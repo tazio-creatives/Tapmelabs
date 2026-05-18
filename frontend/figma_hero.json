@@ -1,0 +1,1112 @@
+﻿{
+    "name":  "TAP ME",
+    "lastModified":  "2026-05-08T19:13:27Z",
+    "thumbnailUrl":  "https://s3-alpha.figma.com/thumbnails/514b0a32-1241-42f2-9edb-19f5131d9471?X-Amz-Algorithm=AWS4-HMAC-SHA256\u0026X-Amz-Credential=AKIAQ4GOSFWCY64QTLLE%2F20260507%2Fus-west-2%2Fs3%2Faws4_request\u0026X-Amz-Date=20260507T000000Z\u0026X-Amz-Expires=604800\u0026X-Amz-SignedHeaders=host\u0026X-Amz-Signature=9f2432ed9498ba97e9628a8bcdcf94624d49b9df642eae5b21a617fcfafb44a8",
+    "version":  "2351303704748481274",
+    "role":  "owner",
+    "editorType":  "figma",
+    "linkAccess":  "view",
+    "nodes":  {
+                  "279:15688":  {
+                                    "document":  {
+                                                     "id":  "279:15688",
+                                                     "name":  "Desktop - 11",
+                                                     "type":  "FRAME",
+                                                     "scrollBehavior":  "SCROLLS",
+                                                     "children":  [
+                                                                      {
+                                                                          "id":  "279:15689",
+                                                                          "name":  "Choose Your Card",
+                                                                          "type":  "TEXT",
+                                                                          "scrollBehavior":  "SCROLLS",
+                                                                          "blendMode":  "PASS_THROUGH",
+                                                                          "fills":  "",
+                                                                          "strokes":  "",
+                                                                          "strokeWeight":  1.0,
+                                                                          "strokeAlign":  "OUTSIDE",
+                                                                          "absoluteBoundingBox":  "@{x=1677.0; y=2639.0; width=315.0; height=44.0}",
+                                                                          "absoluteRenderBounds":  "@{x=1678.9527587890625; y=2647.4602050781250; width=310.458496093750; height=26.936035156250}",
+                                                                          "constraints":  "@{vertical=TOP; horizontal=CENTER}",
+                                                                          "characters":  "Choose Your Card",
+                                                                          "characterStyleOverrides":  "",
+                                                                          "styleOverrideTable":  "",
+                                                                          "lineTypes":  "NONE",
+                                                                          "lineIndentations":  "0",
+                                                                          "style":  "@{fontFamily=Inter; fontPostScriptName=; fontStyle=Semi Bold; fontWeight=600; textAutoResize=WIDTH_AND_HEIGHT; fontSize=36.0; textAlignHorizontal=CENTER; textAlignVertical=CENTER; letterSpacing=0.0; lineHeightPx=43.568180084228516; lineHeightPercent=100.0; lineHeightUnit=INTRINSIC_%}",
+                                                                          "layoutVersion":  5,
+                                                                          "effects":  "",
+                                                                          "interactions":  "",
+                                                                          "complexStrokeProperties":  "@{strokeType=BASIC}"
+                                                                      },
+                                                                      {
+                                                                          "id":  "279:15690",
+                                                                          "name":  "Designed for Every Professional",
+                                                                          "type":  "TEXT",
+                                                                          "scrollBehavior":  "SCROLLS",
+                                                                          "blendMode":  "PASS_THROUGH",
+                                                                          "fills":  "",
+                                                                          "strokes":  "",
+                                                                          "strokeWeight":  1.0,
+                                                                          "strokeAlign":  "OUTSIDE",
+                                                                          "absoluteBoundingBox":  "@{x=1556.0; y=3278.0; width=556.0; height=44.0}",
+                                                                          "absoluteRenderBounds":  "@{x=1558.9710693359375; y=3285.5524902343750; width=550.25915527343750; height=35.220214843750}",
+                                                                          "constraints":  "@{vertical=TOP; horizontal=CENTER}",
+                                                                          "characters":  "Designed for Every Professional",
+                                                                          "characterStyleOverrides":  "",
+                                                                          "styleOverrideTable":  "",
+                                                                          "lineTypes":  "NONE",
+                                                                          "lineIndentations":  "0",
+                                                                          "style":  "@{fontFamily=Inter; fontPostScriptName=; fontStyle=Semi Bold; fontWeight=600; textAutoResize=WIDTH_AND_HEIGHT; fontSize=36.0; textAlignHorizontal=CENTER; textAlignVertical=CENTER; letterSpacing=0.0; lineHeightPx=43.568180084228516; lineHeightPercent=100.0; lineHeightUnit=INTRINSIC_%}",
+                                                                          "layoutVersion":  5,
+                                                                          "effects":  "",
+                                                                          "interactions":  "",
+                                                                          "complexStrokeProperties":  "@{strokeType=BASIC}"
+                                                                      },
+                                                                      {
+                                                                          "id":  "279:15691",
+                                                                          "name":  "Select the material and finish that matches your brand.",
+                                                                          "type":  "TEXT",
+                                                                          "scrollBehavior":  "SCROLLS",
+                                                                          "blendMode":  "PASS_THROUGH",
+                                                                          "fills":  "",
+                                                                          "strokes":  "",
+                                                                          "strokeWeight":  1.0,
+                                                                          "strokeAlign":  "OUTSIDE",
+                                                                          "absoluteBoundingBox":  "@{x=1610.0; y=2693.0; width=449.92520141601562; height=20.0}",
+                                                                          "absoluteRenderBounds":  "@{x=1628.6295166015625; y=2696.8181152343750; width=412.3962402343750; height=15.454589843750}",
+                                                                          "constraints":  "@{vertical=TOP; horizontal=CENTER}",
+                                                                          "characters":  "Select the material and finish that matches your brand.",
+                                                                          "characterStyleOverrides":  "",
+                                                                          "styleOverrideTable":  "",
+                                                                          "lineTypes":  "NONE",
+                                                                          "lineIndentations":  "0",
+                                                                          "style":  "@{fontFamily=Inter; fontPostScriptName=; fontStyle=Regular; fontWeight=400; fontSize=16.0; textAlignHorizontal=CENTER; textAlignVertical=CENTER; letterSpacing=0.0; lineHeightPx=24.0; lineHeightPercent=123.94366455078125; lineHeightPercentFontSize=150.0; lineHeightUnit=PIXELS}",
+                                                                          "layoutVersion":  5,
+                                                                          "effects":  "",
+                                                                          "interactions":  "",
+                                                                          "complexStrokeProperties":  "@{strokeType=BASIC}"
+                                                                      },
+                                                                      {
+                                                                          "id":  "279:15692",
+                                                                          "name":  "Whether you\u0027re networking, growing a business, or building a personal brand TapMe cards make connections effortless.",
+                                                                          "type":  "TEXT",
+                                                                          "scrollBehavior":  "SCROLLS",
+                                                                          "blendMode":  "PASS_THROUGH",
+                                                                          "fills":  "",
+                                                                          "strokes":  "",
+                                                                          "strokeWeight":  1.0,
+                                                                          "strokeAlign":  "OUTSIDE",
+                                                                          "absoluteBoundingBox":  "@{x=1542.0; y=3332.0; width=586.0; height=48.0}",
+                                                                          "absoluteRenderBounds":  "@{x=1545.9425048828125; y=3338.0; width=577.04113769531250; height=39.2727050781250}",
+                                                                          "constraints":  "@{vertical=TOP; horizontal=CENTER}",
+                                                                          "characters":  "Whether you\u0027re networking, growing a business, or building a personal brand  TapMe cards make connections effortless.",
+                                                                          "characterStyleOverrides":  "",
+                                                                          "styleOverrideTable":  "",
+                                                                          "lineTypes":  "NONE",
+                                                                          "lineIndentations":  "0",
+                                                                          "style":  "@{fontFamily=Inter; fontPostScriptName=; fontStyle=Regular; fontWeight=400; textAutoResize=HEIGHT; fontSize=16.0; textAlignHorizontal=CENTER; textAlignVertical=TOP; letterSpacing=0.0; lineHeightPx=24.0; lineHeightPercent=123.94366455078125; lineHeightPercentFontSize=150.0; lineHeightUnit=PIXELS}",
+                                                                          "layoutVersion":  5,
+                                                                          "effects":  "",
+                                                                          "interactions":  "",
+                                                                          "complexStrokeProperties":  "@{strokeType=BASIC}"
+                                                                      },
+                                                                      {
+                                                                          "id":  "279:15693",
+                                                                          "name":  "Container",
+                                                                          "type":  "FRAME",
+                                                                          "scrollBehavior":  "SCROLLS",
+                                                                          "children":  "",
+                                                                          "blendMode":  "PASS_THROUGH",
+                                                                          "clipsContent":  false,
+                                                                          "background":  "",
+                                                                          "fills":  "",
+                                                                          "strokes":  "",
+                                                                          "cornerRadius":  9999.0,
+                                                                          "cornerSmoothing":  0.0,
+                                                                          "strokeWeight":  1.0,
+                                                                          "strokeAlign":  "INSIDE",
+                                                                          "backgroundColor":  "@{r=1.0; g=1.0; b=1.0; a=0.20000000298023224}",
+                                                                          "layoutMode":  "HORIZONTAL",
+                                                                          "counterAxisAlignItems":  "CENTER",
+                                                                          "primaryAxisAlignItems":  "CENTER",
+                                                                          "paddingLeft":  25.0,
+                                                                          "paddingRight":  25.0,
+                                                                          "paddingTop":  8.0,
+                                                                          "paddingBottom":  8.0,
+                                                                          "itemSpacing":  10.0,
+                                                                          "layoutWrap":  "NO_WRAP",
+                                                                          "absoluteBoundingBox":  "@{x=1765.0; y=867.0; width=139.0; height=36.0}",
+                                                                          "absoluteRenderBounds":  "@{x=1753.0; y=859.0; width=163.0; height=60.0}",
+                                                                          "constraints":  "@{vertical=TOP; horizontal=CENTER}",
+                                                                          "layoutSizingHorizontal":  "HUG",
+                                                                          "layoutSizingVertical":  "HUG",
+                                                                          "effects":  "",
+                                                                          "interactions":  "",
+                                                                          "complexStrokeProperties":  "@{strokeType=BASIC}"
+                                                                      },
+                                                                      {
+                                                                          "id":  "279:15695",
+                                                                          "name":  "From Card to Connections, In Three Simple Steps",
+                                                                          "type":  "TEXT",
+                                                                          "scrollBehavior":  "SCROLLS",
+                                                                          "blendMode":  "PASS_THROUGH",
+                                                                          "fills":  "",
+                                                                          "strokes":  "",
+                                                                          "strokeWeight":  1.0,
+                                                                          "strokeAlign":  "OUTSIDE",
+                                                                          "absoluteBoundingBox":  "@{x=1576.0; y=923.0; width=517.0; height=92.0}",
+                                                                          "absoluteRenderBounds":  "@{x=1604.0140380859375; y=931.55255126953125; width=460.74816894531250; height=80.811096191406250}",
+                                                                          "constraints":  "@{vertical=TOP; horizontal=CENTER}",
+                                                                          "characters":  "From Card to Connections,\nIn Three Simple Steps",
+                                                                          "characterStyleOverrides":  "",
+                                                                          "styleOverrideTable":  "",
+                                                                          "lineTypes":  "NONE NONE",
+                                                                          "lineIndentations":  "0 0",
+                                                                          "style":  "@{fontFamily=Inter; fontPostScriptName=Inter-SemiBold; fontStyle=Semi Bold; fontWeight=600; textAutoResize=HEIGHT; fontSize=36.0; textAlignHorizontal=CENTER; textAlignVertical=CENTER; letterSpacing=0.0; lineHeightPx=46.0; lineHeightPercent=105.58164215087891; lineHeightPercentFontSize=127.77777862548828; lineHeightUnit=PIXELS}",
+                                                                          "layoutVersion":  5,
+                                                                          "effects":  "",
+                                                                          "interactions":  "",
+                                                                          "complexStrokeProperties":  "@{strokeType=BASIC}"
+                                                                      },
+                                                                      {
+                                                                          "id":  "279:15696",
+                                                                          "name":  "Div [framer-1oq8wnj]",
+                                                                          "type":  "FRAME",
+                                                                          "scrollBehavior":  "SCROLLS",
+                                                                          "children":  "     ",
+                                                                          "blendMode":  "NORMAL",
+                                                                          "clipsContent":  false,
+                                                                          "background":  " ",
+                                                                          "fills":  " ",
+                                                                          "strokes":  "",
+                                                                          "cornerRadius":  30.717332839965820,
+                                                                          "cornerSmoothing":  0.0,
+                                                                          "strokeWeight":  0.0,
+                                                                          "strokeAlign":  "INSIDE",
+                                                                          "backgroundColor":  "@{r=0.97647058963775635; g=0.97647058963775635; b=0.97647058963775635; a=1.0}",
+                                                                          "absoluteBoundingBox":  "@{x=1236.0; y=1065.0; width=1199.0; height=447.44918823242188}",
+                                                                          "absoluteRenderBounds":  "@{x=1171.5621337890625; y=1065.0; width=1327.8758544921875; height=582.99108886718750}",
+                                                                          "constraints":  "@{vertical=TOP; horizontal=LEFT}",
+                                                                          "effects":  "      ",
+                                                                          "interactions":  "",
+                                                                          "complexStrokeProperties":  "@{strokeType=BASIC}"
+                                                                      },
+                                                                      {
+                                                                          "id":  "279:15830",
+                                                                          "name":  "Div [framer-1oq8wnj]",
+                                                                          "type":  "FRAME",
+                                                                          "scrollBehavior":  "SCROLLS",
+                                                                          "children":  "  ",
+                                                                          "blendMode":  "NORMAL",
+                                                                          "clipsContent":  false,
+                                                                          "background":  " ",
+                                                                          "fills":  " ",
+                                                                          "strokes":  "",
+                                                                          "cornerRadius":  30.717332839965820,
+                                                                          "cornerSmoothing":  0.0,
+                                                                          "strokeWeight":  0.0,
+                                                                          "strokeAlign":  "INSIDE",
+                                                                          "backgroundColor":  "@{r=0.97647058963775635; g=0.97647058963775635; b=0.97647058963775635; a=1.0}",
+                                                                          "absoluteBoundingBox":  "@{x=1236.0; y=1562.449218750; width=1199.0; height=447.44918823242188}",
+                                                                          "absoluteRenderBounds":  "@{x=1171.5621337890625; y=1562.449218750; width=1327.8758544921875; height=582.9909667968750}",
+                                                                          "constraints":  "@{vertical=TOP; horizontal=LEFT}",
+                                                                          "effects":  "      ",
+                                                                          "interactions":  "",
+                                                                          "complexStrokeProperties":  "@{strokeType=BASIC}"
+                                                                      },
+                                                                      {
+                                                                          "id":  "279:15977",
+                                                                          "name":  "Div [framer-1oq8wnj]",
+                                                                          "type":  "FRAME",
+                                                                          "scrollBehavior":  "SCROLLS",
+                                                                          "children":  "     ",
+                                                                          "blendMode":  "NORMAL",
+                                                                          "clipsContent":  false,
+                                                                          "background":  " ",
+                                                                          "fills":  " ",
+                                                                          "strokes":  "",
+                                                                          "cornerRadius":  30.717332839965820,
+                                                                          "cornerSmoothing":  0.0,
+                                                                          "strokeWeight":  0.0,
+                                                                          "strokeAlign":  "INSIDE",
+                                                                          "backgroundColor":  "@{r=0.97647058963775635; g=0.97647058963775635; b=0.97647058963775635; a=1.0}",
+                                                                          "absoluteBoundingBox":  "@{x=1236.0; y=2059.89843750; width=1199.0; height=447.44918823242188}",
+                                                                          "absoluteRenderBounds":  "@{x=1171.5621337890625; y=2059.89843750; width=1327.8758544921875; height=582.9909667968750}",
+                                                                          "constraints":  "@{vertical=TOP; horizontal=LEFT}",
+                                                                          "effects":  "      ",
+                                                                          "interactions":  "",
+                                                                          "complexStrokeProperties":  "@{strokeType=BASIC}"
+                                                                      },
+                                                                      {
+                                                                          "id":  "279:16088",
+                                                                          "name":  "Frame 1171275997",
+                                                                          "type":  "FRAME",
+                                                                          "scrollBehavior":  "SCROLLS",
+                                                                          "children":  "   ",
+                                                                          "blendMode":  "PASS_THROUGH",
+                                                                          "clipsContent":  false,
+                                                                          "background":  "",
+                                                                          "fills":  "",
+                                                                          "strokes":  "",
+                                                                          "strokeWeight":  1.0,
+                                                                          "strokeAlign":  "INSIDE",
+                                                                          "backgroundColor":  "@{r=0.0; g=0.0; b=0.0; a=0.0}",
+                                                                          "layoutMode":  "HORIZONTAL",
+                                                                          "counterAxisAlignItems":  "CENTER",
+                                                                          "itemSpacing":  20.0,
+                                                                          "layoutWrap":  "NO_WRAP",
+                                                                          "absoluteBoundingBox":  "@{x=1235.0; y=2762.9997558593750; width=1199.999511718750; height=384.0}",
+                                                                          "absoluteRenderBounds":  "@{x=1235.0; y=2762.9997558593750; width=1199.999511718750; height=384.0}",
+                                                                          "constraints":  "@{vertical=TOP; horizontal=LEFT}",
+                                                                          "layoutSizingHorizontal":  "HUG",
+                                                                          "layoutSizingVertical":  "HUG",
+                                                                          "effects":  "",
+                                                                          "interactions":  "",
+                                                                          "complexStrokeProperties":  "@{strokeType=BASIC}"
+                                                                      },
+                                                                      {
+                                                                          "id":  "279:16648",
+                                                                          "name":  "Container",
+                                                                          "type":  "FRAME",
+                                                                          "scrollBehavior":  "SCROLLS",
+                                                                          "children":  "",
+                                                                          "blendMode":  "PASS_THROUGH",
+                                                                          "clipsContent":  false,
+                                                                          "background":  "",
+                                                                          "fills":  "",
+                                                                          "strokes":  "",
+                                                                          "cornerRadius":  9999.0,
+                                                                          "cornerSmoothing":  0.0,
+                                                                          "strokeWeight":  1.0,
+                                                                          "strokeAlign":  "INSIDE",
+                                                                          "backgroundColor":  "@{r=1.0; g=1.0; b=1.0; a=0.20000000298023224}",
+                                                                          "layoutMode":  "HORIZONTAL",
+                                                                          "counterAxisAlignItems":  "CENTER",
+                                                                          "primaryAxisAlignItems":  "CENTER",
+                                                                          "paddingLeft":  25.0,
+                                                                          "paddingRight":  25.0,
+                                                                          "paddingTop":  8.0,
+                                                                          "paddingBottom":  8.0,
+                                                                          "itemSpacing":  10.0,
+                                                                          "layoutWrap":  "NO_WRAP",
+                                                                          "absoluteBoundingBox":  "@{x=1779.0; y=2583.0; width=111.0; height=36.0}",
+                                                                          "absoluteRenderBounds":  "@{x=1767.0; y=2575.0; width=135.0; height=60.0}",
+                                                                          "constraints":  "@{vertical=TOP; horizontal=CENTER}",
+                                                                          "layoutSizingHorizontal":  "HUG",
+                                                                          "layoutSizingVertical":  "HUG",
+                                                                          "effects":  "",
+                                                                          "interactions":  "",
+                                                                          "complexStrokeProperties":  "@{strokeType=BASIC}"
+                                                                      },
+                                                                      {
+                                                                          "id":  "279:16650",
+                                                                          "name":  "Container",
+                                                                          "type":  "FRAME",
+                                                                          "scrollBehavior":  "SCROLLS",
+                                                                          "children":  "",
+                                                                          "blendMode":  "PASS_THROUGH",
+                                                                          "clipsContent":  false,
+                                                                          "background":  "",
+                                                                          "fills":  "",
+                                                                          "strokes":  "",
+                                                                          "cornerRadius":  9999.0,
+                                                                          "cornerSmoothing":  0.0,
+                                                                          "strokeWeight":  1.0,
+                                                                          "strokeAlign":  "INSIDE",
+                                                                          "backgroundColor":  "@{r=1.0; g=1.0; b=1.0; a=0.20000000298023224}",
+                                                                          "layoutMode":  "HORIZONTAL",
+                                                                          "counterAxisAlignItems":  "CENTER",
+                                                                          "primaryAxisAlignItems":  "CENTER",
+                                                                          "paddingLeft":  25.0,
+                                                                          "paddingRight":  25.0,
+                                                                          "paddingTop":  8.0,
+                                                                          "paddingBottom":  8.0,
+                                                                          "itemSpacing":  10.0,
+                                                                          "layoutWrap":  "NO_WRAP",
+                                                                          "absoluteBoundingBox":  "@{x=1776.0; y=3222.0; width=117.0; height=36.0}",
+                                                                          "absoluteRenderBounds":  "@{x=1764.0; y=3214.0; width=141.0; height=60.0}",
+                                                                          "constraints":  "@{vertical=TOP; horizontal=CENTER}",
+                                                                          "layoutSizingHorizontal":  "HUG",
+                                                                          "layoutSizingVertical":  "HUG",
+                                                                          "effects":  "",
+                                                                          "interactions":  "",
+                                                                          "complexStrokeProperties":  "@{strokeType=BASIC}"
+                                                                      },
+                                                                      {
+                                                                          "id":  "279:16704",
+                                                                          "name":  "Footer - Desktop",
+                                                                          "type":  "FRAME",
+                                                                          "scrollBehavior":  "SCROLLS",
+                                                                          "children":  " ",
+                                                                          "blendMode":  "PASS_THROUGH",
+                                                                          "clipsContent":  true,
+                                                                          "background":  "",
+                                                                          "fills":  "",
+                                                                          "strokes":  "",
+                                                                          "strokeWeight":  1.0,
+                                                                          "strokeAlign":  "INSIDE",
+                                                                          "backgroundColor":  "@{r=0.0; g=0.0; b=0.0; a=1.0}",
+                                                                          "absoluteBoundingBox":  "@{x=1115.0; y=5701.0; width=1440.0; height=706.0}",
+                                                                          "absoluteRenderBounds":  "@{x=1115.0; y=5701.0; width=1440.0; height=706.0}",
+                                                                          "constraints":  "@{vertical=TOP; horizontal=LEFT}",
+                                                                          "effects":  "",
+                                                                          "interactions":  "",
+                                                                          "complexStrokeProperties":  "@{strokeType=BASIC}"
+                                                                      },
+                                                                      {
+                                                                          "id":  "279:16778",
+                                                                          "name":  "Frame 1171276006",
+                                                                          "type":  "FRAME",
+                                                                          "scrollBehavior":  "SCROLLS",
+                                                                          "children":  "       ",
+                                                                          "blendMode":  "PASS_THROUGH",
+                                                                          "clipsContent":  true,
+                                                                          "background":  " ",
+                                                                          "fills":  " ",
+                                                                          "strokes":  "",
+                                                                          "strokeWeight":  1.0,
+                                                                          "strokeAlign":  "INSIDE",
+                                                                          "backgroundColor":  "@{r=0.0; g=0.0; b=0.0; a=0.0}",
+                                                                          "absoluteBoundingBox":  "@{x=1115.0; y=72.0; width=1440.0; height=745.0}",
+                                                                          "absoluteRenderBounds":  "@{x=1115.0; y=72.0; width=1440.0; height=745.0}",
+                                                                          "constraints":  "@{vertical=TOP; horizontal=LEFT}",
+                                                                          "exportSettings":  "",
+                                                                          "effects":  "",
+                                                                          "interactions":  "",
+                                                                          "complexStrokeProperties":  "@{strokeType=BASIC}"
+                                                                      },
+                                                                      {
+                                                                          "id":  "279:17139",
+                                                                          "name":  "Frame 1171276012",
+                                                                          "visible":  false,
+                                                                          "type":  "FRAME",
+                                                                          "scrollBehavior":  "SCROLLS",
+                                                                          "children":  "   ",
+                                                                          "blendMode":  "PASS_THROUGH",
+                                                                          "clipsContent":  false,
+                                                                          "background":  "",
+                                                                          "fills":  "",
+                                                                          "strokes":  "",
+                                                                          "strokeWeight":  1.0,
+                                                                          "strokeAlign":  "INSIDE",
+                                                                          "backgroundColor":  "@{r=0.0; g=0.0; b=0.0; a=0.0}",
+                                                                          "absoluteBoundingBox":  "@{x=1115.0; y=3359.0; width=1440.0; height=586.0}",
+                                                                          "absoluteRenderBounds":  null,
+                                                                          "constraints":  "@{vertical=TOP; horizontal=LEFT}",
+                                                                          "effects":  "",
+                                                                          "interactions":  "",
+                                                                          "complexStrokeProperties":  "@{strokeType=BASIC}"
+                                                                      },
+                                                                      {
+                                                                          "id":  "434:2580",
+                                                                          "name":  "Frame 1171276084",
+                                                                          "type":  "FRAME",
+                                                                          "scrollBehavior":  "SCROLLS",
+                                                                          "children":  " ",
+                                                                          "blendMode":  "PASS_THROUGH",
+                                                                          "clipsContent":  false,
+                                                                          "background":  "",
+                                                                          "fills":  "",
+                                                                          "strokes":  "",
+                                                                          "strokeWeight":  1.0,
+                                                                          "strokeAlign":  "INSIDE",
+                                                                          "backgroundColor":  "@{r=0.0; g=0.0; b=0.0; a=0.0}",
+                                                                          "layoutMode":  "VERTICAL",
+                                                                          "counterAxisSizingMode":  "FIXED",
+                                                                          "itemSpacing":  75.0,
+                                                                          "layoutWrap":  "NO_WRAP",
+                                                                          "absoluteBoundingBox":  "@{x=1235.0; y=3837.0; width=1200.6315917968750; height=953.3137207031250}",
+                                                                          "absoluteRenderBounds":  "@{x=1235.0; y=3837.0; width=1200.6315917968750; height=953.3137207031250}",
+                                                                          "constraints":  "@{vertical=TOP; horizontal=LEFT}",
+                                                                          "layoutSizingHorizontal":  "FIXED",
+                                                                          "layoutSizingVertical":  "HUG",
+                                                                          "effects":  "",
+                                                                          "interactions":  "",
+                                                                          "complexStrokeProperties":  "@{strokeType=BASIC}"
+                                                                      },
+                                                                      {
+                                                                          "id":  "279:17520",
+                                                                          "name":  "Frame 1171276044",
+                                                                          "type":  "FRAME",
+                                                                          "scrollBehavior":  "SCROLLS",
+                                                                          "children":  "  ",
+                                                                          "blendMode":  "PASS_THROUGH",
+                                                                          "clipsContent":  false,
+                                                                          "background":  "",
+                                                                          "fills":  "",
+                                                                          "strokes":  "",
+                                                                          "strokeWeight":  1.0,
+                                                                          "strokeAlign":  "INSIDE",
+                                                                          "backgroundColor":  "@{r=0.0; g=0.0; b=0.0; a=0.0}",
+                                                                          "layoutMode":  "VERTICAL",
+                                                                          "counterAxisSizingMode":  "FIXED",
+                                                                          "itemSpacing":  20.0,
+                                                                          "layoutWrap":  "NO_WRAP",
+                                                                          "absoluteBoundingBox":  "@{x=1235.0; y=3430.0; width=1201.0; height=332.0}",
+                                                                          "absoluteRenderBounds":  "@{x=1235.0; y=3430.0; width=1201.0; height=332.0}",
+                                                                          "constraints":  "@{vertical=TOP; horizontal=LEFT}",
+                                                                          "layoutSizingHorizontal":  "FIXED",
+                                                                          "layoutSizingVertical":  "HUG",
+                                                                          "effects":  "",
+                                                                          "interactions":  "",
+                                                                          "complexStrokeProperties":  "@{strokeType=BASIC}"
+                                                                      },
+                                                                      {
+                                                                          "id":  "279:17551",
+                                                                          "name":  "Frame 1171275998",
+                                                                          "type":  "FRAME",
+                                                                          "isFixed":  true,
+                                                                          "scrollBehavior":  "FIXED",
+                                                                          "children":  " ",
+                                                                          "blendMode":  "PASS_THROUGH",
+                                                                          "clipsContent":  true,
+                                                                          "background":  "",
+                                                                          "fills":  "",
+                                                                          "strokes":  "",
+                                                                          "strokeWeight":  1.0,
+                                                                          "individualStrokeWeights":  "@{top=0.0; right=0.0; bottom=1.0; left=0.0}",
+                                                                          "strokeAlign":  "INSIDE",
+                                                                          "backgroundColor":  "@{r=1.0; g=1.0; b=1.0; a=1.0}",
+                                                                          "absoluteBoundingBox":  "@{x=1115.0; y=0.0; width=1440.0; height=72.0}",
+                                                                          "absoluteRenderBounds":  "@{x=1115.0; y=0.0; width=1440.0; height=86.0}",
+                                                                          "constraints":  "@{vertical=TOP; horizontal=LEFT}",
+                                                                          "effects":  "",
+                                                                          "interactions":  "",
+                                                                          "complexStrokeProperties":  "@{strokeType=BASIC}"
+                                                                      }
+                                                                  ],
+                                                     "blendMode":  "PASS_THROUGH",
+                                                     "clipsContent":  true,
+                                                     "background":  [
+                                                                        {
+                                                                            "blendMode":  "NORMAL",
+                                                                            "type":  "SOLID",
+                                                                            "color":  "@{r=1.0; g=1.0; b=1.0; a=1.0}"
+                                                                        }
+                                                                    ],
+                                                     "fills":  [
+                                                                   {
+                                                                       "blendMode":  "NORMAL",
+                                                                       "type":  "SOLID",
+                                                                       "color":  "@{r=1.0; g=1.0; b=1.0; a=1.0}"
+                                                                   }
+                                                               ],
+                                                     "strokes":  [
+
+                                                                 ],
+                                                     "strokeWeight":  1.0,
+                                                     "strokeAlign":  "INSIDE",
+                                                     "backgroundColor":  {
+                                                                             "r":  1.0,
+                                                                             "g":  1.0,
+                                                                             "b":  1.0,
+                                                                             "a":  1.0
+                                                                         },
+                                                     "layoutGrids":  [
+                                                                         {
+                                                                             "pattern":  "COLUMNS",
+                                                                             "sectionSize":  81.666664123535156,
+                                                                             "visible":  true,
+                                                                             "color":  "@{r=1.0; g=0.0; b=0.0; a=0.10000000149011612}",
+                                                                             "alignment":  "STRETCH",
+                                                                             "gutterSize":  20.0,
+                                                                             "offset":  120.0,
+                                                                             "count":  12
+                                                                         },
+                                                                         {
+                                                                             "pattern":  "ROWS",
+                                                                             "sectionSize":  8.0,
+                                                                             "visible":  false,
+                                                                             "color":  "@{r=1.0; g=0.0; b=0.0; a=0.10000000149011612}",
+                                                                             "alignment":  "MIN",
+                                                                             "gutterSize":  8.0,
+                                                                             "offset":  0.0,
+                                                                             "count":  5
+                                                                         }
+                                                                     ],
+                                                     "absoluteBoundingBox":  {
+                                                                                 "x":  1115.0,
+                                                                                 "y":  0.0,
+                                                                                 "width":  1440.0,
+                                                                                 "height":  6407.0
+                                                                             },
+                                                     "absoluteRenderBounds":  {
+                                                                                  "x":  1115.0,
+                                                                                  "y":  0.0,
+                                                                                  "width":  1440.0,
+                                                                                  "height":  6407.0
+                                                                              },
+                                                     "constraints":  {
+                                                                         "vertical":  "TOP",
+                                                                         "horizontal":  "LEFT"
+                                                                     },
+                                                     "exportSettings":  [
+                                                                            {
+                                                                                "suffix":  "",
+                                                                                "format":  "PNG",
+                                                                                "constraint":  "@{type=SCALE; value=1.0}"
+                                                                            }
+                                                                        ],
+                                                     "effects":  [
+
+                                                                 ],
+                                                     "interactions":  [
+
+                                                                      ],
+                                                     "complexStrokeProperties":  {
+                                                                                     "strokeType":  "BASIC"
+                                                                                 }
+                                                 },
+                                    "components":  {
+                                                       "20:2":  {
+                                                                    "key":  "39e2560bff2e239c1f4a476259f97aecbbcc6a9f",
+                                                                    "name":  "16",
+                                                                    "description":  "",
+                                                                    "remote":  true,
+                                                                    "documentationLinks":  [
+
+                                                                                           ]
+                                                                },
+                                                       "20:36":  {
+                                                                     "key":  "58c632ad09440f91c3220b01194f8f59b94085ac",
+                                                                     "name":  "Property 1=maps",
+                                                                     "description":  "",
+                                                                     "remote":  true,
+                                                                     "componentSetId":  "20:29",
+                                                                     "documentationLinks":  [
+
+                                                                                            ]
+                                                                 },
+                                                       "20:24":  {
+                                                                     "key":  "507e8b90a5e4097264c6559bff2c0419f31d12f0",
+                                                                     "name":  "Bottom Icon",
+                                                                     "description":  "",
+                                                                     "remote":  true,
+                                                                     "documentationLinks":  [
+
+                                                                                            ]
+                                                                 },
+                                                       "20:12":  {
+                                                                     "key":  "aabf1bb7f5a0f521e223e2012591dccad33e933d",
+                                                                     "name":  "Property 1=1",
+                                                                     "description":  "",
+                                                                     "remote":  true,
+                                                                     "componentSetId":  "20:11",
+                                                                     "documentationLinks":  [
+
+                                                                                            ]
+                                                                 },
+                                                       "20:34":  {
+                                                                     "key":  "fb2604a65e5ed9de4270c8fead45ad68fa3ac067",
+                                                                     "name":  "Property 1=Appletv",
+                                                                     "description":  "",
+                                                                     "remote":  true,
+                                                                     "componentSetId":  "20:29",
+                                                                     "documentationLinks":  [
+
+                                                                                            ]
+                                                                 },
+                                                       "20:38":  {
+                                                                     "key":  "ae58993bdeef29386c90b3ed7f293635594907f0",
+                                                                     "name":  "Property 1=music",
+                                                                     "description":  "",
+                                                                     "remote":  true,
+                                                                     "componentSetId":  "20:29",
+                                                                     "documentationLinks":  [
+
+                                                                                            ]
+                                                                 },
+                                                       "20:32":  {
+                                                                     "key":  "10feb2e77818bcdf1a7f8638c4eef29351764ce1",
+                                                                     "name":  "Property 1=safari",
+                                                                     "description":  "",
+                                                                     "remote":  true,
+                                                                     "componentSetId":  "20:29",
+                                                                     "documentationLinks":  [
+
+                                                                                            ]
+                                                                 },
+                                                       "20:54":  {
+                                                                     "key":  "a347e7e3e0672a3eafb03f1b4419001a0039e6ee",
+                                                                     "name":  "Device=📱 15 Pro Max, Color=⚪ Always White",
+                                                                     "description":  "",
+                                                                     "remote":  true,
+                                                                     "componentSetId":  "20:47",
+                                                                     "documentationLinks":  [
+
+                                                                                            ]
+                                                                 },
+                                                       "20:100":  {
+                                                                      "key":  "67afb5da460f9eab0a5130af33f33ee4fac39e29",
+                                                                      "name":  "Device=📱 15 Pro Max, Color=⚪ Always White, Variant=4 Bars",
+                                                                      "description":  "",
+                                                                      "remote":  true,
+                                                                      "componentSetId":  "20:61",
+                                                                      "documentationLinks":  [
+
+                                                                                             ]
+                                                                  },
+                                                       "20:159":  {
+                                                                      "key":  "d8aa76cde80d02a849cd39abc308d476907ab1ea",
+                                                                      "name":  "Device=📱 15 Pro Max, Color=⚪ Always White",
+                                                                      "description":  "",
+                                                                      "remote":  true,
+                                                                      "componentSetId":  "20:152",
+                                                                      "documentationLinks":  [
+
+                                                                                             ]
+                                                                  },
+                                                       "20:178":  {
+                                                                      "key":  "80d2a82cd494fdddde9bd1da3cca5bd8254d1d3e",
+                                                                      "name":  "Device=📱 15 Pro Max, Color=⚪ Always White",
+                                                                      "description":  "",
+                                                                      "remote":  true,
+                                                                      "componentSetId":  "20:171",
+                                                                      "documentationLinks":  [
+
+                                                                                             ]
+                                                                  },
+                                                       "20:226":  {
+                                                                      "key":  "0e6bbef470a8321fb82932421d90714cb81c5c03",
+                                                                      "name":  "Property 1=facetime",
+                                                                      "description":  "",
+                                                                      "remote":  true,
+                                                                      "componentSetId":  "20:225",
+                                                                      "documentationLinks":  [
+
+                                                                                             ]
+                                                                  },
+                                                       "20:231":  {
+                                                                      "key":  "ebba4e9acb5eb441e13534f00b8329a7e2765623",
+                                                                      "name":  "Property 1=calendar",
+                                                                      "description":  "",
+                                                                      "remote":  true,
+                                                                      "componentSetId":  "20:225",
+                                                                      "documentationLinks":  [
+
+                                                                                             ]
+                                                                  },
+                                                       "20:251":  {
+                                                                      "key":  "33dd4c27eea7b36f6ce2b3955bff9cac31d65ce0",
+                                                                      "name":  "Property 1=wallet",
+                                                                      "description":  "",
+                                                                      "remote":  true,
+                                                                      "componentSetId":  "20:225",
+                                                                      "documentationLinks":  [
+
+                                                                                             ]
+                                                                  },
+                                                       "20:241":  {
+                                                                      "key":  "3c315cbb4a426bc1688f18eaa3df454edb973c17",
+                                                                      "name":  "Property 1=shortcuts",
+                                                                      "description":  "",
+                                                                      "remote":  true,
+                                                                      "componentSetId":  "20:225",
+                                                                      "documentationLinks":  [
+
+                                                                                             ]
+                                                                  },
+                                                       "20:281":  {
+                                                                      "key":  "ab975ccc0d9d7503ec61cb934e33bae24d9cbaf9",
+                                                                      "name":  "Property 1=notes",
+                                                                      "description":  "",
+                                                                      "remote":  true,
+                                                                      "componentSetId":  "20:225",
+                                                                      "documentationLinks":  [
+
+                                                                                             ]
+                                                                  },
+                                                       "20:286":  {
+                                                                      "key":  "1bedee7a93bb2ccda47aa0a8f9edf692548f6c54",
+                                                                      "name":  "Property 1=translate",
+                                                                      "description":  "",
+                                                                      "remote":  true,
+                                                                      "componentSetId":  "20:225",
+                                                                      "documentationLinks":  [
+
+                                                                                             ]
+                                                                  },
+                                                       "20:256":  {
+                                                                      "key":  "55ada2eebfee18cac9a7cff79ba7abd2d2f00959",
+                                                                      "name":  "Property 1=reminder",
+                                                                      "description":  "",
+                                                                      "remote":  true,
+                                                                      "componentSetId":  "20:225",
+                                                                      "documentationLinks":  [
+
+                                                                                             ]
+                                                                  },
+                                                       "20:271":  {
+                                                                      "key":  "22e1dd08990f7b61250620632c158fa6c3743b1d",
+                                                                      "name":  "Property 1=news",
+                                                                      "description":  "",
+                                                                      "remote":  true,
+                                                                      "componentSetId":  "20:225",
+                                                                      "documentationLinks":  [
+
+                                                                                             ]
+                                                                  },
+                                                       "20:291":  {
+                                                                      "key":  "08b8fa5ec24b9e1e510a135e2f979b7759b6a98a",
+                                                                      "name":  "Property 1=appstore",
+                                                                      "description":  "",
+                                                                      "remote":  true,
+                                                                      "componentSetId":  "20:225",
+                                                                      "documentationLinks":  [
+
+                                                                                             ]
+                                                                  },
+                                                       "20:276":  {
+                                                                      "key":  "783926c549cb8a32a78e22b5d9fdec3bf1eb1be5",
+                                                                      "name":  "Property 1=weather",
+                                                                      "description":  "",
+                                                                      "remote":  true,
+                                                                      "componentSetId":  "20:225",
+                                                                      "documentationLinks":  [
+
+                                                                                             ]
+                                                                  },
+                                                       "20:236":  {
+                                                                      "key":  "fb2680a6f8a8a80e8e6487816091e2bdd0133330",
+                                                                      "name":  "Property 1=photos",
+                                                                      "description":  "",
+                                                                      "remote":  true,
+                                                                      "componentSetId":  "20:225",
+                                                                      "documentationLinks":  [
+
+                                                                                             ]
+                                                                  },
+                                                       "20:246":  {
+                                                                      "key":  "0bb2458521db05562e658b933d31928de2f2c97d",
+                                                                      "name":  "Property 1=health",
+                                                                      "description":  "",
+                                                                      "remote":  true,
+                                                                      "componentSetId":  "20:225",
+                                                                      "documentationLinks":  [
+
+                                                                                             ]
+                                                                  },
+                                                       "20:301":  {
+                                                                      "key":  "18b8a480d22c2823c73647333ca3ac10fd518831",
+                                                                      "name":  "Property 1=Habibapp",
+                                                                      "description":  "",
+                                                                      "remote":  true,
+                                                                      "componentSetId":  "20:225",
+                                                                      "documentationLinks":  [
+
+                                                                                             ]
+                                                                  },
+                                                       "20:220":  {
+                                                                      "key":  "065e1c6d5f650a189e9412d5c81fc8eab629daad",
+                                                                      "name":  "Logo and Text",
+                                                                      "description":  "",
+                                                                      "remote":  true,
+                                                                      "documentationLinks":  [
+
+                                                                                             ]
+                                                                  },
+                                                       "20:296":  {
+                                                                      "key":  "def95f242e51740aac308a4c6eea0ebe25876492",
+                                                                      "name":  "Property 1=Default",
+                                                                      "description":  "",
+                                                                      "remote":  true,
+                                                                      "componentSetId":  "20:225",
+                                                                      "documentationLinks":  [
+
+                                                                                             ]
+                                                                  },
+                                                       "20:360":  {
+                                                                      "key":  "e391c261fc62d8cae8b6360c820e27d3c1e8cfcd",
+                                                                      "name":  "button=power",
+                                                                      "description":  "",
+                                                                      "remote":  true,
+                                                                      "componentSetId":  "20:349",
+                                                                      "documentationLinks":  [
+
+                                                                                             ]
+                                                                  },
+                                                       "20:350":  {
+                                                                      "key":  "99c7623b2773db960c3cbbc58675fdb894ebc227",
+                                                                      "name":  "button=switch",
+                                                                      "description":  "",
+                                                                      "remote":  true,
+                                                                      "componentSetId":  "20:349",
+                                                                      "documentationLinks":  [
+
+                                                                                             ]
+                                                                  },
+                                                       "20:355":  {
+                                                                      "key":  "fbac205acf5637833f80237489de883308b396f7",
+                                                                      "name":  "button=vol",
+                                                                      "description":  "",
+                                                                      "remote":  true,
+                                                                      "componentSetId":  "20:349",
+                                                                      "documentationLinks":  [
+
+                                                                                             ]
+                                                                  },
+                                                       "279:11591":  {
+                                                                         "key":  "0dfc4f25f5174736f308fd0a12a01f4f21c128fe",
+                                                                         "name":  "Property 1=Default",
+                                                                         "description":  "",
+                                                                         "remote":  false,
+                                                                         "componentSetId":  "279:11592",
+                                                                         "documentationLinks":  [
+
+                                                                                                ]
+                                                                     },
+                                                       "279:11686":  {
+                                                                         "key":  "8139119693b07181b6846b7e933c2d0811269814",
+                                                                         "name":  "Property 1=Default",
+                                                                         "description":  "",
+                                                                         "remote":  false,
+                                                                         "componentSetId":  "279:11685",
+                                                                         "documentationLinks":  [
+
+                                                                                                ]
+                                                                     },
+                                                       "279:13455":  {
+                                                                         "key":  "622496da7456445ec1378af3192211251216238f",
+                                                                         "name":  "Property 1=Default",
+                                                                         "description":  "",
+                                                                         "remote":  false,
+                                                                         "componentSetId":  "279:13454",
+                                                                         "documentationLinks":  [
+
+                                                                                                ]
+                                                                     },
+                                                       "279:13509":  {
+                                                                         "key":  "e2ffe6c4cd0e6e0b278367c123ca2ed4abdf7bf5",
+                                                                         "name":  "Property 1=Default",
+                                                                         "description":  "",
+                                                                         "remote":  false,
+                                                                         "componentSetId":  "279:13508",
+                                                                         "documentationLinks":  [
+
+                                                                                                ]
+                                                                     },
+                                                       "279:15272":  {
+                                                                         "key":  "797e304d7e80649ad5eaa3c3a119b2890a0b9fb2",
+                                                                         "name":  "Property 1=Default",
+                                                                         "description":  "",
+                                                                         "remote":  false,
+                                                                         "componentSetId":  "279:15271",
+                                                                         "documentationLinks":  [
+
+                                                                                                ]
+                                                                     },
+                                                       "279:15296":  {
+                                                                         "key":  "cc1e1eef58e44aa68e1ac08b4ce380421f563c30",
+                                                                         "name":  "Property 1=Default",
+                                                                         "description":  "",
+                                                                         "remote":  false,
+                                                                         "componentSetId":  "279:15295",
+                                                                         "documentationLinks":  [
+
+                                                                                                ]
+                                                                     }
+                                                   },
+                                    "componentSets":  {
+                                                          "20:29":  {
+                                                                        "key":  "84f1f484902c9fc5f9f66b39ddb6aacc8b13be0c",
+                                                                        "name":  "BOTTOM APP ICONS  ",
+                                                                        "description":  "",
+                                                                        "remote":  true
+                                                                    },
+                                                          "20:11":  {
+                                                                        "key":  "88a89e40ed7f7faf1d2585de884e64bafbce9220",
+                                                                        "name":  "Logo Asset",
+                                                                        "description":  "",
+                                                                        "remote":  true
+                                                                    },
+                                                          "20:47":  {
+                                                                        "key":  "84e886526821cfbeff0f7f88e5478c3fba7f1518",
+                                                                        "name":  "🧩 Status Bar › Time",
+                                                                        "description":  "",
+                                                                        "remote":  true
+                                                                    },
+                                                          "20:61":  {
+                                                                        "key":  "ab0f5c40a66982ed8981c51388cfeb923846d93a",
+                                                                        "name":  "🧩 Status Bar › Cellular Icon",
+                                                                        "description":  "",
+                                                                        "remote":  true
+                                                                    },
+                                                          "20:152":  {
+                                                                         "key":  "66b0ffffe557e689aab3e73faaf51b32b7772430",
+                                                                         "name":  "🧩 Status Bar › Wi-Fi Icon",
+                                                                         "description":  "",
+                                                                         "remote":  true
+                                                                     },
+                                                          "20:171":  {
+                                                                         "key":  "990962802795bd6cba1d5aa2ea092fc0a0d27dcf",
+                                                                         "name":  "🧩 Status Bar › Battery Icon",
+                                                                         "description":  "",
+                                                                         "remote":  true
+                                                                     },
+                                                          "20:225":  {
+                                                                         "key":  "2b7aa1999d9ba671960d02ecfc159f6b1a52c63b",
+                                                                         "name":  ".Home Screen App",
+                                                                         "description":  "",
+                                                                         "remote":  true
+                                                                     },
+                                                          "20:349":  {
+                                                                         "key":  "9f1c030658880b230e1d86532fcd39d4839805d7",
+                                                                         "name":  "button",
+                                                                         "description":  "",
+                                                                         "remote":  true
+                                                                     },
+                                                          "279:11592":  {
+                                                                            "key":  "fab34aabb502e1e059979d4ee76605b32c4ff863",
+                                                                            "name":  "Container",
+                                                                            "description":  "",
+                                                                            "remote":  false
+                                                                        },
+                                                          "279:11685":  {
+                                                                            "key":  "9463439040f8754b1f1e090673196bb66f1127b0",
+                                                                            "name":  "Container",
+                                                                            "description":  "",
+                                                                            "remote":  false
+                                                                        },
+                                                          "279:13454":  {
+                                                                            "key":  "8f773957fa3fffdee80c970d8064c860326ea4f0",
+                                                                            "name":  "Container",
+                                                                            "description":  "",
+                                                                            "remote":  false
+                                                                        },
+                                                          "279:13508":  {
+                                                                            "key":  "25832b47ebc9b78db3dd63cbeec289816fbd001e",
+                                                                            "name":  "Container",
+                                                                            "description":  "",
+                                                                            "remote":  false
+                                                                        },
+                                                          "279:15271":  {
+                                                                            "key":  "586c301c8af1ed29fb954adb41cd796245ac3aa7",
+                                                                            "name":  "Container",
+                                                                            "description":  "",
+                                                                            "remote":  false
+                                                                        },
+                                                          "279:15295":  {
+                                                                            "key":  "c290583b64b73f8ba90c1ec6b41706713b1d2b13",
+                                                                            "name":  "Container",
+                                                                            "description":  "",
+                                                                            "remote":  false
+                                                                        }
+                                                      },
+                                    "schemaVersion":  0,
+                                    "styles":  {
+                                                   "20:193":  {
+                                                                  "key":  "b6ec29616b29a4fc36212b9e2d323c431386aeae",
+                                                                  "name":  "App Logo/FaceTime",
+                                                                  "styleType":  "FILL",
+                                                                  "remote":  true,
+                                                                  "description":  ""
+                                                              },
+                                                   "20:195":  {
+                                                                  "key":  "faa9a48d6ad822a69f5bd6efb94a2d6c4855aabb",
+                                                                  "name":  "App Logo/Calendar",
+                                                                  "styleType":  "FILL",
+                                                                  "remote":  true,
+                                                                  "description":  ""
+                                                              },
+                                                   "20:203":  {
+                                                                  "key":  "88511abdc4e144d775e94efb25883ae282b4edfe",
+                                                                  "name":  "App Logo/Wallet",
+                                                                  "styleType":  "FILL",
+                                                                  "remote":  true,
+                                                                  "description":  ""
+                                                              },
+                                                   "20:199":  {
+                                                                  "key":  "c3ac723faa6e701f8f6dfbe18d17aa204601d399",
+                                                                  "name":  "App Logo/Shortcuts",
+                                                                  "styleType":  "FILL",
+                                                                  "remote":  true,
+                                                                  "description":  ""
+                                                              },
+                                                   "20:215":  {
+                                                                  "key":  "2e07813de1c1463eb0ff2a5b635d17d3943351c9",
+                                                                  "name":  "App Logo/Notes",
+                                                                  "styleType":  "FILL",
+                                                                  "remote":  true,
+                                                                  "description":  ""
+                                                              },
+                                                   "20:217":  {
+                                                                  "key":  "5f93bb6852b8e7f7be90105037c225dee5e96247",
+                                                                  "name":  "App Logo/Translate",
+                                                                  "styleType":  "FILL",
+                                                                  "remote":  true,
+                                                                  "description":  ""
+                                                              },
+                                                   "20:205":  {
+                                                                  "key":  "b24269de221f5ace6fe8f7360f17a54eefca3341",
+                                                                  "name":  "App Logo/Reminders",
+                                                                  "styleType":  "FILL",
+                                                                  "remote":  true,
+                                                                  "description":  ""
+                                                              },
+                                                   "20:211":  {
+                                                                  "key":  "e838d3afef80ffccd885bec4ad36f20f1d000e8c",
+                                                                  "name":  "App Logo/News",
+                                                                  "styleType":  "FILL",
+                                                                  "remote":  true,
+                                                                  "description":  ""
+                                                              },
+                                                   "20:10":  {
+                                                                 "key":  "958e3b7618bd1e751fd60b47652db0f8ac78b183",
+                                                                 "name":  "App Logo/App Store",
+                                                                 "styleType":  "FILL",
+                                                                 "remote":  true,
+                                                                 "description":  ""
+                                                             },
+                                                   "20:213":  {
+                                                                  "key":  "20a8db7a8747118f5336fcd324eed611960ce80d",
+                                                                  "name":  "App Logo/Weather",
+                                                                  "styleType":  "FILL",
+                                                                  "remote":  true,
+                                                                  "description":  ""
+                                                              },
+                                                   "20:197":  {
+                                                                  "key":  "40d9291f15fc6f2b91e177afd20bc4ccaf1b6b7b",
+                                                                  "name":  "App Logo/Photos",
+                                                                  "styleType":  "FILL",
+                                                                  "remote":  true,
+                                                                  "description":  ""
+                                                              },
+                                                   "20:201":  {
+                                                                  "key":  "e8e271e72a9f9998f84315e46c1492b1c2364cef",
+                                                                  "name":  "App Logo/Health",
+                                                                  "styleType":  "FILL",
+                                                                  "remote":  true,
+                                                                  "description":  ""
+                                                              },
+                                                   "27:285":  {
+                                                                  "key":  "10fff2d50d310e206b7f26f1858a66a58b14df97",
+                                                                  "name":  "App Logo/Safari",
+                                                                  "styleType":  "FILL",
+                                                                  "remote":  true,
+                                                                  "description":  ""
+                                                              },
+                                                   "20:5":  {
+                                                                "key":  "0c6e044f2d219c5ecce0364e2b87ca65edf3303b",
+                                                                "name":  "Wallpaper/iOS 17 Bg Light",
+                                                                "styleType":  "FILL",
+                                                                "remote":  true,
+                                                                "description":  ""
+                                                            },
+                                                   "154:4440":  {
+                                                                    "key":  "2d3fece2f028d49685bd68ce3bb99127124f411e",
+                                                                    "name":  "gray/900",
+                                                                    "styleType":  "FILL",
+                                                                    "remote":  true,
+                                                                    "description":  ""
+                                                                },
+                                                   "154:4453":  {
+                                                                    "key":  "41681a89af6adbb15a5c76b0c404680fc9aa0613",
+                                                                    "name":  "base/white",
+                                                                    "styleType":  "FILL",
+                                                                    "remote":  true,
+                                                                    "description":  ""
+                                                                }
+                                               }
+                                }
+              }
+}
