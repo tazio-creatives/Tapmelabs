@@ -1,4 +1,4 @@
-const { Profile } = require("../models");
+const { Profile, Order } = require("../models");
 
 // ── GET /api/profiles/me ──────────────────────────────────────────────────────
 
@@ -33,6 +33,17 @@ async function createProfile(req, res, next) {
       return res.status(409).json({
         success: false,
         message: "You already have a profile. Use PUT /api/profiles/me to update it.",
+        data: null,
+      });
+    }
+
+    const paidOrder = await Order.findOne({
+      where: { user_id: req.user.id, payment_status: "paid" },
+    });
+    if (!paidOrder) {
+      return res.status(403).json({
+        success: false,
+        message: "A completed payment is required before creating your profile. Please purchase a TapMe card first.",
         data: null,
       });
     }

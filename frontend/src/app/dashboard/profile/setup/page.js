@@ -7,6 +7,7 @@ import CropImageModal from "@/components/dashboard/CropImageModal";
 import api from "@/services/api";
 import profileService from "@/services/profileService";
 import themeService from "@/services/themeService";
+import orderService from "@/services/orderService";
 import ProfilePreviewCard, { THEME_STYLES } from "@/components/dashboard/ProfilePreviewCard";
 
 /* ─── theme normalizer ────────────────────────────────────────────────── */
@@ -637,6 +638,7 @@ export default function ProfileSetupPage() {
   const [saving,           setSaving]           = useState(false);
   const [error,            setError]            = useState("");
   const [checkingProfile,  setCheckingProfile]  = useState(true);
+  const [paymentRequired,  setPaymentRequired]  = useState(false);
 
   /* cropState: { imageSrc, aspect, onComplete } | null */
   const [cropState, setCropState] = useState(null);
@@ -655,16 +657,29 @@ export default function ProfileSetupPage() {
 
     /* Guard: redirect existing-profile customers to dashboard */
     profileService.getMyProfile()
-      .then((data) => {
+      .then(async (data) => {
         const prof = data?.data?.profile ?? data?.profile ?? data?.data ?? data ?? null;
         if (prof?.id || prof?.slug) {
           router.replace("/dashboard");
-        } else {
-          setCheckingProfile(false);
-          fetchThemes();
+          return;
         }
+        /* No profile yet — verify a paid order exists before allowing setup */
+        try {
+          const ordersRes = await orderService.getMyOrders();
+          const orders = Array.isArray(ordersRes?.data?.orders) ? ordersRes.data.orders : [];
+          const hasPaid = orders.some((o) => o.payment_status === "paid");
+          if (!hasPaid) {
+            setPaymentRequired(true);
+            setCheckingProfile(false);
+            return;
+          }
+        } catch {
+          /* If order fetch fails, let backend enforce the rule */
+        }
+        setCheckingProfile(false);
+        fetchThemes();
       })
-      .catch((err) => {
+      .catch(() => {
         /* 404 = no profile yet → allow setup. Any other error → fail open. */
         setCheckingProfile(false);
         fetchThemes();
@@ -800,6 +815,46 @@ export default function ProfileSetupPage() {
       <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-[2px]">
         <div className="h-10 w-10 animate-spin rounded-full border-2 border-white border-t-transparent" />
       </div>
+    );
+  }
+
+  if (paymentRequired) {
+    return (
+      <>
+        <div className="fixed inset-0 z-50 overflow-y-auto">
+          <DashboardBg />
+          <div className="fixed inset-0 bg-black/50 backdrop-blur-[2px]" />
+          <div className="relative z-10 flex min-h-full items-center justify-center px-4 py-10">
+            <div className="w-full max-w-[420px] rounded-[24px] bg-white p-8 shadow-[0_32px_80px_rgba(0,0,0,0.22)] text-center">
+              <div className="mx-auto mb-5 flex h-16 w-16 items-center justify-center rounded-full bg-[#FFF5F5]">
+                <svg width="32" height="32" viewBox="0 0 32 32" fill="none">
+                  <circle cx="16" cy="16" r="14" stroke="#EF4444" strokeWidth="2" />
+                  <path d="M16 9v8M16 22v1" stroke="#EF4444" strokeWidth="2.2" strokeLinecap="round" />
+                </svg>
+              </div>
+              <h2 className="text-[20px] font-bold text-[#111827]">Payment Required</h2>
+              <p className="mt-2 text-[14px] leading-[1.65] text-[#6D6D6D]">
+                You need to complete a purchase before setting up your digital profile. Please buy a TapMe card to continue.
+              </p>
+              <button
+                type="button"
+                onClick={() => router.push("/products")}
+                className="mt-6 flex w-full items-center justify-center gap-2 rounded-[12px] py-[14px] text-[15px] font-semibold text-white transition-opacity hover:opacity-90"
+                style={{ background: "#28DC4F" }}
+              >
+                Browse Products
+              </button>
+              <button
+                type="button"
+                onClick={() => router.push("/dashboard/orders")}
+                className="mt-3 flex w-full items-center justify-center rounded-[12px] border border-[#E5E7EB] py-[14px] text-[15px] font-medium text-[#374151] transition-opacity hover:opacity-80"
+              >
+                View My Orders
+              </button>
+            </div>
+          </div>
+        </div>
+      </>
     );
   }
 
