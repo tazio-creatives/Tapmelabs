@@ -48,6 +48,16 @@ const Order = sequelize.define(
       type: DataTypes.STRING(255),
       allowNull: true,
     },
+    admin_notes: {
+      type: DataTypes.TEXT,
+      allowNull: true,
+      defaultValue: null,
+    },
+    card_customization: {
+      type: DataTypes.JSON,
+      allowNull: true,
+      defaultValue: null,
+    },
   },
   {
     tableName: "orders",

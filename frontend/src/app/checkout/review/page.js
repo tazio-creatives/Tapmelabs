@@ -120,7 +120,7 @@ export default function CheckoutReviewPage() {
   }, [router]);
 
   const subtotal = Number(checkoutItem?.rawSalePrice ?? checkoutItem?.rawPrice ?? 0);
-  const shipping = subtotal >= 999 ? 0 : 99;
+  const shipping = 0;
   const total    = subtotal + shipping;
 
   // No item or address → redirect back to fix
@@ -145,10 +145,10 @@ export default function CheckoutReviewPage() {
       };
 
       const result = await orderService.createOrder({
-        product_id:       checkoutItem.productId,
-        total_amount:     total,
+        product_id:         checkoutItem.productId,
+        total_amount:       total,
         shipping_address,
-        // TODO: Pass checkoutItem.customization to backend once Order model supports card_customization JSON
+        card_customization: checkoutItem.customization ?? null,
       });
 
       localStorage.setItem("currentOrder", JSON.stringify(result.data?.order ?? result));

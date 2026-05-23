@@ -46,8 +46,8 @@ app.use(
 );
 
 // ── Body parsers ──────────────────────────────────────────────────────────────
-app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
+app.use(express.json({ limit: "10mb" }));
+app.use(express.urlencoded({ extended: true, limit: "10mb" }));
 
 // ── Route imports ─────────────────────────────────────────────────────────────
 const authRoutes           = require("./src/routes/authRoutes");
@@ -114,7 +114,7 @@ async function start() {
     if (NODE_ENV === "development") {
       // sync({ alter: true }) updates columns without dropping tables.
       // For production, use proper migrations (e.g. sequelize-cli migrate).
-      await sequelize.sync({ alter: true });
+      await sequelize.sync({ alter: { drop: false } });
       console.log("Database synced (development mode)");
     }
   } catch (err) {

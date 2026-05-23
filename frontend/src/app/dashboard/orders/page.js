@@ -339,9 +339,7 @@ export default function OrdersPage() {
         setOrders(sorted);
       })
       .catch((err) => {
-        if (err?.response?.status !== 404) {
-          setError("Could not load your orders. Please try again.");
-        }
+        setError("Could not load your orders. Please try again.");
       })
       .finally(() => setLoading(false));
   }, [router]);

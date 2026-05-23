@@ -58,14 +58,14 @@ function isLightBg(bg) {
 
 /* ─── card face components (mirrors ProductDetail.js visuals) ───────────── */
 
-function FrontCardPreview({ bg, name, subTitle, logoDataUrl, logoPlacement, logoSize }) {
+function FrontCardPreview({ bg, name, subTitle, logoDataUrl, logoPlacement, logoSize, fontColor }) {
   const light = isLightBg(bg);
-  const tc    = light ? "rgba(0,0,0,0.85)"  : "rgba(255,255,255,0.9)";
-  const stc   = light ? "rgba(0,0,0,0.45)"  : "rgba(255,255,255,0.45)";
-  const lMain = light ? "#000000"            : "#ffffff";
-  const arc   = light ? "rgba(0,0,0,0.2)"   : "rgba(255,255,255,0.25)";
+  const tc    = fontColor || (light ? "rgba(0,0,0,0.85)"  : "rgba(255,255,255,0.9)");
+  const stc   = fontColor ? fontColor + "99" : (light ? "rgba(0,0,0,0.45)"  : "rgba(255,255,255,0.45)");
+  const lMain = fontColor || (light ? "#000000"            : "#ffffff");
+  const arc   = fontColor ? fontColor + "55" : (light ? "rgba(0,0,0,0.2)"   : "rgba(255,255,255,0.25)");
   const ring  = (o) => light ? `rgba(0,0,0,${o})` : `rgba(255,255,255,${o})`;
-  const dm    = light ? "#000" : "#fff";
+  const dm    = fontColor || (light ? "#000" : "#fff");
 
   return (
     <div
@@ -388,11 +388,20 @@ function SectionCard({ children, className = "" }) {
 
 /* ─── left column ─────────────────────────────────────────────────────── */
 
-function PhysicalCardSection({ customization, productImages, onReorder, onLock }) {
+function PhysicalCardSection({ customization, productImages, profile, onReorder, onLock }) {
   const [cardSide, setCardSide] = useState("front");
   const hasCust = !!customization;
   const c = customization || {};
   const imgs = productImages || { front: null, back: null };
+
+  // Profile data always wins over stale checkout customization
+  const cardName    = profile?.name    || c.name    || "";
+  const cardSubTitle = profile
+    ? profile.designation || c.subTitle || ""
+    : c.subTitle || "";
+  const cardLogoUrl = profile?.company_logo
+    ? (profile.company_logo.startsWith("http") ? profile.company_logo : `${typeof window !== "undefined" ? window.location.origin : ""}${profile.company_logo.startsWith("/") ? "" : "/"}${profile.company_logo}`)
+    : c.logoDataUrl || null;
 
   return (
     <SectionCard>
@@ -436,7 +445,7 @@ function PhysicalCardSection({ customization, productImages, onReorder, onLock }
                     mockupSrc={mockupSrc}
                     alt={`Card ${cardSide} side`}
                     side={cardSide}
-                    customization={c}
+                    customization={{ ...c, name: cardName, subTitle: cardSubTitle, logoDataUrl: cardLogoUrl, frontBg: c.cardColor ? { type: "solid", color: c.cardColor } : (c.frontBg || DEFAULT_BG), backBg: c.cardColor ? { type: "solid", color: c.cardColor } : (c.backBg || DEFAULT_BG) }}
                     className="rounded-[12px] overflow-hidden"
                   />
                 );
@@ -459,19 +468,20 @@ function PhysicalCardSection({ customization, productImages, onReorder, onLock }
                     {/* Front face */}
                     <div style={{ position: "absolute", inset: 0, backfaceVisibility: "hidden", WebkitBackfaceVisibility: "hidden", display: "flex", alignItems: "center", justifyContent: "center" }}>
                       <FrontCardPreview
-                        bg={c.frontBg}
-                        name={c.name}
-                        subTitle={c.subTitle}
-                        logoDataUrl={c.logoDataUrl}
+                        bg={c.cardColor ? { type: "solid", color: c.cardColor } : (c.frontBg || DEFAULT_BG)}
+                        name={cardName}
+                        subTitle={cardSubTitle}
+                        logoDataUrl={cardLogoUrl}
                         logoPlacement={c.logoPlacement}
                         logoSize={c.logoSize}
+                        fontColor={c.fontColor}
                       />
                     </div>
                     {/* Back face */}
                     <div style={{ position: "absolute", inset: 0, backfaceVisibility: "hidden", WebkitBackfaceVisibility: "hidden", transform: "rotateY(180deg)", display: "flex", alignItems: "center", justifyContent: "center" }}>
                       <BackCardPreview
                         backContent={c.backContent || "logo"}
-                        bg={c.backBg}
+                        bg={c.cardColor ? { type: "solid", color: c.cardColor } : (c.backBg || DEFAULT_BG)}
                         backLogoDataUrl={c.backLogoDataUrl}
                         backLogoPlacement={c.backLogoPlacement}
                         backLogoSize={c.backLogoSize}
@@ -485,12 +495,12 @@ function PhysicalCardSection({ customization, productImages, onReorder, onLock }
           </div>
 
           {/* Customization summary pill */}
-          {(c.selectedCard || c.name || c.subTitle) && (
+          {(c.selectedCard || cardName || cardSubTitle) && (
             <div className="mb-5 rounded-[10px] bg-[#F9FAFB] px-4 py-3 text-[12px] text-[#6B7280]">
               {[
                 c.selectedCard && `Card: ${c.selectedCard.charAt(0).toUpperCase() + c.selectedCard.slice(1)}`,
-                c.name       && `Name: ${c.name}`,
-                c.subTitle   && c.subTitle,
+                cardName       && `Name: ${cardName}`,
+                cardSubTitle   && cardSubTitle,
               ].filter(Boolean).join(" · ")}
             </div>
           )}
@@ -850,7 +860,7 @@ export default function MyCardsPage() {
 
             {/* ── LEFT column ── */}
             <div className="flex flex-col gap-5">
-              <PhysicalCardSection customization={customization} productImages={productImages} onReorder={handleReorder} onLock={handleLock} />
+              <PhysicalCardSection customization={customization} productImages={productImages} profile={profile} onReorder={handleReorder} onLock={handleLock} />
               <OrderDetailsSection order={latestOrder} />
             </div>
 

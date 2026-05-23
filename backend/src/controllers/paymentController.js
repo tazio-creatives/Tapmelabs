@@ -1,6 +1,9 @@
 const crypto   = require("crypto");
 const razorpay = require("../config/razorpay");
 const Order    = require("../models/Order");
+const User     = require("../models/User");
+const Product  = require("../models/Product");
+const { sendPaymentSuccessEmail } = require("../utils/mailer");
 
 // ── POST /api/payments/create-razorpay-order ──────────────────────────────────
 // Creates a Razorpay order for a given local order_id.
@@ -90,6 +93,24 @@ async function verifyRazorpayPayment(req, res, next) {
       order_status:   "processing",
       payment_id:     razorpay_payment_id,
     });
+
+    // Send confirmation email — fire-and-forget so a mail failure never blocks the response
+    try {
+      const [user, product] = await Promise.all([
+        User.findByPk(order.user_id),
+        Product.findByPk(order.product_id),
+      ]);
+      if (user?.email) {
+        sendPaymentSuccessEmail(user.email, {
+          customerName:    user.full_name || "Customer",
+          orderId:         order.id,
+          orderNumber:     order.order_number,
+          amount:          order.total_amount,
+          productName:     product?.name ?? null,
+          shippingAddress: order.shipping_address,
+        }).catch(() => {});
+      }
+    } catch {}
 
     return res.json({
       success: true,

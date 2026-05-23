@@ -814,17 +814,19 @@ export default function ProductDetail({ product }) {
           {/* ── RIGHT COLUMN ── */}
           <div className="flex flex-1 flex-col gap-4">
 
-            <div style={{ display: "grid" }}>
+            <div style={{ position: "relative" }}>
 
               {/* ── FRONT SIDE FORM ── */}
               <div
                 className="rounded-[16px] border border-[#F0F0F0] bg-white p-6 shadow-sm transition-all duration-500"
                 style={{
-                  gridArea: "1/1",
-                  opacity:      isBack ? 0 : 1,
+                  position:      isBack ? "absolute" : "relative",
+                  width:         "100%",
+                  top:           0,
+                  opacity:       isBack ? 0 : 1,
                   pointerEvents: isBack ? "none" : "auto",
-                  transform:    isBack ? "translateX(-12px)" : "translateX(0)",
-                  visibility:   isBack ? "hidden" : "visible",
+                  transform:     isBack ? "translateX(-12px)" : "translateX(0)",
+                  visibility:    isBack ? "hidden" : "visible",
                 }}
               >
                 <div className="flex flex-col gap-4">
@@ -1129,11 +1131,13 @@ export default function ProductDetail({ product }) {
               <div
                 className="rounded-[16px] border border-[#F0F0F0] bg-white p-6 shadow-sm transition-all duration-500"
                 style={{
-                  gridArea: "1/1",
-                  opacity:      isBack ? 1 : 0,
+                  position:      isBack ? "relative" : "absolute",
+                  width:         "100%",
+                  top:           0,
+                  opacity:       isBack ? 1 : 0,
                   pointerEvents: isBack ? "auto" : "none",
-                  transform:    isBack ? "translateX(0)" : "translateX(12px)",
-                  visibility:   isBack ? "visible" : "hidden",
+                  transform:     isBack ? "translateX(0)" : "translateX(12px)",
+                  visibility:    isBack ? "visible" : "hidden",
                 }}
               >
                 {/* Choose Back Design */}

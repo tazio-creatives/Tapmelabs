@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
 import AdminLayout from "@/components/AdminLayout";
 import orderService from "@/services/orderService";
 
@@ -42,6 +43,7 @@ function StatusBadge({ map, value }) {
 // ── Page ──────────────────────────────────────────────────────────────────────
 
 export default function OrdersPage() {
+  const router = useRouter();
   const [orders, setOrders]           = useState([]);
   const [loading, setLoading]         = useState(true);
   const [error, setError]             = useState("");
@@ -190,9 +192,9 @@ export default function OrdersPage() {
                     </td>
                     <td className="px-5 py-3.5 text-[12px] text-slate-400">{formatDate(o.created_at)}</td>
                     <td className="px-5 py-3.5">
-                      {/* TODO: Navigate to /orders/[id] for a full order detail page instead of drawer */}
-                      <button onClick={() => { setSelected(o); setUpdateError(""); }}
-                        className="rounded-md px-2.5 py-1 text-[11px] font-medium text-slate-600 hover:bg-slate-100">
+                      <button onClick={() => router.push(`/orders/${o.id}`)}
+                        className="rounded-md px-2.5 py-1 text-[11px] font-medium text-slate-600 hover:bg-slate-100"
+                        style={{ border: "1px solid #E2E8F0" }}>
                         View
                       </button>
                     </td>

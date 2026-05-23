@@ -399,7 +399,7 @@ export default function DashboardPage() {
   };
 
   const activityItems = orders.slice(0, 5).map((order) => {
-    const s = STATUS_MAP[order.status] ?? { accent: "#9CA3AF", title: "Order Update" };
+    const s = STATUS_MAP[order.order_status || order.status] ?? { accent: "#9CA3AF", title: "Order Update" };
     return {
       accent:  s.accent,
       iconKey: "box",

@@ -20,6 +20,11 @@ const orderService = {
     const response = await api.put(`/orders/${id}/payment-status`, { payment_status });
     return response.data;
   },
+
+  async updateOrderNotes(id, admin_notes) {
+    const response = await api.put(`/orders/${id}/notes`, { admin_notes });
+    return response.data;
+  },
 };
 
 export default orderService;
