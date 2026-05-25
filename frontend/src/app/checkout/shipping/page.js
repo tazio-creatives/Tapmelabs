@@ -61,12 +61,12 @@ const STEPS = [
 
 function CheckoutSteps() {
   return (
-    <div className="mb-8 flex items-center gap-0">
+    <div className="mb-6 flex items-center gap-0">
       {STEPS.map((s, i) => (
         <div key={s.label} className="flex items-center">
           <div className="flex flex-col items-center gap-1">
             <div
-              className="flex h-8 w-8 items-center justify-center rounded-full text-[13px] font-semibold"
+              className="flex h-7 w-7 items-center justify-center rounded-full text-[12px] font-semibold sm:h-8 sm:w-8 sm:text-[13px]"
               style={{
                 background: s.done ? "#28DC4F" : s.active ? "#18181B" : "#E5E7EB",
                 color: s.done || s.active ? "#fff" : "#9CA3AF",
@@ -87,7 +87,7 @@ function CheckoutSteps() {
           </div>
           {i < STEPS.length - 1 && (
             <div
-              className="mx-2 h-[2px] w-12 rounded-full sm:w-20 md:w-24"
+              className="mx-1 h-[2px] w-7 rounded-full sm:mx-2 sm:w-16 md:w-24"
               style={{ background: s.done ? "#28DC4F" : "#E5E7EB" }}
             />
           )}
@@ -102,13 +102,13 @@ function CheckoutSteps() {
 function Field({ label, id, optional, error, ...inputProps }) {
   return (
     <div className="flex flex-col gap-[6px]">
-      <label htmlFor={id} className="flex items-center gap-1 text-[14px] font-medium text-[#1E1E1E]">
+      <label htmlFor={id} className="flex items-center gap-1 text-[13px] font-medium text-[#374151]">
         {label}
-        {optional && <span className="text-[12px] font-normal text-[#9CA3AF]">(Optional)</span>}
+        {optional && <span className="text-[11px] font-normal text-[#9CA3AF]">(Optional)</span>}
       </label>
       <input
         id={id}
-        className="w-full rounded-[10px] border bg-[#FAFAFA] px-4 py-[13px] text-[14px] text-[#1E1E1E] outline-none transition-all placeholder:text-[#AEAEAE] focus:bg-white focus:ring-1"
+        className="w-full rounded-xl border bg-[#F9FAFB] px-4 py-[14px] text-[14px] text-[#1E1E1E] outline-none transition-all placeholder:text-[#AEAEAE] focus:border-[#28DC4F] focus:bg-white focus:ring-2 focus:ring-[#28DC4F]/15"
         style={{
           borderColor: error ? "#EF4444" : "#EBEBEB",
           "--tw-ring-color": error ? "rgba(239,68,68,0.2)" : "rgba(40,220,79,0.2)",
@@ -255,10 +255,10 @@ export default function CheckoutShippingPage() {
       <Header />
 
       <main className="min-h-screen bg-[#F9F9F9]">
-        <div className="mx-auto max-w-[1440px] px-4 py-8 md:px-[120px]">
+        <div className="mx-auto max-w-5xl px-4 py-6 sm:px-6">
 
           {/* Breadcrumb */}
-          <nav aria-label="Breadcrumb" className="mb-8 flex items-center gap-1">
+          <nav aria-label="Breadcrumb" className="mb-5 hidden items-center gap-1 sm:flex">
             <Link href="/" className="text-[13px] font-normal text-[#9CA3AF] transition-colors hover:text-black">Home</Link>
             <ChevronRightIcon />
             <Link href="/products" className="text-[13px] font-normal text-[#9CA3AF] transition-colors hover:text-black">Products</Link>
@@ -274,15 +274,15 @@ export default function CheckoutShippingPage() {
             {/* ── LEFT: Shipping Form ── */}
             <div className="flex-1">
               <form onSubmit={handleSubmit} noValidate>
-                <div className="rounded-[20px] border border-[#F0F0F0] bg-white p-6 shadow-sm md:p-8">
+                <div className="rounded-2xl border border-[#F0F0F0] bg-white p-5 shadow-sm sm:p-6">
 
-                  <div className="mb-6 flex items-center gap-[10px]">
+                  <div className="mb-5 flex items-center gap-3">
                     <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-[#28DC4F]/10">
                       <LocationPinIcon />
                     </div>
                     <div>
-                      <h1 className="text-[20px] font-semibold text-[#111827]">Shipping Address</h1>
-                      <p className="text-[13px] text-[#9CA3AF]">Enter the address where you&apos;d like your order delivered</p>
+                      <h1 className="text-[18px] font-bold text-[#111827]">Shipping Address</h1>
+                      <p className="text-[12px] text-[#9CA3AF]">Where should we deliver your order?</p>
                     </div>
                   </div>
 
@@ -318,7 +318,7 @@ export default function CheckoutShippingPage() {
                     <button
                       type="submit"
                       disabled={submitting}
-                      className="mt-2 flex w-full items-center justify-center gap-2 rounded-[12px] py-[15px] text-[16px] font-semibold text-white transition-opacity hover:opacity-90 active:opacity-80 disabled:cursor-not-allowed disabled:opacity-60"
+                      className="mt-2 flex w-full items-center justify-center gap-2 rounded-xl py-4 text-[15px] font-semibold text-black transition-opacity hover:opacity-90 active:opacity-80 disabled:cursor-not-allowed disabled:opacity-60"
                       style={{ background: "#28DC4F" }}
                     >
                       {submitting ? "Saving…" : <> Continue to Review <ArrowRightIcon /> </>}
@@ -340,8 +340,8 @@ export default function CheckoutShippingPage() {
 
             {/* ── RIGHT: Order Summary ── */}
             <div className="w-full lg:w-[380px] lg:shrink-0">
-              <div className="rounded-[20px] border border-[#F0F0F0] bg-white p-6 shadow-sm">
-                <h2 className="mb-5 text-[18px] font-semibold text-[#111827]">Order Summary</h2>
+              <div className="rounded-2xl border border-[#F0F0F0] bg-white p-5 shadow-sm">
+                <h2 className="mb-5 text-[16px] font-bold text-[#111827]">Order Summary</h2>
 
                 {!checkoutItem ? (
                   <p className="text-[14px] text-[#9CA3AF]">No product selected.</p>

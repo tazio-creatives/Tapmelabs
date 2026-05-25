@@ -30,7 +30,7 @@ function generateSlug(name) {
 /* ─── shared input style ──────────────────────────────────────────────── */
 
 const inputCls =
-  "w-full rounded-[10px] border border-[#E5E7EB] bg-white px-4 py-[12px] text-[14px] text-[#111827] outline-none transition-all placeholder:text-[#9CA3AF] focus:border-[#28DC4F] focus:ring-2 focus:ring-[#28DC4F]/15";
+  "w-full rounded-xl border border-[#E5E7EB] bg-[#F9FAFB] px-4 py-[14px] text-[14px] text-[#111827] outline-none transition-all placeholder:text-[#9CA3AF] focus:border-[#28DC4F] focus:bg-white focus:ring-2 focus:ring-[#28DC4F]/15";
 
 /* ─── icons ───────────────────────────────────────────────────────────── */
 
@@ -831,7 +831,7 @@ export default function ProfileSetupPage() {
             <div className="flex">
 
               {/* ── Form side ─────────────────────────────────── */}
-              <div className="min-w-0 flex-1 px-8 pb-8 pt-6">
+              <div className="min-w-0 flex-1 px-5 pb-6 pt-5 sm:px-8 sm:pb-8 sm:pt-6">
 
                 {/* Back | Step X/4 | Skip */}
                 <div className="flex items-center justify-between">
@@ -860,7 +860,7 @@ export default function ProfileSetupPage() {
 
                 {/* Step heading */}
                 <div className="mt-5">
-                  <h2 className="text-[22px] font-bold leading-tight text-[#111827]">
+                  <h2 className="text-[20px] font-bold leading-tight text-[#111827] sm:text-[22px]">
                     {STEP_TITLES[step]}
                   </h2>
                   <p className="mt-1 text-[14px] text-[#6D6D6D]">{STEP_SUBTITLES[step]}</p>
@@ -910,7 +910,7 @@ export default function ProfileSetupPage() {
                   type="button"
                   onClick={handleNext}
                   disabled={saving}
-                  className="mt-6 flex w-full items-center justify-center gap-2 rounded-[12px] py-[14px] text-[15px] font-semibold text-white transition-opacity hover:opacity-90 active:opacity-80 disabled:cursor-not-allowed disabled:opacity-60"
+                  className="mt-6 flex w-full items-center justify-center gap-2 rounded-xl py-4 text-[15px] font-semibold text-black transition-opacity hover:opacity-90 active:opacity-80 disabled:cursor-not-allowed disabled:opacity-60"
                   style={{ background: "#28DC4F" }}
                 >
                   {saving ? (
@@ -966,7 +966,7 @@ export default function ProfileSetupPage() {
             <button
               type="button"
               onClick={() => router.push("/products")}
-              className="mt-6 flex w-full items-center justify-center gap-2 rounded-[12px] py-[14px] text-[15px] font-semibold text-white transition-opacity hover:opacity-90"
+              className="mt-6 flex w-full items-center justify-center gap-2 rounded-xl py-4 text-[15px] font-semibold text-black transition-opacity hover:opacity-90"
               style={{ background: "#28DC4F" }}
             >
               Buy a TapMe Card
@@ -974,7 +974,7 @@ export default function ProfileSetupPage() {
             <button
               type="button"
               onClick={() => setShowPaymentModal(false)}
-              className="mt-3 flex w-full items-center justify-center rounded-[12px] border border-[#E5E7EB] py-[14px] text-[15px] font-medium text-[#374151] transition-opacity hover:opacity-80"
+              className="mt-3 flex w-full items-center justify-center rounded-xl border border-[#E5E7EB] py-4 text-[15px] font-medium text-[#374151] transition-opacity hover:opacity-80"
             >
               Go Back
             </button>

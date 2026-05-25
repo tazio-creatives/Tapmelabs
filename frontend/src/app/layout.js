@@ -20,6 +20,11 @@ export const metadata = {
   title: "TapMe Lab | NFC Business Card",
   description:
     "Create smart NFC business cards and digital profiles with TapMe Lab.",
+  icons: {
+    icon: "/favicon.svg",
+    shortcut: "/favicon.svg",
+    apple: "/favicon.svg",
+  },
 };
 
 export default function RootLayout({ children }) {

@@ -487,16 +487,16 @@ export default function DashboardPage() {
         <div className="flex flex-1 overflow-hidden">
 
           {/* Scrollable main */}
-          <main className="flex-1 overflow-y-auto px-6 py-6">
+          <main className="flex-1 overflow-y-auto px-4 py-5 sm:px-6 sm:py-6">
 
             {/* Welcome */}
             <div className="mb-6">
-              <h1 className="text-[24px] font-bold text-[#111827]">Welcome back, {firstName} 👋</h1>
+              <h1 className="text-[22px] font-bold text-[#111827] sm:text-[24px]">Welcome back, {firstName} 👋</h1>
               <p className="mt-[4px] text-[14px] text-[#6B7280]">Here&apos;s how your NFC card is performing</p>
             </div>
 
             {/* Analytics 2×2 grid */}
-            <div className="mb-6 grid grid-cols-2 gap-4">
+            <div className="mb-6 grid grid-cols-2 gap-3">
               {analyticsCards.map((card) => (
                 <AnalyticsCard key={card.label} {...card} />
               ))}

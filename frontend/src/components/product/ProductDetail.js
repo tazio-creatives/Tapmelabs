@@ -70,17 +70,17 @@ function getLogoStyle(placement, size = 44) {
 function LogoPlacementPicker({ value, onChange, label = "Logo Placement" }) {
   return (
     <div className="flex flex-col gap-2">
-      <p className="text-[14px] font-medium text-[#1E1E1E]">{label}</p>
-      <div className="grid grid-cols-3 gap-1 rounded-[10px] border border-[#F4F4F4] bg-[#FAFAFA] p-[6px]">
+      <p className="text-[13px] font-medium text-[#374151]">{label}</p>
+      <div className="grid grid-cols-3 gap-1 rounded-xl bg-[#F5F5F5] p-1.5">
         {LOGO_PLACEMENTS.map((p) => (
           <button
             key={p.id}
             onClick={() => onChange(p.id)}
             title={p.label}
-            className="flex items-center justify-center rounded-[7px] py-[9px] text-[15px] transition-all"
+            className="flex items-center justify-center rounded-lg py-2.5 text-[15px] transition-all"
             style={{
               background: value === p.id ? "#18181B" : "transparent",
-              color:      value === p.id ? "#28DC4F" : "#AEAEAE",
+              color:      value === p.id ? "#28DC4F" : "#9CA3AF",
             }}
           >
             {p.symbol}
@@ -292,25 +292,17 @@ const CheckIcon = () => (
   </svg>
 );
 
-const WifiIcon = () => (
-  <svg width="14" height="14" viewBox="0 0 14 14" fill="none" aria-hidden="true">
-    <path d="M1 4.5C2.93 2.83 5.35 2 7 2C8.65 2 11.07 2.83 13 4.5" stroke="#28DC4F" strokeWidth="1.4" strokeLinecap="round" />
-    <path d="M3.2 6.7C4.38 5.63 5.66 5.1 7 5.1C8.34 5.1 9.62 5.63 10.8 6.7" stroke="#28DC4F" strokeWidth="1.4" strokeLinecap="round" />
-    <circle cx="7" cy="9.5" r="1.2" fill="#28DC4F" />
+const ChevronRight = () => (
+  <svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round">
+    <path d="M5 3l4 4-4 4" />
   </svg>
 );
 
 const UploadIcon = () => (
-  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+  <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
     <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
     <polyline points="17 8 12 3 7 8" />
     <line x1="12" y1="3" x2="12" y2="15" />
-  </svg>
-);
-
-const ChevronRight = () => (
-  <svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round">
-    <path d="M5 3l4 4-4 4" />
   </svg>
 );
 
@@ -356,11 +348,6 @@ function BackSideCardPreview({ backContent, bg, backLogoDataUrl, backLogoPlaceme
           <path d="M4 10a8.5 8.5 0 0 1 12 0" stroke="rgba(255,255,255,0.25)" strokeWidth="1.5" strokeLinecap="round" fill="none" />
         </svg>
       </div>
-
-      <div
-        className="pointer-events-none absolute left-0 right-0"
-        style={{ bottom: "16%", height: "1px", background: "rgba(255,255,255,0.06)" }}
-      />
 
       <div className="absolute inset-0 flex flex-col items-center justify-center gap-[3%]">
         {backContent === "qr" ? (
@@ -435,8 +422,8 @@ function UploadZone({ file, onChange }) {
   const ref = useRef(null);
 
   return (
-    <div className="flex flex-col gap-[6px]">
-      <label className="text-[16px] font-medium text-black">Upload Logo</label>
+    <div className="flex flex-col gap-1.5">
+      <label className="text-[13px] font-medium text-[#374151]">Upload Logo</label>
       <div
         onDragOver={(e) => { e.preventDefault(); setDragOver(true); }}
         onDragLeave={() => setDragOver(false)}
@@ -447,20 +434,17 @@ function UploadZone({ file, onChange }) {
           if (f) onChange(f);
         }}
         onClick={() => ref.current?.click()}
-        className="flex cursor-pointer flex-col items-center justify-center gap-2 rounded-[10px] py-6 transition-colors"
+        className="flex cursor-pointer flex-col items-center justify-center gap-1.5 rounded-xl py-5 transition-colors"
         style={{
-          background: dragOver ? "#F0FFF4" : "#FAFAFA",
-          border: `1.5px dashed ${dragOver ? "#28DC4F" : "#87909E"}`,
-          minHeight: "119px",
+          background: dragOver ? "#F0FFF4" : "#F9FAFB",
+          border: `1.5px dashed ${dragOver ? "#28DC4F" : "#D1D5DB"}`,
         }}
       >
-        <div className="text-black"><UploadIcon /></div>
-        <p className="text-[14px] font-medium text-black">
+        <div className="text-[#9CA3AF]"><UploadIcon /></div>
+        <p className="text-[13px] font-medium text-[#374151]">
           {file ? file.name : "Upload Logo"}
         </p>
-        <p className="text-[10px] font-semibold text-[#6D6D6D]">
-          Drag &amp; drop or Choose from file (png/svg)
-        </p>
+        <p className="text-[11px] text-[#9CA3AF]">PNG or SVG</p>
         <input
           ref={ref}
           type="file"
@@ -485,15 +469,15 @@ function DesignUploadZone({ label, file, onChange, preview, required = false, er
 
   if (preview && isImage) {
     return (
-      <div className="flex flex-col gap-[6px]">
+      <div className="flex flex-col gap-1.5">
         <div className="flex items-center gap-1">
-          <span className="text-[15px] font-medium text-black">{label}</span>
+          <span className="text-[13px] font-medium text-[#374151]">{label}</span>
           {required
             ? <span className="text-[#EF4444]">*</span>
             : <span className="ml-1 text-[11px] text-[#9CA3AF]">(optional)</span>}
         </div>
         <div
-          className="relative overflow-hidden rounded-[12px]"
+          className="relative overflow-hidden rounded-xl"
           style={{ aspectRatio: "5/3", border: "1px solid #F0F0F0", background: "#111" }}
         >
           {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -521,16 +505,16 @@ function DesignUploadZone({ label, file, onChange, preview, required = false, er
 
   if (file && !isImage) {
     return (
-      <div className="flex flex-col gap-[6px]">
+      <div className="flex flex-col gap-1.5">
         <div className="flex items-center gap-1">
-          <span className="text-[15px] font-medium text-black">{label}</span>
+          <span className="text-[13px] font-medium text-[#374151]">{label}</span>
           {required
             ? <span className="text-[#EF4444]">*</span>
             : <span className="ml-1 text-[11px] text-[#9CA3AF]">(optional)</span>}
         </div>
         <div
-          className="flex items-center gap-3 rounded-[10px] px-4 py-3"
-          style={{ background: "#FAFAFA", border: "1px solid #F4F4F4" }}
+          className="flex items-center gap-3 rounded-xl px-4 py-3"
+          style={{ background: "#F9FAFB", border: "1px solid #F0F0F0" }}
         >
           <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#6B7280" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
             <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
@@ -550,9 +534,9 @@ function DesignUploadZone({ label, file, onChange, preview, required = false, er
   }
 
   return (
-    <div className="flex flex-col gap-[6px]">
+    <div className="flex flex-col gap-1.5">
       <div className="flex items-center gap-1">
-        <span className="text-[15px] font-medium text-black">{label}</span>
+        <span className="text-[13px] font-medium text-[#374151]">{label}</span>
         {required
           ? <span className="text-[#EF4444]">*</span>
           : <span className="ml-1 text-[11px] text-[#9CA3AF]">(optional)</span>}
@@ -567,16 +551,15 @@ function DesignUploadZone({ label, file, onChange, preview, required = false, er
           if (f) onChange(f);
         }}
         onClick={() => ref.current?.click()}
-        className="flex cursor-pointer flex-col items-center justify-center gap-2 rounded-[10px] py-8 transition-colors"
+        className="flex cursor-pointer flex-col items-center justify-center gap-2 rounded-xl py-7 transition-colors"
         style={{
-          background: dragOver ? "#F0FFF4" : "#FAFAFA",
+          background: dragOver ? "#F0FFF4" : "#F9FAFB",
           border: `1.5px dashed ${error ? "#EF4444" : dragOver ? "#28DC4F" : "#D1D5DB"}`,
-          minHeight: "120px",
         }}
       >
         <div className="text-[#9CA3AF]"><UploadIcon /></div>
-        <p className="text-[14px] font-medium text-[#111827]">Click or drag to upload</p>
-        <p className="px-6 text-center text-[11px] text-[#9CA3AF]">JPG, PNG, PDF, SVG · Max 20 MB</p>
+        <p className="text-[13px] font-medium text-[#374151]">Click or drag to upload</p>
+        <p className="text-[11px] text-[#9CA3AF]">JPG, PNG, PDF, SVG · Max 20 MB</p>
         <input
           ref={ref}
           type="file"
@@ -593,33 +576,36 @@ function DesignUploadZone({ label, file, onChange, preview, required = false, er
   );
 }
 
+/* ─── section label ──────────────────────────────────────────── */
+
+function SectionLabel({ children }) {
+  return (
+    <p className="text-[11px] font-bold uppercase tracking-wider text-[#9CA3AF]">{children}</p>
+  );
+}
+
 /* ─── main component ─────────────────────────────────────────── */
 
 export default function ProductDetail({ product }) {
   const router = useRouter();
   const [activeTab, setActiveTab] = useState("front");
 
-  /* design method */
   const [designMethod, setDesignMethod] = useState("customize_online");
 
-  /* uploaded design files (upload_own_design) */
   const [uploadedFrontFile, setUploadedFrontFile] = useState(null);
   const [uploadedBackFile,  setUploadedBackFile]  = useState(null);
   const [uploadedFrontDataUrl, setUploadedFrontDataUrl] = useState(null);
   const [uploadedBackDataUrl,  setUploadedBackDataUrl]  = useState(null);
 
-  /* front-side state */
   const [name, setName] = useState("");
   const [subTitle, setSubTitle] = useState("");
   const [moreDetails, setMoreDetails] = useState("");
   const [logoFile, setLogoFile] = useState(null);
 
-  /* back-side state */
   const [selectedBackDesign, setSelectedBackDesign] = useState("brand-logo");
   const [backContent, setBackContent] = useState("logo");
   const [backLogoFile, setBackLogoFile] = useState(null);
 
-  /* logo data URLs */
   const [logoDataUrl,     setLogoDataUrl]     = useState(null);
   const [backLogoDataUrl, setBackLogoDataUrl] = useState(null);
 
@@ -651,28 +637,22 @@ export default function ProductDetail({ product }) {
     reader.readAsDataURL(uploadedBackFile);
   }, [uploadedBackFile]);
 
-  /* logo placement and size */
   const [logoPlacement,     setLogoPlacement]     = useState("top-left");
   const [backLogoPlacement, setBackLogoPlacement] = useState("center");
   const [logoSize,          setLogoSize]          = useState(44);
   const [backLogoSize,      setBackLogoSize]      = useState(44);
 
-  /* QR code foreground color */
   const [qrFgColor, setQrFgColor] = useState("#18181B");
 
-  /* Front-side optional QR code */
   const [frontQrEnabled,   setFrontQrEnabled]   = useState(false);
   const [frontQrPlacement, setFrontQrPlacement] = useState("bottom-right");
   const [frontQrColor,     setFrontQrColor]     = useState("#18181B");
 
-  /* Card & font colour customization */
   const [cardColor, setCardColor] = useState("#18181B");
   const [fontColor, setFontColor] = useState("#FFFFFF");
 
-  /* form validation errors */
   const [errors, setErrors] = useState({});
 
-  /* background — fixed default */
   const frontBg = DEFAULT_BG;
   const backBg  = DEFAULT_BG;
 
@@ -710,25 +690,15 @@ export default function ProductDetail({ product }) {
       rawSalePrice: product.rawSalePrice,
       design_method: designMethod,
       customization: designMethod === "customize_online" ? {
-        name,
-        subTitle,
-        moreDetails,
-        frontBg,
+        name, subTitle, moreDetails, frontBg,
         logoDataUrl:      logoDataUrl     || null,
-        logoPlacement,
-        logoSize,
-        frontQrEnabled,
-        frontQrPlacement,
-        frontQrColor,
+        logoPlacement, logoSize,
+        frontQrEnabled, frontQrPlacement, frontQrColor,
         cardColor:  product.allowColorCustomization ? cardColor : null,
         fontColor:  product.allowColorCustomization ? fontColor : null,
-        selectedBackDesign,
-        backContent,
-        backBg,
+        selectedBackDesign, backContent, backBg,
         backLogoDataUrl:  backLogoDataUrl || null,
-        backLogoPlacement,
-        backLogoSize,
-        qrFgColor,
+        backLogoPlacement, backLogoSize, qrFgColor,
       } : null,
       uploaded_front_design: designMethod === "upload_own_design" ? (uploadedFrontDataUrl || null) : null,
       uploaded_back_design:  designMethod === "upload_own_design" ? (uploadedBackDataUrl  || null) : null,
@@ -743,293 +713,266 @@ export default function ProductDetail({ product }) {
     router.push(token ? "/checkout/shipping" : "/register?redirect=checkout");
   }
 
+  /* ── card preview renderer ── */
+  function renderCardPreview() {
+    if (designMethod === "upload_own_design") {
+      const src = isBack ? uploadedBackDataUrl : uploadedFrontDataUrl;
+      if (src) {
+        return (
+          <div className="overflow-hidden rounded-xl" style={{ aspectRatio: "5/3", background: "#111" }}>
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img src={src} alt={isBack ? "Back design" : "Front design"} style={{ width: "100%", height: "100%", objectFit: "contain" }} />
+          </div>
+        );
+      }
+      return (
+        <div
+          className="flex flex-col items-center justify-center gap-2 rounded-xl"
+          style={{ aspectRatio: "5/3", background: "#F3F4F6", border: "2px dashed #D1D5DB" }}
+        >
+          <div className="text-[#9CA3AF]"><UploadIcon /></div>
+          <p className="text-[13px] text-[#9CA3AF]">
+            {isBack ? "Back design not uploaded yet" : "Upload your front design below"}
+          </p>
+        </div>
+      );
+    }
+
+    const frontSrc = product.front_image || product.images?.[0] || null;
+    const backSrc  = product.back_image  || product.images?.[1] || product.images?.[0] || null;
+    const activeSrc = isBack ? backSrc : frontSrc;
+
+    if (activeSrc) {
+      return (
+        <CardMockupOverlay
+          mockupSrc={activeSrc}
+          alt={`${product.name} — ${isBack ? "back" : "front"}`}
+          side={isBack ? "back" : "front"}
+          customization={{
+            name, subTitle, logoDataUrl, logoPlacement, logoSize,
+            frontQrEnabled, frontQrPlacement, frontQrColor,
+            cardColor: product.allowColorCustomization ? cardColor : null,
+            fontColor: product.allowColorCustomization ? fontColor : null,
+            backContent, backLogoDataUrl, backLogoPlacement, backLogoSize, qrFgColor,
+          }}
+        />
+      );
+    }
+
+    return (
+      <div style={{ perspective: "1200px" }}>
+        <div
+          style={{
+            position: "relative", width: "100%", maxWidth: "420px",
+            margin: "0 auto", aspectRatio: "460 / 276",
+            transformStyle: "preserve-3d",
+            transition: "transform 0.65s cubic-bezier(0.4,0,0.2,1)",
+            transform: isBack ? "rotateY(180deg)" : "rotateY(0deg)",
+          }}
+        >
+          <div style={{ position: "absolute", inset: 0, backfaceVisibility: "hidden", WebkitBackfaceVisibility: "hidden", display: "flex", alignItems: "center", justifyContent: "center" }}>
+            <FrontCardPreview
+              bg={product.allowColorCustomization ? { type: "solid", color: cardColor } : frontBg}
+              name={name} subTitle={subTitle}
+              logoDataUrl={logoDataUrl} logoPlacement={logoPlacement} logoSize={logoSize}
+              fontColor={product.allowColorCustomization ? fontColor : null}
+            />
+          </div>
+          <div style={{ position: "absolute", inset: 0, backfaceVisibility: "hidden", WebkitBackfaceVisibility: "hidden", transform: "rotateY(180deg)", display: "flex", alignItems: "center", justifyContent: "center" }}>
+            <BackSideCardPreview backContent={backContent} bg={backBg} backLogoDataUrl={backLogoDataUrl} backLogoPlacement={backLogoPlacement} backLogoSize={backLogoSize} qrFgColor={qrFgColor} />
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   return (
-    <main className="min-h-screen">
-      <div className="mx-auto max-w-[1440px] px-4 py-6 md:px-[120px]">
+    <main className="min-h-screen bg-white">
+
+      {/* ── STICKY MOBILE BUY BAR ── */}
+      <div
+        className="fixed bottom-0 left-0 right-0 z-50 flex items-center gap-3 border-t border-[#F0F0F0] bg-white px-4 py-3 lg:hidden"
+        style={{ boxShadow: "0 -4px 20px rgba(0,0,0,0.06)" }}
+      >
+        <div className="flex-1 min-w-0">
+          <p className="truncate text-[11px] text-[#9CA3AF]">{product.name}</p>
+          <div className="flex items-baseline gap-2">
+            <span className="text-[20px] font-bold leading-none text-black">{product.price}</span>
+            {product.originalPrice && (
+              <span className="text-[13px] text-[#BBBBBB] line-through">{product.originalPrice}</span>
+            )}
+          </div>
+        </div>
+        <button
+          onClick={handleBuyNow}
+          className="shrink-0 rounded-xl px-6 py-3 text-[15px] font-bold text-black transition-opacity active:opacity-80"
+          style={{ background: "#28DC4F" }}
+        >
+          Buy Now
+        </button>
+      </div>
+
+      <div className="mx-auto max-w-5xl px-4 pb-28 pt-4 sm:px-6 lg:pb-12 lg:pt-8">
 
         {/* Breadcrumb */}
-        <nav aria-label="Breadcrumb" className="flex items-center gap-1">
-          <Link href="/" className="text-[14px] font-normal text-[#7F7F7F] transition-colors hover:text-black">
-            Home
-          </Link>
+        <nav aria-label="Breadcrumb" className="mb-4 flex items-center gap-1">
+          <Link href="/" className="text-[13px] text-[#9CA3AF] transition-colors hover:text-black">Home</Link>
           <ChevronRight />
-          <Link href="/#products" className="text-[14px] font-normal text-[#7F7F7F] transition-colors hover:text-black">
-            Products
-          </Link>
+          <Link href="/#products" className="text-[13px] text-[#9CA3AF] transition-colors hover:text-black">Products</Link>
           <ChevronRight />
-          <span className="text-[14px] font-medium text-[#4B5563]">{product.name}</span>
+          <span className="text-[13px] text-[#374151]">{product.name}</span>
         </nav>
 
-        {/* Two-column layout */}
-        <div className="mt-6 flex flex-col gap-8 lg:flex-row lg:gap-[30px]">
+        {/* ── MOBILE: name + price above preview ── */}
+        <div className="mb-4 lg:hidden">
+          <h1 className="text-[22px] font-bold leading-snug text-black">{product.name}</h1>
+          <div className="mt-2 flex items-baseline gap-2.5">
+            <span className="text-[24px] font-bold text-black">{product.price}</span>
+            {product.originalPrice && (
+              <span className="text-[15px] text-[#BBBBBB] line-through">{product.originalPrice}</span>
+            )}
+            {product.discount && (
+              <span className="rounded-md bg-[#28DC4F]/10 px-2 py-0.5 text-[12px] font-semibold text-[#28DC4F]">
+                {product.discount}
+              </span>
+            )}
+          </div>
+        </div>
+
+        {/* ── TWO COLUMN LAYOUT ── */}
+        <div className="flex flex-col gap-6 lg:flex-row lg:items-start lg:gap-10">
 
           {/* ── LEFT COLUMN ── */}
-          <div className="flex flex-col gap-6 lg:w-[580px] lg:shrink-0">
+          <div className="flex flex-col gap-5 lg:sticky lg:top-6 lg:w-[460px] lg:shrink-0">
 
-            {/* Card image area */}
-            <div className="overflow-hidden rounded-[20px] bg-[#F5F5F5]">
-
-              {/* Mockup / uploaded design preview */}
-              <div className="px-6 py-8">
-                {designMethod === "upload_own_design" ? (
-                  (() => {
-                    const src = isBack ? uploadedBackDataUrl : uploadedFrontDataUrl;
-                    if (src) {
-                      return (
-                        <div
-                          className="overflow-hidden rounded-[14px] shadow-xl"
-                          style={{ aspectRatio: "5/3", background: "#111" }}
-                        >
-                          {/* eslint-disable-next-line @next/next/no-img-element */}
-                          <img
-                            src={src}
-                            alt={isBack ? "Back design" : "Front design"}
-                            style={{ width: "100%", height: "100%", objectFit: "contain" }}
-                          />
-                        </div>
-                      );
-                    }
-                    return (
-                      <div
-                        className="flex flex-col items-center justify-center rounded-[14px]"
-                        style={{ aspectRatio: "5/3", background: "#EBEBEB", border: "2px dashed #D1D5DB" }}
-                      >
-                        <div className="text-center text-[#9CA3AF]">
-                          <div className="mb-2 flex justify-center"><UploadIcon /></div>
-                          <p className="text-[13px]">
-                            {isBack ? "Back design not uploaded yet" : "Upload your front design →"}
-                          </p>
-                        </div>
-                      </div>
-                    );
-                  })()
-                ) : (
-                  (() => {
-                    const frontSrc = product.front_image || product.images?.[0] || null;
-                    const backSrc  = product.back_image  || product.images?.[1] || product.images?.[0] || null;
-                    const activeSrc = isBack ? backSrc : frontSrc;
-
-                    if (activeSrc) {
-                      return (
-                        <CardMockupOverlay
-                          mockupSrc={activeSrc}
-                          alt={`${product.name} — ${isBack ? "back" : "front"}`}
-                          side={isBack ? "back" : "front"}
-                          customization={{
-                            name,
-                            subTitle,
-                            logoDataUrl,
-                            logoPlacement,
-                            logoSize,
-                            frontQrEnabled,
-                            frontQrPlacement,
-                            frontQrColor,
-                            cardColor: product.allowColorCustomization ? cardColor : null,
-                            fontColor: product.allowColorCustomization ? fontColor : null,
-                            backContent,
-                            backLogoDataUrl,
-                            backLogoPlacement,
-                            backLogoSize,
-                            qrFgColor,
-                          }}
-                        />
-                      );
-                    }
-
-                    return (
-                      <div style={{ perspective: "1200px" }}>
-                        <div
-                          style={{
-                            position: "relative",
-                            width: "100%",
-                            maxWidth: "420px",
-                            margin: "0 auto",
-                            aspectRatio: "460 / 276",
-                            transformStyle: "preserve-3d",
-                            transition: "transform 0.65s cubic-bezier(0.4,0,0.2,1)",
-                            transform: isBack ? "rotateY(180deg)" : "rotateY(0deg)",
-                          }}
-                        >
-                          <div style={{ position: "absolute", inset: 0, backfaceVisibility: "hidden", WebkitBackfaceVisibility: "hidden", display: "flex", alignItems: "center", justifyContent: "center" }}>
-                            <FrontCardPreview
-                              bg={product.allowColorCustomization ? { type: "solid", color: cardColor } : frontBg}
-                              name={name} subTitle={subTitle}
-                              logoDataUrl={logoDataUrl} logoPlacement={logoPlacement} logoSize={logoSize}
-                              fontColor={product.allowColorCustomization ? fontColor : null}
-                            />
-                          </div>
-                          <div style={{ position: "absolute", inset: 0, backfaceVisibility: "hidden", WebkitBackfaceVisibility: "hidden", transform: "rotateY(180deg)", display: "flex", alignItems: "center", justifyContent: "center" }}>
-                            <BackSideCardPreview backContent={backContent} bg={backBg} backLogoDataUrl={backLogoDataUrl} backLogoPlacement={backLogoPlacement} backLogoSize={backLogoSize} qrFgColor={qrFgColor} />
-                          </div>
-                        </div>
-                      </div>
-                    );
-                  })()
-                )}
+            {/* Card preview box */}
+            <div className="overflow-hidden rounded-2xl" style={{ background: "#F8F8F8" }}>
+              <div className="p-4 sm:p-6">
+                {renderCardPreview()}
               </div>
 
-              {/* Front / Back tabs */}
-              <div className="flex border-t border-[#EBEBEB]">
+              {/* Front / Back tab */}
+              <div className="flex border-t border-[#EFEFEF]">
                 {["front", "back"].map((tab) => (
                   <button
                     key={tab}
                     onClick={() => setActiveTab(tab)}
-                    className="flex flex-1 items-center justify-center py-[11px] text-[16px] font-medium transition-all duration-300"
+                    className="flex flex-1 items-center justify-center py-3 text-[14px] font-semibold transition-all"
                     style={{
                       background: activeTab === tab ? "#18181B" : "transparent",
-                      color:      activeTab === tab ? "#fff"    : "#18181B",
+                      color:      activeTab === tab ? "#fff"    : "#9CA3AF",
                     }}
                   >
-                    {tab === "front" ? "Front Side" : "Back Side"}
+                    {tab === "front" ? "Front" : "Back"}
                   </button>
                 ))}
               </div>
             </div>
 
-            {/* Product info */}
-            <div className="flex flex-col gap-4">
-              <div className="flex flex-col gap-1">
-                <h1 className="text-[28px] font-semibold leading-tight text-black">{product.name}</h1>
-                <p className="text-[14px] font-normal text-[#999999]">{product.variant}</p>
-              </div>
+            {/* DESKTOP: product info under preview */}
+            <div className="hidden flex-col gap-3 lg:flex">
+              <h1 className="text-[26px] font-bold leading-snug text-black">{product.name}</h1>
 
               {product.rating != null && (
                 <div className="flex items-center gap-2">
                   <StarRating rating={product.rating} />
-                  <span className="text-[14px] font-normal text-[#6D6D6D]">
-                    {product.rating} ({product.reviewCount} reviews)
-                  </span>
+                  <span className="text-[13px] text-[#6D6D6D]">{product.rating} ({product.reviewCount} reviews)</span>
                 </div>
               )}
 
-              <div className="flex items-center gap-3">
-                <span className="text-[30px] font-semibold leading-none text-black">{product.price}</span>
+              <div className="flex items-baseline gap-2.5">
+                <span className="text-[28px] font-bold text-black">{product.price}</span>
                 {product.originalPrice && (
-                  <span className="text-[20px] font-normal text-[#BBBBBB] line-through">{product.originalPrice}</span>
+                  <span className="text-[18px] text-[#BBBBBB] line-through">{product.originalPrice}</span>
                 )}
                 {product.discount && (
-                  <span className="rounded-[6px] bg-[#28DC4F]/10 px-2 py-[3px] text-[14px] font-medium text-[#28DC4F]">
+                  <span className="rounded-md bg-[#28DC4F]/10 px-2 py-0.5 text-[13px] font-semibold text-[#28DC4F]">
                     {product.discount}
                   </span>
                 )}
               </div>
 
-              <div className="h-px bg-[#EBEBEB]" />
-
-              <div className="flex flex-col gap-4">
-                <p className="text-[16px] font-normal leading-[26px] text-[#555555]">{product.description}</p>
-
-                {product.features?.length > 0 && (
-                  <div className="flex flex-wrap gap-2">
-                    {product.features.map((f) => (
-                      <span key={f} className="flex items-center gap-[6px] rounded-[8px] bg-[#F5F5F5] px-3 py-[7px] text-[14px] font-normal text-[#444444]">
-                        <CheckIcon />{f}
-                      </span>
-                    ))}
-                  </div>
-                )}
-
-                {product.nfcNote && (
-                  <div className="flex items-start gap-3 rounded-[10px] px-4 py-3" style={{ background: "#F8FAF8", border: "1px solid #28DC4F" }}>
-                    <WifiIcon />
-                    <p className="text-[13px] font-normal text-[#444444]">{product.nfcNote}</p>
-                  </div>
-                )}
-              </div>
+              <div className="h-px bg-[#F0F0F0]" />
+              <p className="text-[14px] leading-relaxed text-[#6B7280]">{product.description}</p>
             </div>
 
-            {/* Reviews */}
+            {/* Reviews — desktop only */}
             {product.reviews?.length > 0 && (
-              <div className="flex flex-col gap-4 pt-2">
+              <div className="hidden flex-col gap-4 lg:flex">
                 <div className="flex items-center justify-between">
-                  <h2 className="text-[20px] font-semibold text-black">Customer Reviews</h2>
-                  <div className="flex items-center gap-2">
+                  <h2 className="text-[16px] font-semibold text-black">Reviews</h2>
+                  <div className="flex items-center gap-1.5">
                     <StarRating rating={product.rating} />
-                    <span className="text-[14px] text-[#6D6D6D]">{product.rating} / 5</span>
+                    <span className="text-[13px] text-[#6D6D6D]">{product.rating}/5</span>
                   </div>
                 </div>
-
-                <div className="flex flex-col gap-4">
+                <div className="flex flex-col gap-3">
                   {product.reviews.map((review) => (
-                    <div key={review.name} className="rounded-[12px] border border-[#F0F0F0] bg-white p-4 shadow-sm">
+                    <div key={review.name} className="rounded-xl border border-[#F0F0F0] bg-white p-4">
                       <div className="flex items-start gap-3">
-                        <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-[#28DC4F] text-[15px] font-bold text-white">
+                        <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-[#28DC4F] text-[13px] font-bold text-white">
                           {review.name.charAt(0)}
                         </div>
                         <div className="flex-1">
                           <div className="flex items-center justify-between">
-                            <p className="text-[14px] font-semibold text-[#111827]">{review.name}</p>
-                            <span className="text-[12px] text-[#9CA3AF]">{review.date}</span>
+                            <p className="text-[13px] font-semibold text-black">{review.name}</p>
+                            <span className="text-[11px] text-[#9CA3AF]">{review.date}</span>
                           </div>
-                          <p className="text-[12px] text-[#9CA3AF]">{review.role}</p>
+                          <p className="text-[11px] text-[#9CA3AF]">{review.role}</p>
                           <div className="mt-1"><StarRating rating={review.rating} /></div>
-                          <p className="mt-2 text-[14px] font-normal leading-[22px] text-[#4B5563]">{review.text}</p>
+                          <p className="mt-1.5 text-[13px] leading-snug text-[#4B5563]">{review.text}</p>
                         </div>
                       </div>
                     </div>
                   ))}
                 </div>
-
-                <button className="w-full rounded-[10px] border border-[#EBEBEB] py-3 text-[14px] font-medium text-[#6D6D6D] transition-colors hover:border-[#28DC4F] hover:text-[#28DC4F]">
-                  See More Reviews
-                </button>
               </div>
             )}
           </div>
 
           {/* ── RIGHT COLUMN ── */}
-          <div className="flex flex-1 flex-col gap-4">
+          <div className="flex flex-1 flex-col gap-5">
 
-            {/* Design method selector */}
-            <div className="rounded-[16px] border border-[#F0F0F0] bg-white p-6 shadow-sm">
-              <p className="mb-3 text-[15px] font-semibold text-[#111827]">How do you want to design your card?</p>
-              <div className="flex flex-col gap-1 rounded-[10px] p-1" style={{ background: "#FAFAFA", border: "1px solid #F4F4F4" }}>
+            {/* MOBILE: description */}
+            {product.description && (
+              <p className="text-[14px] leading-relaxed text-[#6B7280] lg:hidden">{product.description}</p>
+            )}
+
+            {/* ── DESIGN METHOD TOGGLE ── */}
+            <div className="flex flex-col gap-2">
+              <SectionLabel>How to design</SectionLabel>
+              <div className="flex overflow-hidden rounded-xl border border-[#F0F0F0] bg-[#F9FAFB]">
                 {[
-                  { value: "customize_online",  label: "Customize Online",    desc: "Use our built-in editor to personalise your card" },
-                  { value: "upload_own_design",  label: "Upload My Own Design", desc: "Upload your own print-ready artwork file" },
-                ].map(({ value, label, desc }) => (
+                  { value: "customize_online",  label: "Customize Online" },
+                  { value: "upload_own_design",  label: "Upload My Design" },
+                ].map(({ value, label }) => (
                   <button
                     key={value}
                     onClick={() => { setDesignMethod(value); setErrors({}); }}
-                    className="flex items-start gap-3 rounded-[8px] px-3 py-[10px] text-left transition-colors"
-                    style={{ background: designMethod === value ? "#fff" : "transparent" }}
+                    className="flex flex-1 items-center justify-center py-3 text-[13px] font-semibold transition-all"
+                    style={{
+                      background: designMethod === value ? "#18181B" : "transparent",
+                      color:      designMethod === value ? "#fff"    : "#9CA3AF",
+                    }}
                   >
-                    <div
-                      className="mt-[3px] flex h-[18px] w-[18px] shrink-0 items-center justify-center rounded-full border-2 transition-colors"
-                      style={{ borderColor: designMethod === value ? "#28DC4F" : "#D1D5DB" }}
-                    >
-                      {designMethod === value && <div className="h-[8px] w-[8px] rounded-full bg-[#28DC4F]" />}
-                    </div>
-                    <div>
-                      <p className="text-[14px] font-semibold text-[#1E1E1E]">{label}</p>
-                      <p className="mt-0.5 text-[12px] text-[#9CA3AF]">{desc}</p>
-                    </div>
+                    {label}
                   </button>
                 ))}
               </div>
             </div>
 
-            {/* ── CUSTOMIZE ONLINE FORMS ── */}
+            {/* ── CUSTOMIZE ONLINE ── */}
             {designMethod === "customize_online" && (
-              <div style={{ position: "relative" }}>
+              <div className="flex flex-col gap-5">
 
-                {/* FRONT SIDE FORM */}
-                <div
-                  className="rounded-[16px] border border-[#F0F0F0] bg-white p-6 shadow-sm transition-all duration-500"
-                  style={{
-                    position:      isBack ? "absolute" : "relative",
-                    width:         "100%",
-                    top:           0,
-                    opacity:       isBack ? 0 : 1,
-                    pointerEvents: isBack ? "none" : "auto",
-                    transform:     isBack ? "translateX(-12px)" : "translateX(0)",
-                    visibility:    isBack ? "hidden" : "visible",
-                  }}
-                >
-                  <div className="flex flex-col gap-4">
+                {/* Front side form */}
+                {!isBack && (
+                  <div className="flex flex-col gap-5">
 
+                    {/* Card & font colour */}
                     {product.allowColorCustomization && (
-                      <div className="flex flex-col gap-4 rounded-[12px] border border-[#F4F4F4] bg-[#FAFAFA] p-4">
+                      <div className="flex flex-col gap-4">
+                        <SectionLabel>Card Colours</SectionLabel>
 
                         {/* Card Colour */}
                         {(() => {
@@ -1037,20 +980,17 @@ export default function ProductDetail({ product }) {
                           return (
                             <div className="flex flex-col gap-2">
                               <div className="flex items-center justify-between">
-                                <p className="text-[15px] font-semibold text-black">Card Colour</p>
+                                <p className="text-[13px] font-medium text-[#374151]">Card Colour</p>
                                 <label
-                                  title="Pick a custom card colour"
-                                  className="flex cursor-pointer items-center gap-[6px] rounded-[8px] border px-2 py-1 transition-colors hover:bg-[#F0F0F0]"
+                                  title="Custom colour"
+                                  className="flex cursor-pointer items-center gap-1.5 rounded-lg border px-2 py-1"
                                   style={{
-                                    borderColor: isCustomCard ? "#28DC4F" : "#EBEBEB",
+                                    borderColor: isCustomCard ? "#28DC4F" : "#E5E7EB",
                                     background:  isCustomCard ? "#F0FFF4" : "transparent",
                                   }}
                                 >
-                                  <span
-                                    className="inline-block h-4 w-4 rounded-[4px] border border-black/10"
-                                    style={{ background: cardColor }}
-                                  />
-                                  <span className="text-[11px] font-medium text-[#6D6D6D]">
+                                  <span className="inline-block h-3.5 w-3.5 rounded border border-black/10" style={{ background: cardColor }} />
+                                  <span className="text-[11px] font-medium text-[#6B7280]">
                                     {isCustomCard ? cardColor.toUpperCase() : "Custom"}
                                   </span>
                                   <input
@@ -1061,7 +1001,6 @@ export default function ProductDetail({ product }) {
                                   />
                                 </label>
                               </div>
-
                               <div className="grid grid-cols-5 gap-2">
                                 {CARD_COLORS.map((cc) => {
                                   const selected = cardColor.toLowerCase() === cc.color.toLowerCase();
@@ -1073,21 +1012,20 @@ export default function ProductDetail({ product }) {
                                       title={cc.label}
                                       onClick={() => {
                                         setCardColor(cc.color);
-                                        if (cc.color === "#F5F5F5") setFontColor("#18181B");
-                                        else setFontColor("#FFFFFF");
+                                        setFontColor(cc.color === "#F5F5F5" ? "#18181B" : "#FFFFFF");
                                       }}
-                                      className="relative rounded-[8px] transition-all"
+                                      className="relative rounded-xl transition-all"
                                       style={{
-                                        height: "36px",
+                                        height: "40px",
                                         background: cc.color,
-                                        border: selected ? "2px solid #28DC4F" : "2px solid transparent",
+                                        border: selected ? "2.5px solid #28DC4F" : "2px solid transparent",
                                         boxShadow: selected ? "0 0 0 1px #28DC4F" : "0 0 0 1px rgba(0,0,0,0.1)",
                                       }}
                                     >
                                       {selected && (
                                         <div className="absolute inset-0 flex items-center justify-center">
                                           <svg width="13" height="13" viewBox="0 0 14 14" fill="none">
-                                            <path d="M2.5 7L5.5 10L11.5 4" stroke={isLight ? "#18181B" : "#fff"} strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
+                                            <path d="M2.5 7L5.5 10L11.5 4" stroke={isLight ? "#18181B" : "#fff"} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
                                           </svg>
                                         </div>
                                       )}
@@ -1095,7 +1033,6 @@ export default function ProductDetail({ product }) {
                                   );
                                 })}
                               </div>
-
                               <p className="text-[11px] text-[#9CA3AF]">
                                 {isCustomCard
                                   ? `Custom · ${cardColor.toUpperCase()}`
@@ -1111,20 +1048,17 @@ export default function ProductDetail({ product }) {
                           return (
                             <div className="flex flex-col gap-2">
                               <div className="flex items-center justify-between">
-                                <p className="text-[14px] font-medium text-black">Text Colour</p>
+                                <p className="text-[13px] font-medium text-[#374151]">Text Colour</p>
                                 <label
-                                  title="Pick a custom text colour"
-                                  className="flex cursor-pointer items-center gap-[6px] rounded-[8px] border px-2 py-1 transition-colors hover:bg-[#F0F0F0]"
+                                  title="Custom text colour"
+                                  className="flex cursor-pointer items-center gap-1.5 rounded-lg border px-2 py-1"
                                   style={{
-                                    borderColor: isCustomFont ? "#28DC4F" : "#EBEBEB",
+                                    borderColor: isCustomFont ? "#28DC4F" : "#E5E7EB",
                                     background:  isCustomFont ? "#F0FFF4" : "transparent",
                                   }}
                                 >
-                                  <span
-                                    className="inline-block h-4 w-4 rounded-full border border-black/10"
-                                    style={{ background: fontColor }}
-                                  />
-                                  <span className="text-[11px] font-medium text-[#6D6D6D]">
+                                  <span className="inline-block h-3.5 w-3.5 rounded-full border border-black/10" style={{ background: fontColor }} />
+                                  <span className="text-[11px] font-medium text-[#6B7280]">
                                     {isCustomFont ? fontColor.toUpperCase() : "Custom"}
                                   </span>
                                   <input
@@ -1135,8 +1069,7 @@ export default function ProductDetail({ product }) {
                                   />
                                 </label>
                               </div>
-
-                              <div className="flex gap-2">
+                              <div className="flex gap-2.5">
                                 {FONT_COLORS.map((fc) => {
                                   const selected = fontColor.toLowerCase() === fc.color.toLowerCase();
                                   const isLight  = ["#ffffff", "#e2e8f0", "#f59e0b"].includes(fc.color.toLowerCase());
@@ -1146,17 +1079,17 @@ export default function ProductDetail({ product }) {
                                       type="button"
                                       title={fc.label}
                                       onClick={() => setFontColor(fc.color)}
-                                      className="relative h-9 w-9 rounded-full transition-all"
+                                      className="relative h-10 w-10 rounded-full transition-all"
                                       style={{
                                         background: fc.color,
-                                        border: selected ? "2px solid #28DC4F" : "2px solid rgba(0,0,0,0.12)",
+                                        border: selected ? "2.5px solid #28DC4F" : "2px solid rgba(0,0,0,0.12)",
                                         boxShadow: selected ? "0 0 0 2px #28DC4F" : "none",
                                       }}
                                     >
                                       {selected && (
                                         <div className="absolute inset-0 flex items-center justify-center">
                                           <svg width="12" height="12" viewBox="0 0 14 14" fill="none">
-                                            <path d="M2.5 7L5.5 10L11.5 4" stroke={isLight ? "#18181B" : "#fff"} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+                                            <path d="M2.5 7L5.5 10L11.5 4" stroke={isLight ? "#18181B" : "#fff"} strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" />
                                           </svg>
                                         </div>
                                       )}
@@ -1164,7 +1097,6 @@ export default function ProductDetail({ product }) {
                                   );
                                 })}
                               </div>
-
                               <p className="text-[11px] text-[#9CA3AF]">
                                 {isCustomFont
                                   ? `Custom · ${fontColor.toUpperCase()}`
@@ -1173,27 +1105,22 @@ export default function ProductDetail({ product }) {
                             </div>
                           );
                         })()}
-
                       </div>
                     )}
 
-                    {[
-                      { label: "Name",         value: name,        setter: setName,        placeholder: "Jane Smith",                                         errorKey: "name"     },
-                      { label: "Sub Title",    value: subTitle,    setter: setSubTitle,    placeholder: "e.g. Phone Number, Job Title or Company Name",        errorKey: "subTitle" },
-                      { label: "More Details", value: moreDetails, setter: setMoreDetails, placeholder: "e.g. Phone Number, Job Title or Company Name",        errorKey: null       },
-                    ].map(({ label, value, setter, placeholder, errorKey }) => (
-                      <div key={label} className="flex flex-col gap-[6px]">
-                        <label className="text-[16px] font-medium text-black">
-                          {label}
-                          {errorKey && <span className="ml-1 text-[#EF4444]">*</span>}
-                        </label>
-                        <div
-                          className="flex items-center rounded-[10px] px-4 py-[10px]"
-                          style={{
-                            background: "#FAFAFA",
-                            border: `1px solid ${errorKey && errors[errorKey] ? "#EF4444" : "#F4F4F4"}`,
-                          }}
-                        >
+                    {/* Name fields */}
+                    <div className="flex flex-col gap-4">
+                      <SectionLabel>Your Details</SectionLabel>
+                      {[
+                        { label: "Name",         value: name,        setter: setName,        placeholder: "Jane Smith",                                  errorKey: "name"     },
+                        { label: "Sub Title",    value: subTitle,    setter: setSubTitle,    placeholder: "e.g. Product Manager at Acme Co.",            errorKey: "subTitle" },
+                        { label: "More Details", value: moreDetails, setter: setMoreDetails, placeholder: "e.g. +91 98765 43210",                       errorKey: null       },
+                      ].map(({ label, value, setter, placeholder, errorKey }) => (
+                        <div key={label} className="flex flex-col gap-1.5">
+                          <label className="text-[13px] font-medium text-[#374151]">
+                            {label}
+                            {errorKey && <span className="ml-1 text-[#EF4444]">*</span>}
+                          </label>
                           <input
                             type="text"
                             value={value}
@@ -1202,75 +1129,81 @@ export default function ProductDetail({ product }) {
                               if (errorKey && errors[errorKey]) setErrors((prev) => ({ ...prev, [errorKey]: "" }));
                             }}
                             placeholder={placeholder}
-                            className="w-full bg-transparent text-[14px] text-black outline-none placeholder:text-[#AEAEAE]"
+                            className="w-full rounded-xl px-4 text-[14px] text-black outline-none placeholder:text-[#C4C4C4] transition-colors"
+                            style={{
+                              height: "48px",
+                              background: "#F9FAFB",
+                              border: `1.5px solid ${errorKey && errors[errorKey] ? "#EF4444" : "#E5E7EB"}`,
+                            }}
                           />
+                          {errorKey && errors[errorKey] && (
+                            <p className="text-[12px] text-[#EF4444]">{errors[errorKey]}</p>
+                          )}
                         </div>
-                        {errorKey && errors[errorKey] && (
-                          <p className="text-[12px] text-[#EF4444]">{errors[errorKey]}</p>
-                        )}
-                      </div>
-                    ))}
+                      ))}
+                    </div>
 
-                    <UploadZone file={logoFile} onChange={setLogoFile} />
+                    {/* Logo upload */}
+                    <div className="flex flex-col gap-3">
+                      <SectionLabel>Logo (optional)</SectionLabel>
+                      <UploadZone file={logoFile} onChange={setLogoFile} />
 
-                    {logoDataUrl && (
-                      <div className="flex flex-col gap-3">
-                        <div className="flex items-center gap-3">
-                          {/* eslint-disable-next-line @next/next/no-img-element */}
-                          <img
-                            src={logoDataUrl}
-                            alt="Logo preview"
-                            className="rounded-[8px] border border-[#F0F0F0]"
-                            style={{ height: "48px", maxWidth: "80px", objectFit: "contain" }}
-                          />
-                          <button
-                            onClick={() => { setLogoFile(null); }}
-                            className="rounded-[8px] border border-[#EBEBEB] px-3 py-[6px] text-[12px] font-medium text-[#EF4444] transition-colors hover:border-[#EF4444]"
-                          >
-                            Remove
-                          </button>
+                      {logoDataUrl && (
+                        <div className="flex flex-col gap-3">
+                          <div className="flex items-center gap-3">
+                            {/* eslint-disable-next-line @next/next/no-img-element */}
+                            <img
+                              src={logoDataUrl}
+                              alt="Logo preview"
+                              className="rounded-lg border border-[#F0F0F0]"
+                              style={{ height: "44px", maxWidth: "72px", objectFit: "contain" }}
+                            />
+                            <button
+                              onClick={() => setLogoFile(null)}
+                              className="rounded-lg border border-[#F0F0F0] px-3 py-1.5 text-[12px] font-medium text-[#EF4444]"
+                            >
+                              Remove
+                            </button>
+                          </div>
+                          <LogoPlacementPicker value={logoPlacement} onChange={setLogoPlacement} />
+                          <div className="flex items-center gap-3">
+                            <span className="shrink-0 text-[13px] font-medium text-[#374151]">Logo Size</span>
+                            <input
+                              type="range" min={20} max={80} value={logoSize}
+                              onChange={(e) => setLogoSize(Number(e.target.value))}
+                              className="flex-1 accent-[#28DC4F]"
+                            />
+                            <span className="w-8 text-right text-[12px] text-[#9CA3AF]">{logoSize}</span>
+                          </div>
                         </div>
-                        <LogoPlacementPicker value={logoPlacement} onChange={setLogoPlacement} />
-                        <div className="flex items-center gap-3">
-                          <span className="shrink-0 text-[14px] font-medium text-[#1E1E1E]">Logo Size</span>
-                          <input
-                            type="range"
-                            min={20}
-                            max={80}
-                            value={logoSize}
-                            onChange={(e) => setLogoSize(Number(e.target.value))}
-                            className="flex-1 accent-[#28DC4F]"
-                          />
-                          <span className="w-9 text-right text-[12px] text-[#9CA3AF]">{logoSize}px</span>
-                        </div>
-                      </div>
-                    )}
+                      )}
+                    </div>
 
-                    {/* Front QR Code (optional) */}
-                    <div className="flex flex-col gap-3 rounded-[12px] border border-[#F4F4F4] bg-[#FAFAFA] p-4">
+                    {/* Front QR (optional) */}
+                    <div className="rounded-xl bg-[#F9FAFB] p-4" style={{ border: "1px solid #F0F0F0" }}>
                       <button
                         type="button"
                         onClick={() => setFrontQrEnabled((v) => !v)}
-                        className="flex items-center justify-between"
+                        className="flex w-full items-center justify-between"
                       >
                         <div className="flex items-center gap-3">
                           <div
-                            className="flex h-[18px] w-[18px] shrink-0 items-center justify-center rounded-full border-2 transition-colors"
+                            className="flex h-5 w-5 items-center justify-center rounded-full border-2 transition-colors"
                             style={{ borderColor: frontQrEnabled ? "#28DC4F" : "#D1D5DB" }}
                           >
-                            {frontQrEnabled && <div className="h-[8px] w-[8px] rounded-full bg-[#28DC4F]" />}
+                            {frontQrEnabled && <div className="h-2.5 w-2.5 rounded-full bg-[#28DC4F]" />}
                           </div>
-                          <span className="text-[14px] font-medium text-[#1E1E1E]">Add QR Code on Front</span>
+                          <span className="text-[13px] font-medium text-[#374151]">Add QR Code on Front</span>
                         </div>
-                        <span className="text-[11px] font-medium" style={{ color: frontQrEnabled ? "#28DC4F" : "#9CA3AF" }}>
+                        <span className="text-[11px] font-semibold" style={{ color: frontQrEnabled ? "#28DC4F" : "#9CA3AF" }}>
                           {frontQrEnabled ? "On" : "Off"}
                         </span>
                       </button>
 
                       {frontQrEnabled && (
-                        <div className="flex flex-col gap-3 pt-1">
+                        <div className="mt-4 flex flex-col gap-3 border-t border-[#EBEBEB] pt-4">
                           <div className="flex flex-col gap-2">
-                            <p className="text-[13px] font-medium text-[#1E1E1E]">QR Code Colour</p>
+                            <p className="text-[12px] font-medium text-[#374151]">QR Colour</p>
                             <div className="grid grid-cols-5 gap-2">
                               {QR_COLORS.map((c) => {
                                 const selected = frontQrColor === c.color;
@@ -1281,9 +1214,9 @@ export default function ProductDetail({ product }) {
                                     type="button"
                                     title={c.label}
                                     onClick={() => setFrontQrColor(c.color)}
-                                    className="relative rounded-[8px] transition-all"
+                                    className="relative rounded-lg transition-all"
                                     style={{
-                                      height: "32px",
+                                      height: "36px",
                                       background: c.color,
                                       border: selected ? "2px solid #28DC4F" : "2px solid transparent",
                                       boxShadow: selected ? "0 0 0 1px #28DC4F" : "none",
@@ -1292,7 +1225,7 @@ export default function ProductDetail({ product }) {
                                     {selected && (
                                       <div className="absolute inset-0 flex items-center justify-center">
                                         <svg width="12" height="12" viewBox="0 0 14 14" fill="none">
-                                          <path d="M2.5 7L5.5 10L11.5 4" stroke={isLight ? "#18181B" : "#fff"} strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
+                                          <path d="M2.5 7L5.5 10L11.5 4" stroke={isLight ? "#18181B" : "#fff"} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
                                         </svg>
                                       </div>
                                     )}
@@ -1300,234 +1233,209 @@ export default function ProductDetail({ product }) {
                                 );
                               })}
                             </div>
-                            <p className="text-[11px] text-[#9CA3AF]">
-                              {QR_COLORS.find((c) => c.color === frontQrColor)?.label ?? "Black"}
-                            </p>
                           </div>
-                          <LogoPlacementPicker value={frontQrPlacement} onChange={setFrontQrPlacement} label="QR Code Placement" />
+                          <LogoPlacementPicker value={frontQrPlacement} onChange={setFrontQrPlacement} label="QR Placement" />
                         </div>
                       )}
                     </div>
 
                   </div>
-                </div>
+                )}
 
-                {/* BACK SIDE FORM */}
-                <div
-                  className="rounded-[16px] border border-[#F0F0F0] bg-white p-6 shadow-sm transition-all duration-500"
-                  style={{
-                    position:      isBack ? "relative" : "absolute",
-                    width:         "100%",
-                    top:           0,
-                    opacity:       isBack ? 1 : 0,
-                    pointerEvents: isBack ? "auto" : "none",
-                    transform:     isBack ? "translateX(0)" : "translateX(12px)",
-                    visibility:    isBack ? "visible" : "hidden",
-                  }}
-                >
-                  <div className="flex flex-col gap-3">
-                    <p className="text-[16px] font-medium text-[#1E1E1E]">Choose Back Design</p>
-                    <div className="flex gap-3">
-                      {BACK_DESIGN_OPTIONS.map((opt) => (
-                        <button
-                          key={opt.id}
-                          onClick={() => {
-                            setSelectedBackDesign(opt.id);
-                            setBackContent(opt.id === "qr-only" ? "qr" : "logo");
-                          }}
-                          className="flex flex-col items-center gap-1"
-                        >
-                          <div
-                            className="overflow-hidden rounded-[8px] transition-all"
-                            style={{
-                              width: "90px", height: "56px",
-                              border: selectedBackDesign === opt.id ? "2px solid #28DC4F" : "2px solid #EBEBEB",
+                {/* Back side form */}
+                {isBack && (
+                  <div className="flex flex-col gap-5">
+                    <div className="flex flex-col gap-3">
+                      <SectionLabel>Back Design</SectionLabel>
+                      <div className="flex gap-3">
+                        {BACK_DESIGN_OPTIONS.map((opt) => (
+                          <button
+                            key={opt.id}
+                            onClick={() => {
+                              setSelectedBackDesign(opt.id);
+                              setBackContent(opt.id === "qr-only" ? "qr" : "logo");
                             }}
+                            className="flex flex-col items-center gap-1.5"
                           >
-                            {opt.preview}
-                          </div>
-                          <span className="text-[12px] font-medium" style={{ color: selectedBackDesign === opt.id ? "#28DC4F" : "#6D6D6D" }}>
-                            {opt.label}
-                          </span>
-                        </button>
-                      ))}
-                    </div>
-                  </div>
-
-                  <div className="my-5 h-px bg-[#F4F4F4]" />
-
-                  <div className="flex flex-col gap-3">
-                    <p className="text-[16px] font-medium text-[#1E1E1E]">Back Content</p>
-
-                    <div className="flex flex-col gap-2 rounded-[10px] p-1" style={{ background: "#FAFAFA", border: "1px solid #F4F4F4" }}>
-                      {[
-                        { value: "logo", label: "Logo" },
-                        { value: "qr",   label: "Place QR Code" },
-                      ].map(({ value, label }) => (
-                        <button
-                          key={value}
-                          onClick={() => setBackContent(value)}
-                          className="flex items-center gap-3 rounded-[8px] px-3 py-[10px] transition-colors"
-                          style={{ background: backContent === value ? "#fff" : "transparent" }}
-                        >
-                          <div
-                            className="flex h-[18px] w-[18px] shrink-0 items-center justify-center rounded-full border-2 transition-colors"
-                            style={{ borderColor: backContent === value ? "#28DC4F" : "#D1D5DB" }}
-                          >
-                            {backContent === value && <div className="h-[8px] w-[8px] rounded-full bg-[#28DC4F]" />}
-                          </div>
-                          <span className="text-[14px] font-normal text-[#1E1E1E]">{label}</span>
-                        </button>
-                      ))}
-                    </div>
-
-                    {backContent === "qr" && (
-                      <div className="flex flex-col gap-2">
-                        <p className="text-[14px] font-medium text-[#1E1E1E]">QR Code Colour</p>
-                        <div className="grid grid-cols-5 gap-2">
-                          {QR_COLORS.map((c) => {
-                            const selected = qrFgColor === c.color;
-                            const isLight  = c.color === "#28DC4F";
-                            return (
-                              <button
-                                key={c.id}
-                                title={c.label}
-                                onClick={() => setQrFgColor(c.color)}
-                                className="relative rounded-[8px] transition-all"
-                                style={{
-                                  height: "36px",
-                                  background: c.color,
-                                  border: selected ? "2px solid #28DC4F" : "2px solid transparent",
-                                  boxShadow: selected ? "0 0 0 1px #28DC4F" : "none",
-                                }}
-                              >
-                                {selected && (
-                                  <div className="absolute inset-0 flex items-center justify-center">
-                                    <svg width="13" height="13" viewBox="0 0 14 14" fill="none">
-                                      <path d="M2.5 7L5.5 10L11.5 4" stroke={isLight ? "#18181B" : "#fff"} strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
-                                    </svg>
-                                  </div>
-                                )}
-                              </button>
-                            );
-                          })}
-                        </div>
-                        <p className="text-[11px] text-[#9CA3AF]">
-                          {QR_COLORS.find((c) => c.color === qrFgColor)?.label ?? "Black"}
-                        </p>
+                            <div
+                              className="overflow-hidden rounded-xl transition-all"
+                              style={{
+                                width: "88px", height: "54px",
+                                border: selectedBackDesign === opt.id ? "2px solid #28DC4F" : "2px solid #E5E7EB",
+                              }}
+                            >
+                              {opt.preview}
+                            </div>
+                            <span className="text-[12px] font-semibold" style={{ color: selectedBackDesign === opt.id ? "#28DC4F" : "#9CA3AF" }}>
+                              {opt.label}
+                            </span>
+                          </button>
+                        ))}
                       </div>
-                    )}
+                    </div>
 
-                    {backContent === "logo" && (
-                      <>
-                        <UploadZone file={backLogoFile} onChange={setBackLogoFile} />
+                    <div className="h-px bg-[#F0F0F0]" />
 
-                        {backLogoDataUrl && (
-                          <div className="flex flex-col gap-3">
-                            <div className="flex items-center gap-3">
-                              {/* eslint-disable-next-line @next/next/no-img-element */}
-                              <img
-                                src={backLogoDataUrl}
-                                alt="Logo preview"
-                                className="rounded-[8px] border border-[#F0F0F0]"
-                                style={{ height: "48px", maxWidth: "80px", objectFit: "contain" }}
-                              />
-                              <button
-                                onClick={() => { setBackLogoFile(null); }}
-                                className="rounded-[8px] border border-[#EBEBEB] px-3 py-[6px] text-[12px] font-medium text-[#EF4444] transition-colors hover:border-[#EF4444]"
-                              >
-                                Remove
-                              </button>
+                    <div className="flex flex-col gap-3">
+                      <SectionLabel>Back Content</SectionLabel>
+                      <div className="flex flex-col gap-1 overflow-hidden rounded-xl bg-[#F9FAFB]" style={{ border: "1px solid #F0F0F0" }}>
+                        {[
+                          { value: "logo", label: "Logo" },
+                          { value: "qr",   label: "QR Code" },
+                        ].map(({ value, label }) => (
+                          <button
+                            key={value}
+                            onClick={() => setBackContent(value)}
+                            className="flex items-center gap-3 px-4 py-3 transition-colors"
+                            style={{ background: backContent === value ? "#fff" : "transparent" }}
+                          >
+                            <div
+                              className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full border-2 transition-colors"
+                              style={{ borderColor: backContent === value ? "#28DC4F" : "#D1D5DB" }}
+                            >
+                              {backContent === value && <div className="h-2.5 w-2.5 rounded-full bg-[#28DC4F]" />}
                             </div>
-                            <LogoPlacementPicker value={backLogoPlacement} onChange={setBackLogoPlacement} />
-                            <div className="flex items-center gap-3">
-                              <span className="shrink-0 text-[14px] font-medium text-[#1E1E1E]">Logo Size</span>
-                              <input
-                                type="range"
-                                min={20}
-                                max={80}
-                                value={backLogoSize}
-                                onChange={(e) => setBackLogoSize(Number(e.target.value))}
-                                className="flex-1 accent-[#28DC4F]"
-                              />
-                              <span className="w-9 text-right text-[12px] text-[#9CA3AF]">{backLogoSize}px</span>
-                            </div>
+                            <span className="text-[14px] text-[#374151]">{label}</span>
+                          </button>
+                        ))}
+                      </div>
+
+                      {backContent === "qr" && (
+                        <div className="flex flex-col gap-2">
+                          <p className="text-[13px] font-medium text-[#374151]">QR Colour</p>
+                          <div className="grid grid-cols-5 gap-2">
+                            {QR_COLORS.map((c) => {
+                              const selected = qrFgColor === c.color;
+                              const isLight  = c.color === "#28DC4F";
+                              return (
+                                <button
+                                  key={c.id}
+                                  title={c.label}
+                                  onClick={() => setQrFgColor(c.color)}
+                                  className="relative rounded-xl transition-all"
+                                  style={{
+                                    height: "40px",
+                                    background: c.color,
+                                    border: selected ? "2px solid #28DC4F" : "2px solid transparent",
+                                    boxShadow: selected ? "0 0 0 1px #28DC4F" : "0 0 0 1px rgba(0,0,0,0.1)",
+                                  }}
+                                >
+                                  {selected && (
+                                    <div className="absolute inset-0 flex items-center justify-center">
+                                      <svg width="12" height="12" viewBox="0 0 14 14" fill="none">
+                                        <path d="M2.5 7L5.5 10L11.5 4" stroke={isLight ? "#18181B" : "#fff"} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+                                      </svg>
+                                    </div>
+                                  )}
+                                </button>
+                              );
+                            })}
                           </div>
-                        )}
-                      </>
-                    )}
+                          <p className="text-[11px] text-[#9CA3AF]">
+                            {QR_COLORS.find((c) => c.color === qrFgColor)?.label ?? "Black"}
+                          </p>
+                        </div>
+                      )}
+
+                      {backContent === "logo" && (
+                        <>
+                          <UploadZone file={backLogoFile} onChange={setBackLogoFile} />
+                          {backLogoDataUrl && (
+                            <div className="flex flex-col gap-3">
+                              <div className="flex items-center gap-3">
+                                {/* eslint-disable-next-line @next/next/no-img-element */}
+                                <img
+                                  src={backLogoDataUrl}
+                                  alt="Logo preview"
+                                  className="rounded-lg border border-[#F0F0F0]"
+                                  style={{ height: "44px", maxWidth: "72px", objectFit: "contain" }}
+                                />
+                                <button
+                                  onClick={() => setBackLogoFile(null)}
+                                  className="rounded-lg border border-[#F0F0F0] px-3 py-1.5 text-[12px] font-medium text-[#EF4444]"
+                                >
+                                  Remove
+                                </button>
+                              </div>
+                              <LogoPlacementPicker value={backLogoPlacement} onChange={setBackLogoPlacement} />
+                              <div className="flex items-center gap-3">
+                                <span className="shrink-0 text-[13px] font-medium text-[#374151]">Logo Size</span>
+                                <input
+                                  type="range" min={20} max={80} value={backLogoSize}
+                                  onChange={(e) => setBackLogoSize(Number(e.target.value))}
+                                  className="flex-1 accent-[#28DC4F]"
+                                />
+                                <span className="w-8 text-right text-[12px] text-[#9CA3AF]">{backLogoSize}</span>
+                              </div>
+                            </div>
+                          )}
+                        </>
+                      )}
+                    </div>
                   </div>
-                </div>
+                )}
               </div>
             )}
 
-            {/* ── UPLOAD OWN DESIGN FORM ── */}
+            {/* ── UPLOAD OWN DESIGN ── */}
             {designMethod === "upload_own_design" && (
-              <div className="rounded-[16px] border border-[#F0F0F0] bg-white p-6 shadow-sm">
-                <div className="flex flex-col gap-5">
+              <div className="flex flex-col gap-4">
+                <SectionLabel>Upload Your Artwork</SectionLabel>
 
-                  <DesignUploadZone
-                    label="Front Design"
-                    file={uploadedFrontFile}
-                    onChange={(f) => {
-                      setUploadedFrontFile(f);
-                      if (errors.uploadedFront) setErrors((prev) => ({ ...prev, uploadedFront: "" }));
-                    }}
-                    preview={uploadedFrontDataUrl}
-                    required
-                    error={errors.uploadedFront}
-                  />
+                <DesignUploadZone
+                  label="Front Design"
+                  file={uploadedFrontFile}
+                  onChange={(f) => {
+                    setUploadedFrontFile(f);
+                    if (errors.uploadedFront) setErrors((prev) => ({ ...prev, uploadedFront: "" }));
+                  }}
+                  preview={uploadedFrontDataUrl}
+                  required
+                  error={errors.uploadedFront}
+                />
 
-                  <DesignUploadZone
-                    label="Back Design"
-                    file={uploadedBackFile}
-                    onChange={setUploadedBackFile}
-                    preview={uploadedBackDataUrl}
-                    required={false}
-                  />
+                <DesignUploadZone
+                  label="Back Design"
+                  file={uploadedBackFile}
+                  onChange={setUploadedBackFile}
+                  preview={uploadedBackDataUrl}
+                  required={false}
+                />
 
-                  {/* Print-ready guidelines */}
-                  <div
-                    className="rounded-[12px] px-4 py-4"
-                    style={{ background: "rgba(40,220,79,0.06)", border: "1px solid rgba(40,220,79,0.2)" }}
-                  >
-                    <p className="mb-2 text-[13px] font-semibold text-[#111827]">
-                      Please upload a print-ready design in the correct card size.
-                    </p>
-                    <ul className="flex flex-col gap-1 pl-4 text-[12px] leading-[20px] text-[#6B7280]" style={{ listStyleType: "disc" }}>
-                      <li>Recommended size: <strong>1200 × 720 px</strong></li>
-                      <li>Aspect ratio: <strong>5:3</strong></li>
-                      <li>High resolution <strong>PNG or PDF</strong> preferred</li>
-                      <li>Include at least 3 mm bleed on each edge</li>
-                    </ul>
-                  </div>
-
+                <div className="rounded-xl px-4 py-3" style={{ background: "rgba(40,220,79,0.06)", border: "1px solid rgba(40,220,79,0.2)" }}>
+                  <p className="mb-1.5 text-[12px] font-semibold text-[#111827]">Print-ready artwork guidelines</p>
+                  <ul className="flex flex-col gap-0.5 pl-4 text-[11px] leading-5 text-[#6B7280]" style={{ listStyleType: "disc" }}>
+                    <li>Recommended: <strong>1200 × 720 px</strong> · Aspect ratio <strong>5:3</strong></li>
+                    <li>High-res <strong>PNG or PDF</strong> preferred</li>
+                    <li>Include at least 3 mm bleed on each edge</li>
+                  </ul>
                 </div>
               </div>
             )}
 
-            {/* Buy Now */}
-            <button
-              onClick={handleBuyNow}
-              className="block w-full rounded-[10px] py-[13px] text-center text-[16px] font-semibold text-white transition-opacity hover:opacity-90 active:opacity-80"
-              style={{ background: "#28DC4F" }}
-            >
-              Buy Now
-            </button>
+            {/* DESKTOP: Buy Now */}
+            <div className="hidden lg:flex flex-col gap-3">
+              <button
+                onClick={handleBuyNow}
+                className="w-full rounded-xl py-4 text-[16px] font-bold text-black transition-opacity hover:opacity-90 active:opacity-80"
+                style={{ background: "#28DC4F" }}
+              >
+                Buy Now
+              </button>
 
-            {/* Trust badges */}
-            <div className="flex flex-wrap items-center justify-center gap-x-6 gap-y-2 py-2">
-              {["Free Delivery", "Secure Payment", "Easy Returns"].map((badge) => (
-                <div key={badge} className="flex items-center gap-1">
-                  <CheckIcon />
-                  <span className="text-[13px] text-[#6D6D6D]">{badge}</span>
-                </div>
-              ))}
+              <div className="flex items-center justify-center gap-5">
+                {["Free Delivery", "Secure Payment", "Easy Returns"].map((badge) => (
+                  <div key={badge} className="flex items-center gap-1">
+                    <CheckIcon />
+                    <span className="text-[12px] text-[#9CA3AF]">{badge}</span>
+                  </div>
+                ))}
+              </div>
             </div>
+
           </div>
         </div>
       </div>
-
     </main>
   );
 }

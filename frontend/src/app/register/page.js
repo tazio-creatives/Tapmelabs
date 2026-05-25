@@ -106,7 +106,7 @@ function Field({ label, id, rightSlot, error, ...props }) {
       <div className="relative flex items-center">
         <input
           id={id}
-          className="w-full rounded-[10px] border bg-[#FAFAFA] px-4 py-[12px] text-[14px] text-[#1E1E1E] outline-none transition-all placeholder:text-[#AEAEAE] focus:bg-white focus:ring-2 focus:ring-[#28DC4F]/15"
+          className="w-full rounded-xl border bg-[#F9FAFB] px-4 py-[14px] text-[14px] text-[#1E1E1E] outline-none transition-all placeholder:text-[#AEAEAE] focus:bg-white focus:ring-2 focus:ring-[#28DC4F]/15"
           style={{ borderColor: error ? "#EF4444" : "#EBEBEB", borderWidth: "1px" }}
           {...props}
         />
@@ -352,8 +352,8 @@ export default function RegisterPage() {
         <div className="absolute inset-0 bg-white/20 backdrop-blur-[8px]" />
 
         {/* Modal */}
-        <div className="relative z-10 flex flex-1 items-center justify-center px-4 py-10">
-          <div className="w-full max-w-[440px] rounded-[24px] bg-white p-8 shadow-[0_24px_64px_rgba(0,0,0,0.13)]">
+        <div className="relative z-10 flex flex-1 items-center justify-center px-4 py-8">
+          <div className="w-full max-w-[440px] rounded-[24px] bg-white p-6 shadow-[0_24px_64px_rgba(0,0,0,0.13)] sm:p-8">
 
             <ModalLogo />
 
@@ -361,8 +361,8 @@ export default function RegisterPage() {
             {step === "form" && (
               <>
                 <div className="mt-5 text-center">
-                  <h1 className="text-[22px] font-bold text-[#111827]">{isCheckout ? "Sign Up" : "Create your Profile"}</h1>
-                  <p className="mt-1 text-[14px] text-[#6D6D6D]">Join TapMe and go contactless today</p>
+                  <h1 className="text-[20px] font-bold text-[#111827] sm:text-[22px]">{isCheckout ? "Sign Up" : "Create your Profile"}</h1>
+                  <p className="mt-1 text-[13px] text-[#6D6D6D]">Join TapMe and go contactless today</p>
                 </div>
 
                 {error && (
@@ -480,7 +480,7 @@ export default function RegisterPage() {
                   <button
                     type="submit"
                     disabled={loading}
-                    className="flex w-full items-center justify-center gap-2 rounded-[12px] py-[14px] text-[15px] font-semibold text-white transition-opacity hover:opacity-90 active:opacity-80 disabled:cursor-not-allowed disabled:opacity-60"
+                    className="flex w-full items-center justify-center gap-2 rounded-xl py-4 text-[15px] font-semibold text-black transition-opacity hover:opacity-90 active:opacity-80 disabled:cursor-not-allowed disabled:opacity-60"
                     style={{ background: "#28DC4F" }}
                   >
                     {loading ? (
@@ -547,7 +547,7 @@ export default function RegisterPage() {
                   <button
                     type="submit"
                     disabled={otpLoading || otp.join("").length < 6}
-                    className="flex w-full items-center justify-center gap-2 rounded-[12px] py-[14px] text-[15px] font-semibold text-white transition-opacity hover:opacity-90 active:opacity-80 disabled:cursor-not-allowed disabled:opacity-60"
+                    className="flex w-full items-center justify-center gap-2 rounded-xl py-4 text-[15px] font-semibold text-black transition-opacity hover:opacity-90 active:opacity-80 disabled:cursor-not-allowed disabled:opacity-60"
                     style={{ background: "#28DC4F" }}
                   >
                     {otpLoading ? (

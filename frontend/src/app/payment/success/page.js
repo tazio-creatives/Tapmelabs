@@ -108,7 +108,7 @@ const ImagePlaceholderIcon = () => (
 
 function InfoCard({ icon, title, children }) {
   return (
-    <div className="rounded-[16px] border border-[#F0F0F0] bg-white p-5 shadow-sm">
+    <div className="rounded-2xl border border-[#F0F0F0] bg-white p-5 shadow-sm">
       <div className="mb-3 flex items-center gap-3">
         <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-[#28DC4F]/10">
           {icon}
@@ -233,10 +233,10 @@ export default function PaymentSuccessPage() {
       <Header />
 
       <main className="min-h-screen bg-[#F9F9F9]">
-        <div className="mx-auto max-w-[1440px] px-4 py-10 md:px-[120px]">
+        <div className="mx-auto max-w-5xl px-4 py-8 sm:px-6">
 
           {/* Breadcrumb */}
-          <nav aria-label="Breadcrumb" className="mb-8 flex items-center gap-1">
+          <nav aria-label="Breadcrumb" className="mb-6 hidden items-center gap-1 sm:flex">
             <Link href="/" className="text-[13px] text-[#9CA3AF] transition-colors hover:text-black">Home</Link>
             <ChevronRightIcon />
             <Link href="/products" className="text-[13px] text-[#9CA3AF] transition-colors hover:text-black">Products</Link>
@@ -245,10 +245,10 @@ export default function PaymentSuccessPage() {
           </nav>
 
           {/* ── Success hero ── */}
-          <div className="mb-10 flex flex-col items-center text-center">
+          <div className="mb-8 flex flex-col items-center text-center">
             <CheckCircleIcon />
 
-            <h1 className="mt-5 text-[28px] font-bold leading-tight text-[#111827] md:text-[32px]">
+            <h1 className="mt-5 text-[22px] font-bold leading-tight text-[#111827] sm:text-[28px]">
               Thank you for your order!
             </h1>
 
@@ -281,7 +281,7 @@ export default function PaymentSuccessPage() {
             <div className="mt-6 flex flex-col items-center gap-2">
               <Link
                 href="/dashboard/profile/setup"
-                className="flex items-center justify-center gap-2 rounded-[12px] px-8 py-[13px] text-[15px] font-semibold text-white transition-opacity hover:opacity-90 active:opacity-80"
+                className="flex items-center justify-center gap-2 rounded-xl px-6 py-[13px] text-[15px] font-semibold text-black transition-opacity hover:opacity-90 active:opacity-80"
                 style={{ background: "#28DC4F" }}
               >
                 Complete Your Profile
@@ -304,8 +304,8 @@ export default function PaymentSuccessPage() {
             <div className="flex flex-1 flex-col gap-5">
 
               {/* Order Summary card */}
-              <div className="rounded-[20px] border border-[#F0F0F0] bg-white p-6 shadow-sm">
-                <h2 className="mb-5 text-[17px] font-semibold text-[#111827]">Order Summary</h2>
+              <div className="rounded-2xl border border-[#F0F0F0] bg-white p-5 shadow-sm">
+                <h2 className="mb-5 text-[16px] font-bold text-[#111827]">Order Summary</h2>
 
                 {/* Order item */}
                 <div className="flex items-center gap-4">
@@ -393,7 +393,7 @@ export default function PaymentSuccessPage() {
                 type="button"
                 disabled
                 title="Invoice will be available after backend invoice integration."
-                className="flex w-full cursor-not-allowed items-center justify-center gap-2 rounded-[12px] py-[14px] text-[15px] font-semibold text-white opacity-50"
+                className="flex w-full cursor-not-allowed items-center justify-center gap-2 rounded-xl py-[14px] text-[15px] font-semibold text-white opacity-50"
                 style={{ background: "#28DC4F" }}
               >
                 <DownloadIcon />
@@ -403,7 +403,7 @@ export default function PaymentSuccessPage() {
               {/* View Order */}
               <Link
                 href="/dashboard/orders"
-                className="flex w-full items-center justify-center gap-2 rounded-[12px] border border-[#EBEBEB] bg-white py-[13px] text-[15px] font-semibold text-[#111827] transition-colors hover:border-[#28DC4F] hover:text-[#28DC4F]"
+                className="flex w-full items-center justify-center gap-2 rounded-xl border border-[#EBEBEB] bg-white py-[13px] text-[15px] font-semibold text-[#111827] transition-colors hover:border-[#28DC4F] hover:text-[#28DC4F]"
               >
                 View Order Details
                 <ChevronRightIcon />
@@ -518,7 +518,7 @@ export default function PaymentSuccessPage() {
           <div className="mt-8 flex flex-col items-center gap-3">
             <Link
               href="/products"
-              className="flex items-center gap-2 rounded-[12px] bg-[#111827] px-10 py-[15px] text-[16px] font-semibold text-white transition-opacity hover:opacity-90 active:opacity-80"
+              className="flex items-center gap-2 rounded-xl bg-[#111827] px-8 py-4 text-[15px] font-semibold text-white transition-opacity hover:opacity-90 active:opacity-80"
             >
               <ShoppingBagIcon />
               Continue Shopping
