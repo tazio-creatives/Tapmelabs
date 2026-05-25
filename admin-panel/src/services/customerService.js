@@ -11,6 +11,11 @@ const customerService = {
     const response = await api.get(`/admin/customers/${id}`);
     return response.data;
   },
+
+  async deleteCustomer(id) {
+    const response = await api.delete(`/admin/customers/${id}`);
+    return response.data;
+  },
 };
 
 export default customerService;

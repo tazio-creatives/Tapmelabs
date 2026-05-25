@@ -136,4 +136,27 @@ async function getCustomerById(req, res, next) {
   }
 }
 
-module.exports = { getAllCustomers, getCustomerById };
+// ── DELETE /api/admin/customers/:id ──────────────────────────────────────────
+// Permanently deletes a customer. Admin accounts are protected.
+
+async function deleteCustomer(req, res, next) {
+  try {
+    const user = await User.findByPk(req.params.id);
+
+    if (!user) {
+      return res.status(404).json({ success: false, message: "User not found.", data: null });
+    }
+
+    if (user.role === "admin") {
+      return res.status(403).json({ success: false, message: "Admin accounts cannot be deleted.", data: null });
+    }
+
+    await user.destroy();
+
+    return res.status(200).json({ success: true, message: "Customer deleted successfully.", data: null });
+  } catch (err) {
+    next(err);
+  }
+}
+
+module.exports = { getAllCustomers, getCustomerById, deleteCustomer };

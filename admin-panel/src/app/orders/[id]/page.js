@@ -648,8 +648,11 @@ export default function OrderDetailPage() {
                 <div className="flex items-center gap-2">
                   <h3 className="text-[13px] font-semibold text-slate-700">Physical NFC Card</h3>
                   <span className="rounded-full px-2 py-0.5 text-[10px] font-semibold" style={{ background: "rgba(40,220,79,0.12)", color: "#16A34A" }}>Active</span>
+                  {cust.design_method === "upload_own_design" && (
+                    <span className="rounded-full px-2 py-0.5 text-[10px] font-semibold" style={{ background: "#EFF6FF", color: "#3B82F6" }}>Custom Upload</span>
+                  )}
                 </div>
-                {/* Front / Back Side toggle — same style as customer dashboard */}
+                {/* Front / Back Side toggle */}
                 <div className="flex overflow-hidden rounded-lg" style={{ border: "1px solid #E2E8F0" }}>
                   {[["front", "Front Side"], ["back", "Back Side"]].map(([face, label]) => (
                     <button key={face} onClick={() => setCardFace(face)}
@@ -664,10 +667,30 @@ export default function OrderDetailPage() {
               <div className="p-4">
                 {/* Card preview */}
                 <div className="overflow-hidden rounded-[12px] bg-[#F5F5F5] p-4">
-                  {cardFace === "front"
-                    ? <FrontCardPreview bg={cardBg} name={cardName} subTitle={cardSub} logoDataUrl={logoUrl} logoPlacement={cust.logoPlacement || "top-left"} logoSize={cust.logoSize || 44} fontColor={cust.fontColor} />
-                    : <BackCardPreview  bg={backBg} backContent={cust.backContent || "logo"} backLogoDataUrl={cust.backLogoDataUrl} backLogoPlacement={cust.backLogoPlacement} backLogoSize={cust.backLogoSize} qrFgColor={cust.qrFgColor} />
-                  }
+                  {cust.design_method === "upload_own_design" ? (
+                    (() => {
+                      const src = cardFace === "front" ? cust.uploaded_front_design : cust.uploaded_back_design;
+                      if (src) {
+                        return (
+                          <div style={{ aspectRatio: "5/3", background: "#111", borderRadius: "10px", overflow: "hidden" }}>
+                            {/* eslint-disable-next-line @next/next/no-img-element */}
+                            <img src={src} alt={`${cardFace} design`} style={{ width: "100%", height: "100%", objectFit: "contain" }} />
+                          </div>
+                        );
+                      }
+                      return (
+                        <div style={{ aspectRatio: "5/3", background: "#F1F5F9", borderRadius: "10px", display: "flex", alignItems: "center", justifyContent: "center", border: "2px dashed #CBD5E1" }}>
+                          <p className="text-[12px] text-slate-400">
+                            {cardFace === "front" ? "Front design not available" : "Back design not uploaded"}
+                          </p>
+                        </div>
+                      );
+                    })()
+                  ) : (
+                    cardFace === "front"
+                      ? <FrontCardPreview bg={cardBg} name={cardName} subTitle={cardSub} logoDataUrl={logoUrl} logoPlacement={cust.logoPlacement || "top-left"} logoSize={cust.logoSize || 44} fontColor={cust.fontColor} />
+                      : <BackCardPreview  bg={backBg} backContent={cust.backContent || "logo"} backLogoDataUrl={cust.backLogoDataUrl} backLogoPlacement={cust.backLogoPlacement} backLogoSize={cust.backLogoSize} qrFgColor={cust.qrFgColor} />
+                  )}
                 </div>
 
                 {!profile && (
@@ -677,43 +700,86 @@ export default function OrderDetailPage() {
                 )}
 
                 {/* Action buttons */}
-                <div className="mt-3 flex gap-2">
-                  <button
-                    onClick={() => handleDownload(cardFace)}
-                    disabled={downloading}
-                    className="flex flex-1 items-center justify-center gap-2 rounded-lg py-2.5 text-[12px] font-semibold transition-opacity hover:opacity-90 disabled:opacity-50"
-                    style={{ background: "#F1F5F9", color: "#374151", border: "1px solid #E2E8F0" }}>
-                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                      <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/>
-                    </svg>
-                    {downloading ? "Saving…" : `Download ${cardFace === "front" ? "Front" : "Back"}`}
-                  </button>
-                  <button
-                    onClick={handlePrint}
-                    className="flex flex-1 items-center justify-center gap-2 rounded-lg py-2.5 text-[12px] font-semibold transition-opacity hover:opacity-90"
-                    style={{ background: "#0F172A", color: "#fff" }}>
-                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                      <polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/>
-                    </svg>
-                    Print Both
-                  </button>
-                </div>
-
-                {/* Download both buttons */}
-                <div className="mt-2 flex gap-2">
-                  <button onClick={() => handleDownload("front")} disabled={downloading}
-                    className="flex flex-1 items-center justify-center gap-1.5 rounded-lg py-2 text-[11px] font-medium transition-opacity hover:opacity-80 disabled:opacity-40"
-                    style={{ background: "#F8FAFC", color: "#64748B", border: "1px dashed #CBD5E1" }}>
-                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
-                    Front PNG
-                  </button>
-                  <button onClick={() => handleDownload("back")} disabled={downloading}
-                    className="flex flex-1 items-center justify-center gap-1.5 rounded-lg py-2 text-[11px] font-medium transition-opacity hover:opacity-80 disabled:opacity-40"
-                    style={{ background: "#F8FAFC", color: "#64748B", border: "1px dashed #CBD5E1" }}>
-                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
-                    Back PNG
-                  </button>
-                </div>
+                {cust.design_method === "upload_own_design" ? (
+                  <div className="mt-3 flex flex-col gap-2">
+                    {[
+                      { label: "Front Design", src: cust.uploaded_front_design, face: "front" },
+                      { label: "Back Design",  src: cust.uploaded_back_design,  face: "back"  },
+                    ].map(({ label, src, face }) => src ? (
+                      <div key={face} className="flex gap-2">
+                        <a
+                          href={src}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="flex flex-1 items-center justify-center gap-1.5 rounded-lg py-2.5 text-[12px] font-semibold transition-opacity hover:opacity-90"
+                          style={{ background: "#F1F5F9", color: "#374151", border: "1px solid #E2E8F0" }}
+                        >
+                          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                            <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/>
+                          </svg>
+                          Open {label}
+                        </a>
+                        <a
+                          href={src}
+                          download={`${order?.order_number ?? "order"}-${face}-design`}
+                          className="flex flex-1 items-center justify-center gap-1.5 rounded-lg py-2.5 text-[12px] font-semibold transition-opacity hover:opacity-90"
+                          style={{ background: "#18181B", color: "#fff" }}
+                        >
+                          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/>
+                          </svg>
+                          Download
+                        </a>
+                      </div>
+                    ) : (
+                      <div
+                        key={face}
+                        className="flex items-center justify-center rounded-lg py-2.5 text-[12px] text-slate-400"
+                        style={{ background: "#F8FAFC", border: "1px dashed #CBD5E1" }}
+                      >
+                        {face === "front" ? "Front design not available" : "Back design not uploaded"}
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <>
+                    <div className="mt-3 flex gap-2">
+                      <button
+                        onClick={() => handleDownload(cardFace)}
+                        disabled={downloading}
+                        className="flex flex-1 items-center justify-center gap-2 rounded-lg py-2.5 text-[12px] font-semibold transition-opacity hover:opacity-90 disabled:opacity-50"
+                        style={{ background: "#F1F5F9", color: "#374151", border: "1px solid #E2E8F0" }}>
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                          <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/>
+                        </svg>
+                        {downloading ? "Saving…" : `Download ${cardFace === "front" ? "Front" : "Back"}`}
+                      </button>
+                      <button
+                        onClick={handlePrint}
+                        className="flex flex-1 items-center justify-center gap-2 rounded-lg py-2.5 text-[12px] font-semibold transition-opacity hover:opacity-90"
+                        style={{ background: "#0F172A", color: "#fff" }}>
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                          <polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/>
+                        </svg>
+                        Print Both
+                      </button>
+                    </div>
+                    <div className="mt-2 flex gap-2">
+                      <button onClick={() => handleDownload("front")} disabled={downloading}
+                        className="flex flex-1 items-center justify-center gap-1.5 rounded-lg py-2 text-[11px] font-medium transition-opacity hover:opacity-80 disabled:opacity-40"
+                        style={{ background: "#F8FAFC", color: "#64748B", border: "1px dashed #CBD5E1" }}>
+                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+                        Front PNG
+                      </button>
+                      <button onClick={() => handleDownload("back")} disabled={downloading}
+                        className="flex flex-1 items-center justify-center gap-1.5 rounded-lg py-2 text-[11px] font-medium transition-opacity hover:opacity-80 disabled:opacity-40"
+                        style={{ background: "#F8FAFC", color: "#64748B", border: "1px dashed #CBD5E1" }}>
+                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+                        Back PNG
+                      </button>
+                    </div>
+                  </>
+                )}
               </div>
             </div>
 
@@ -772,8 +838,21 @@ export default function OrderDetailPage() {
             </SectionCard>
 
             {/* Card Design */}
-            {(cust.cardColor || cust.fontColor || logoUrl) && (
+            {(cust.design_method || cust.cardColor || cust.fontColor || logoUrl) && (
               <SectionCard title="Card Design">
+                {cust.design_method && (
+                  <div className="flex items-center justify-between gap-4 py-2" style={{ borderBottom: "1px solid #F8FAFC" }}>
+                    <span className="text-[12px] text-slate-400 shrink-0 w-28">Design Method</span>
+                    <span
+                      className="rounded-full px-2.5 py-1 text-[11px] font-semibold"
+                      style={cust.design_method === "upload_own_design"
+                        ? { background: "#EFF6FF", color: "#3B82F6" }
+                        : { background: "#F0FFF4", color: "#16A34A" }}
+                    >
+                      {cust.design_method === "upload_own_design" ? "Custom Upload" : "Customized Online"}
+                    </span>
+                  </div>
+                )}
                 {cust.cardColor && (
                   <div className="flex items-center justify-between gap-4 py-2" style={{ borderBottom: "1px solid #F8FAFC" }}>
                     <span className="text-[12px] text-slate-400 shrink-0 w-28">Card Color</span>

@@ -388,9 +388,10 @@ function SectionCard({ children, className = "" }) {
 
 /* ─── left column ─────────────────────────────────────────────────────── */
 
-function PhysicalCardSection({ customization, productImages, profile, onReorder, onLock }) {
+function PhysicalCardSection({ customization, productImages, profile, onReorder, onLock, designMethod, uploadedFrontDesign, uploadedBackDesign }) {
   const [cardSide, setCardSide] = useState("front");
-  const hasCust = !!customization;
+  const isUploadMethod = designMethod === "upload_own_design";
+  const hasCust = !!customization || isUploadMethod;
   const c = customization || {};
   const imgs = productImages || { front: null, back: null };
 
@@ -434,7 +435,26 @@ function PhysicalCardSection({ customization, productImages, profile, onReorder,
             </div>
 
             {/* Card visual */}
-            {(() => {
+            {isUploadMethod ? (
+              (() => {
+                const src = cardSide === "front" ? uploadedFrontDesign : uploadedBackDesign;
+                if (src) {
+                  return (
+                    <div className="overflow-hidden rounded-[12px] mx-3 my-3" style={{ aspectRatio: "5/3", background: "#111" }}>
+                      {/* eslint-disable-next-line @next/next/no-img-element */}
+                      <img src={src} alt={`${cardSide} design`} style={{ width: "100%", height: "100%", objectFit: "contain" }} />
+                    </div>
+                  );
+                }
+                return (
+                  <div className="flex items-center justify-center rounded-[12px] mx-3 my-3" style={{ aspectRatio: "5/3", background: "#F0F0F0", border: "2px dashed #D1D5DB" }}>
+                    <p className="text-[13px] text-[#9CA3AF]">
+                      {cardSide === "front" ? "Front design" : "Back design (not uploaded)"}
+                    </p>
+                  </div>
+                );
+              })()
+            ) : (() => {
               const mockupSrc = cardSide === "front"
                 ? imgs.front || null
                 : imgs.back  || imgs.front || null;
@@ -694,15 +714,18 @@ function ActionsSection({ profileUrl, onViewProfile, onDownloadQR, onShare, onCo
 export default function MyCardsPage() {
   const router = useRouter();
 
-  const [sidebarOpen,    setSidebarOpen]    = useState(false);
-  const [initials,       setInitials]       = useState("U");
-  const [profile,        setProfile]        = useState(null);
-  const [latestOrder,    setLatestOrder]    = useState(null);
-  const [customization,  setCustomization]  = useState(null);
-  const [productImages,  setProductImages]  = useState({ front: null, back: null });
-  const [copied,         setCopied]         = useState(false);
-  const [loading,        setLoading]        = useState(true);
-  const [apiError,       setApiError]       = useState("");
+  const [sidebarOpen,          setSidebarOpen]          = useState(false);
+  const [initials,             setInitials]             = useState("U");
+  const [profile,              setProfile]              = useState(null);
+  const [latestOrder,          setLatestOrder]          = useState(null);
+  const [customization,        setCustomization]        = useState(null);
+  const [productImages,        setProductImages]        = useState({ front: null, back: null });
+  const [designMethod,         setDesignMethod]         = useState("customize_online");
+  const [uploadedFrontDesign,  setUploadedFrontDesign]  = useState(null);
+  const [uploadedBackDesign,   setUploadedBackDesign]   = useState(null);
+  const [copied,               setCopied]               = useState(false);
+  const [loading,              setLoading]              = useState(true);
+  const [apiError,             setApiError]             = useState("");
 
   useEffect(() => {
     if (typeof window === "undefined") return;
@@ -739,7 +762,15 @@ export default function MyCardsPage() {
 
         // 1. Try API order's card_customization (future-proofed once backend stores it)
         if (order?.card_customization) {
-          setCustomization(order.card_customization);
+          const cust = order.card_customization;
+          if (cust.design_method === "upload_own_design") {
+            setDesignMethod("upload_own_design");
+            setUploadedFrontDesign(cust.uploaded_front_design || null);
+            setUploadedBackDesign(cust.uploaded_back_design || null);
+          } else {
+            setDesignMethod(cust.design_method || "customize_online");
+            setCustomization(cust);
+          }
           return; // skip localStorage fallback
         }
       } else if (ordersRes.reason?.response?.status !== 404) {
@@ -750,9 +781,14 @@ export default function MyCardsPage() {
       //    Check checkoutItem first (new flow), then cartItems (legacy).
       try {
         const singleItem = JSON.parse(localStorage.getItem("checkoutItem") || "null");
-        if (singleItem?.customization) {
-          setCustomization(singleItem.customization);
-          setProductImages({ front: singleItem.front_image || null, back: singleItem.back_image || null });
+        if (singleItem) {
+          setDesignMethod(singleItem.design_method || "customize_online");
+          setUploadedFrontDesign(singleItem.uploaded_front_design || null);
+          setUploadedBackDesign(singleItem.uploaded_back_design || null);
+          if (singleItem.customization) {
+            setCustomization(singleItem.customization);
+            setProductImages({ front: singleItem.front_image || null, back: singleItem.back_image || null });
+          }
         } else {
           const cart = JSON.parse(localStorage.getItem("cartItems") || "[]");
           const lastItem = cart.length > 0 ? cart[cart.length - 1] : null;
@@ -860,7 +896,16 @@ export default function MyCardsPage() {
 
             {/* ── LEFT column ── */}
             <div className="flex flex-col gap-5">
-              <PhysicalCardSection customization={customization} productImages={productImages} profile={profile} onReorder={handleReorder} onLock={handleLock} />
+              <PhysicalCardSection
+                customization={customization}
+                productImages={productImages}
+                profile={profile}
+                onReorder={handleReorder}
+                onLock={handleLock}
+                designMethod={designMethod}
+                uploadedFrontDesign={uploadedFrontDesign}
+                uploadedBackDesign={uploadedBackDesign}
+              />
               <OrderDetailsSection order={latestOrder} />
             </div>
 

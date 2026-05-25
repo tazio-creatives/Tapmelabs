@@ -44,32 +44,29 @@ export default function ProductCards() {
   }, []);
 
   return (
-    <section id="products" className="bg-white px-4 py-16 sm:px-6 lg:px-8">
+    <section id="products" className="bg-white px-4 py-10 sm:px-6 sm:py-12 lg:px-8">
       <div className="mx-auto max-w-6xl">
-        <ScrollReveal className="text-center">
-          <span className="inline-flex items-center rounded-full border border-[#E6E6E6] bg-white px-[25px] py-2 text-xs font-medium text-gray-500">
+        <ScrollReveal className="mb-8 text-center">
+          <p className="mb-3 text-[12px] font-bold uppercase tracking-[0.18em] text-[#28DC4F]">
             Products
-          </span>
-
-          <h2 className="mt-5 text-[36px] font-semibold leading-tight text-[#111827]">
+          </p>
+          <h2 className="text-[26px] font-extrabold text-[#111827] sm:text-[32px]">
             Choose Your Card
           </h2>
-
-          <p className="mx-auto mt-3 max-w-xl text-[14px] leading-6 text-[#6B7280]">
+          <p className="mx-auto mt-2 max-w-xs text-[14px] text-[#9CA3AF]">
             Select the material and finish that matches your brand.
           </p>
         </ScrollReveal>
 
         {/* 4-column grid matching Figma — 285px cards with 20px gaps */}
-        <div className="mt-10 grid grid-cols-1 gap-5 sm:grid-cols-2 xl:grid-cols-4">
-          {loading ? (
-            Array.from({ length: 4 }).map((_, i) => <SkeletonCard key={i} />)
-          ) : products.length === 0 ? (
+        <div className="grid grid-cols-2 gap-4 sm:gap-5 lg:grid-cols-4">
+          {loading && Array.from({ length: 4 }).map((_, i) => <SkeletonCard key={`skel-${i}`} />)}
+          {!loading && products.length === 0 && (
             <div className="col-span-4 py-16 text-center text-[14px] text-[#6B7280]">
               No products available yet. Check back soon.
             </div>
-          ) : (
-            products.map((product, index) => {
+          )}
+          {!loading && products.length > 0 && products.map((product, index) => {
               const image         = getImageUrl(product.images);
               const salePrice     = product.sale_price != null ? formatPrice(product.sale_price) : null;
               const regularPrice  = formatPrice(product.price);
@@ -131,8 +128,7 @@ export default function ProductCards() {
                   </div>
                 </ScrollReveal>
               );
-            })
-          )}
+            })}
         </div>
       </div>
     </section>

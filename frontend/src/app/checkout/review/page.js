@@ -144,11 +144,21 @@ export default function CheckoutReviewPage() {
         pincode:   address.pincode.trim(),
       };
 
+      const card_customization = checkoutItem.design_method === "upload_own_design"
+        ? {
+            design_method:          "upload_own_design",
+            uploaded_front_design:  checkoutItem.uploaded_front_design ?? null,
+            uploaded_back_design:   checkoutItem.uploaded_back_design  ?? null,
+          }
+        : checkoutItem.customization
+          ? { design_method: "customize_online", ...checkoutItem.customization }
+          : null;
+
       const result = await orderService.createOrder({
-        product_id:         checkoutItem.productId,
-        total_amount:       total,
+        product_id:   checkoutItem.productId,
+        total_amount: total,
         shipping_address,
-        card_customization: checkoutItem.customization ?? null,
+        card_customization,
       });
 
       localStorage.setItem("currentOrder", JSON.stringify(result.data?.order ?? result));

@@ -48,6 +48,9 @@ export default function CustomersPage() {
   const [selected, setSelected]     = useState(null);
   const [detailLoading, setDetailLoading] = useState(false);
   const [detailError, setDetailError]     = useState("");
+  const [deleteTarget, setDeleteTarget]   = useState(null);
+  const [deleting, setDeleting]           = useState(false);
+  const [deleteError, setDeleteError]     = useState("");
 
   useEffect(() => {
     async function fetchCustomers() {
@@ -77,6 +80,22 @@ export default function CustomersPage() {
       setSelected(customer);
     } finally {
       setDetailLoading(false);
+    }
+  }
+
+  async function confirmDelete() {
+    if (!deleteTarget) return;
+    setDeleting(true);
+    setDeleteError("");
+    try {
+      await customerService.deleteCustomer(deleteTarget.id);
+      setCustomers((prev) => prev.filter((c) => c.id !== deleteTarget.id));
+      setDeleteTarget(null);
+      if (selected?.id === deleteTarget.id) setSelected(null);
+    } catch (err) {
+      setDeleteError(err.response?.data?.message || "Failed to delete customer.");
+    } finally {
+      setDeleting(false);
     }
   }
 
@@ -163,11 +182,9 @@ export default function CustomersPage() {
                           className="rounded-md px-2.5 py-1 text-[11px] font-medium text-slate-600 hover:bg-slate-100">
                           View
                         </button>
-                        {/* TODO: Implement block/unblock customer via PUT /api/admin/customers/:id/block
-                            Update user.status to "blocked" and show reason modal */}
-                        <button disabled
-                          className="rounded-md px-2.5 py-1 text-[11px] font-medium text-red-300 cursor-not-allowed">
-                          Block
+                        <button onClick={() => { setDeleteError(""); setDeleteTarget(c); }}
+                          className="rounded-md px-2.5 py-1 text-[11px] font-medium text-red-500 hover:bg-red-50 transition-colors">
+                          Delete
                         </button>
                       </div>
                     </td>
@@ -178,6 +195,46 @@ export default function CustomersPage() {
           </div>
         </div>
       </div>
+
+      {/* ── Delete confirmation modal ── */}
+      {deleteTarget && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center px-4">
+          <div className="absolute inset-0 bg-black/40" onClick={() => !deleting && setDeleteTarget(null)} />
+          <div className="relative z-10 w-full max-w-[380px] rounded-xl bg-white p-6 shadow-xl" style={{ border: "1px solid #E2E8F0" }}>
+            <div className="mb-4 flex h-11 w-11 items-center justify-center rounded-full" style={{ background: "#FEE2E2" }}>
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#DC2626" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/>
+              </svg>
+            </div>
+            <h3 className="mb-1 text-[15px] font-semibold text-slate-800">Delete Customer</h3>
+            <p className="mb-1 text-[13px] text-slate-500">
+              Are you sure you want to permanently delete <span className="font-semibold text-slate-700">{deleteTarget.full_name}</span>?
+            </p>
+            <p className="mb-5 text-[12px] text-red-500">This will delete their account, profile, and all associated data. This cannot be undone.</p>
+            {deleteError && (
+              <div className="mb-4 rounded-lg bg-red-50 px-3 py-2 text-[12px] text-red-600" style={{ border: "1px solid #FECACA" }}>
+                {deleteError}
+              </div>
+            )}
+            <div className="flex gap-3">
+              <button
+                onClick={() => setDeleteTarget(null)}
+                disabled={deleting}
+                className="flex flex-1 items-center justify-center rounded-lg py-2.5 text-[13px] font-medium text-slate-600 transition-colors hover:bg-slate-50 disabled:opacity-50"
+                style={{ border: "1px solid #E2E8F0" }}>
+                Cancel
+              </button>
+              <button
+                onClick={confirmDelete}
+                disabled={deleting}
+                className="flex flex-1 items-center justify-center rounded-lg py-2.5 text-[13px] font-semibold text-white transition-opacity hover:opacity-90 disabled:opacity-60"
+                style={{ background: "#DC2626" }}>
+                {deleting ? "Deleting…" : "Delete"}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* ── Customer detail drawer ── */}
       {selected && (

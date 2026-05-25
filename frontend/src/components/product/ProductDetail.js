@@ -42,7 +42,6 @@ const LOGO_PLACEMENTS = [
 ];
 
 function getLogoStyle(placement, size = 44) {
-  // Convert px slider value (20-80) to % of card width (8-22%)
   const pct = Math.round((size / 80) * 14) + 8;
   const base = {
     position: "absolute",
@@ -126,7 +125,6 @@ function FrontCardPreview({ bg, name, subTitle, logoDataUrl, logoPlacement, logo
         />
       )}
 
-      {/* Decorative rings — bottom-right (sized as % of card width) */}
       {["33%", "50%", "66%"].map((sz, i) => (
         <div
           key={i}
@@ -139,7 +137,6 @@ function FrontCardPreview({ bg, name, subTitle, logoDataUrl, logoPlacement, logo
         />
       ))}
 
-      {/* Top-left: TapMe branding — hidden when logo is placed top-left */}
       {!(logoDataUrl && logoPlacement === "top-left") && (
         <div style={{ position: "absolute", left: "4%", top: "8%", display: "flex", alignItems: "center", gap: "3%" }}>
           <svg style={{ width: "5.5cqw", height: "5.5cqw" }} viewBox="0 0 40 40" fill="none">
@@ -156,13 +153,11 @@ function FrontCardPreview({ bg, name, subTitle, logoDataUrl, logoPlacement, logo
         </div>
       )}
 
-      {/* Customer logo — percentage-positioned at selected placement */}
       {logoDataUrl && (
         // eslint-disable-next-line @next/next/no-img-element
         <img src={logoDataUrl} alt="Logo" style={getLogoStyle(logoPlacement ?? "top-left", logoSize ?? 44)} />
       )}
 
-      {/* Top-right: NFC icon */}
       <div style={{ position: "absolute", right: "4%", top: "8%" }}>
         <svg style={{ width: "5cqw", height: "5cqw" }} viewBox="0 0 20 20" fill="none">
           <circle cx="10" cy="16" r="1.5" fill={arc} />
@@ -171,7 +166,6 @@ function FrontCardPreview({ bg, name, subTitle, logoDataUrl, logoPlacement, logo
         </svg>
       </div>
 
-      {/* Bottom-left: name + subtitle */}
       <div style={{ position: "absolute", bottom: "12%", left: "5%", right: "30%", overflow: "hidden" }}>
         <p style={{ color: tc, fontSize: "clamp(7px, 3.5cqw, 18px)", fontWeight: 600, lineHeight: 1.3, margin: 0, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
           {name || "Your Name"}
@@ -181,7 +175,6 @@ function FrontCardPreview({ bg, name, subTitle, logoDataUrl, logoPlacement, logo
         </p>
       </div>
 
-      {/* Bottom-right: tiny data-matrix placeholder */}
       <div style={{ position: "absolute", bottom: "8%", right: "4%", width: "8%", aspectRatio: "1", opacity: 0.18 }}>
         <svg viewBox="0 0 22 22" fill="none" style={{ width: "100%", height: "100%" }}>
           <rect x="0.5"  y="0.5"  width="9" height="9" rx="1" stroke={dm} strokeWidth="1" fill="none" />
@@ -339,13 +332,11 @@ function BackSideCardPreview({ backContent, bg, backLogoDataUrl, backLogoPlaceme
         ...bgStyle,
       }}
     >
-      {/* Subtle green radial glow */}
       <div
         className="pointer-events-none absolute inset-0"
         style={{ background: "radial-gradient(ellipse at 80% 20%,rgba(40,220,79,0.10) 0%,transparent 55%)" }}
       />
 
-      {/* Decorative concentric circles — bottom-left (percentage-based) */}
       {["53%", "73%", "93%"].map((sz, i) => (
         <div
           key={i}
@@ -358,7 +349,6 @@ function BackSideCardPreview({ backContent, bg, backLogoDataUrl, backLogoPlaceme
         />
       ))}
 
-      {/* NFC icon — top-right */}
       <div style={{ position: "absolute", right: "4%", top: "8%" }}>
         <svg style={{ width: "5cqw", height: "5cqw" }} viewBox="0 0 20 20" fill="none">
           <circle cx="10" cy="16" r="1.5" fill="rgba(255,255,255,0.25)" />
@@ -367,28 +357,19 @@ function BackSideCardPreview({ backContent, bg, backLogoDataUrl, backLogoPlaceme
         </svg>
       </div>
 
-      {/* Thin horizontal rule */}
       <div
         className="pointer-events-none absolute left-0 right-0"
         style={{ bottom: "16%", height: "1px", background: "rgba(255,255,255,0.06)" }}
       />
 
-      {/* Center content */}
       <div className="absolute inset-0 flex flex-col items-center justify-center gap-[3%]">
         {backContent === "qr" ? (
           <>
-            {/* QR box: 28% of card width, square */}
             <div
               style={{
-                width: "28%",
-                aspectRatio: "1",
-                background: "white",
-                borderRadius: "6px",
-                padding: "4%",
-                boxSizing: "border-box",
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
+                width: "28%", aspectRatio: "1", background: "white",
+                borderRadius: "6px", padding: "4%", boxSizing: "border-box",
+                display: "flex", alignItems: "center", justifyContent: "center",
               }}
             >
               <svg viewBox="0 0 22 22" fill="none" style={{ width: "100%", height: "100%" }}>
@@ -447,7 +428,7 @@ function StarRating({ rating }) {
   );
 }
 
-/* ─── upload zone ────────────────────────────────────────────── */
+/* ─── logo upload zone ───────────────────────────────────────── */
 
 function UploadZone({ file, onChange }) {
   const [dragOver, setDragOver] = useState(false);
@@ -492,11 +473,140 @@ function UploadZone({ file, onChange }) {
   );
 }
 
+/* ─── design upload zone ─────────────────────────────────────── */
+
+function DesignUploadZone({ label, file, onChange, preview, required = false, error }) {
+  const [dragOver, setDragOver] = useState(false);
+  const ref = useRef(null);
+  const isImage = file && (
+    file.type?.startsWith("image/") ||
+    /\.(png|jpg|jpeg|svg)$/i.test(file.name ?? "")
+  );
+
+  if (preview && isImage) {
+    return (
+      <div className="flex flex-col gap-[6px]">
+        <div className="flex items-center gap-1">
+          <span className="text-[15px] font-medium text-black">{label}</span>
+          {required
+            ? <span className="text-[#EF4444]">*</span>
+            : <span className="ml-1 text-[11px] text-[#9CA3AF]">(optional)</span>}
+        </div>
+        <div
+          className="relative overflow-hidden rounded-[12px]"
+          style={{ aspectRatio: "5/3", border: "1px solid #F0F0F0", background: "#111" }}
+        >
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img src={preview} alt={label} style={{ width: "100%", height: "100%", objectFit: "contain" }} />
+          <button
+            onClick={() => onChange(null)}
+            className="absolute right-2 top-2 flex h-7 w-7 items-center justify-center rounded-full bg-white shadow"
+            style={{ border: "1px solid #F0F0F0", color: "#EF4444" }}
+          >
+            <svg width="10" height="10" viewBox="0 0 10 10" fill="none">
+              <path d="M1 1l8 8M9 1L1 9" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" />
+            </svg>
+          </button>
+          <div
+            className="absolute bottom-2 left-2 max-w-[80%] truncate rounded-full bg-white px-2 py-0.5 text-[10px] font-medium text-[#6B7280] shadow"
+            style={{ border: "1px solid #F0F0F0" }}
+          >
+            {file.name}
+          </div>
+        </div>
+        {error && <p className="text-[12px] text-[#EF4444]">{error}</p>}
+      </div>
+    );
+  }
+
+  if (file && !isImage) {
+    return (
+      <div className="flex flex-col gap-[6px]">
+        <div className="flex items-center gap-1">
+          <span className="text-[15px] font-medium text-black">{label}</span>
+          {required
+            ? <span className="text-[#EF4444]">*</span>
+            : <span className="ml-1 text-[11px] text-[#9CA3AF]">(optional)</span>}
+        </div>
+        <div
+          className="flex items-center gap-3 rounded-[10px] px-4 py-3"
+          style={{ background: "#FAFAFA", border: "1px solid #F4F4F4" }}
+        >
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#6B7280" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+            <polyline points="14 2 14 8 20 8" />
+          </svg>
+          <div className="flex-1 overflow-hidden">
+            <p className="truncate text-[13px] font-medium text-[#111827]">{file.name}</p>
+            <p className="text-[11px] text-[#9CA3AF]">{(file.size / 1024 / 1024).toFixed(2)} MB</p>
+          </div>
+          <button onClick={() => onChange(null)} className="shrink-0 text-[12px] font-medium text-[#EF4444]">
+            Remove
+          </button>
+        </div>
+        {error && <p className="text-[12px] text-[#EF4444]">{error}</p>}
+      </div>
+    );
+  }
+
+  return (
+    <div className="flex flex-col gap-[6px]">
+      <div className="flex items-center gap-1">
+        <span className="text-[15px] font-medium text-black">{label}</span>
+        {required
+          ? <span className="text-[#EF4444]">*</span>
+          : <span className="ml-1 text-[11px] text-[#9CA3AF]">(optional)</span>}
+      </div>
+      <div
+        onDragOver={(e) => { e.preventDefault(); setDragOver(true); }}
+        onDragLeave={() => setDragOver(false)}
+        onDrop={(e) => {
+          e.preventDefault();
+          setDragOver(false);
+          const f = e.dataTransfer.files[0];
+          if (f) onChange(f);
+        }}
+        onClick={() => ref.current?.click()}
+        className="flex cursor-pointer flex-col items-center justify-center gap-2 rounded-[10px] py-8 transition-colors"
+        style={{
+          background: dragOver ? "#F0FFF4" : "#FAFAFA",
+          border: `1.5px dashed ${error ? "#EF4444" : dragOver ? "#28DC4F" : "#D1D5DB"}`,
+          minHeight: "120px",
+        }}
+      >
+        <div className="text-[#9CA3AF]"><UploadIcon /></div>
+        <p className="text-[14px] font-medium text-[#111827]">Click or drag to upload</p>
+        <p className="px-6 text-center text-[11px] text-[#9CA3AF]">JPG, PNG, PDF, SVG · Max 20 MB</p>
+        <input
+          ref={ref}
+          type="file"
+          accept=".jpg,.jpeg,.png,.pdf,.svg,image/jpeg,image/png,application/pdf,image/svg+xml"
+          className="hidden"
+          onChange={(e) => {
+            onChange(e.target.files?.[0] ?? null);
+            e.target.value = "";
+          }}
+        />
+      </div>
+      {error && <p className="text-[12px] text-[#EF4444]">{error}</p>}
+    </div>
+  );
+}
+
 /* ─── main component ─────────────────────────────────────────── */
 
 export default function ProductDetail({ product }) {
   const router = useRouter();
   const [activeTab, setActiveTab] = useState("front");
+
+  /* design method */
+  const [designMethod, setDesignMethod] = useState("customize_online");
+
+  /* uploaded design files (upload_own_design) */
+  const [uploadedFrontFile, setUploadedFrontFile] = useState(null);
+  const [uploadedBackFile,  setUploadedBackFile]  = useState(null);
+  const [uploadedFrontDataUrl, setUploadedFrontDataUrl] = useState(null);
+  const [uploadedBackDataUrl,  setUploadedBackDataUrl]  = useState(null);
 
   /* front-side state */
   const [name, setName] = useState("");
@@ -509,7 +619,7 @@ export default function ProductDetail({ product }) {
   const [backContent, setBackContent] = useState("logo");
   const [backLogoFile, setBackLogoFile] = useState(null);
 
-  /* logo data URLs — read via FileReader so they survive page navigation */
+  /* logo data URLs */
   const [logoDataUrl,     setLogoDataUrl]     = useState(null);
   const [backLogoDataUrl, setBackLogoDataUrl] = useState(null);
 
@@ -527,13 +637,27 @@ export default function ProductDetail({ product }) {
     reader.readAsDataURL(backLogoFile);
   }, [backLogoFile]);
 
-  /* logo placement (9-position grid) and size */
+  useEffect(() => {
+    if (!uploadedFrontFile) { setUploadedFrontDataUrl(null); return; }
+    const reader = new FileReader();
+    reader.onload = (e) => setUploadedFrontDataUrl(e.target.result);
+    reader.readAsDataURL(uploadedFrontFile);
+  }, [uploadedFrontFile]);
+
+  useEffect(() => {
+    if (!uploadedBackFile) { setUploadedBackDataUrl(null); return; }
+    const reader = new FileReader();
+    reader.onload = (e) => setUploadedBackDataUrl(e.target.result);
+    reader.readAsDataURL(uploadedBackFile);
+  }, [uploadedBackFile]);
+
+  /* logo placement and size */
   const [logoPlacement,     setLogoPlacement]     = useState("top-left");
   const [backLogoPlacement, setBackLogoPlacement] = useState("center");
   const [logoSize,          setLogoSize]          = useState(44);
   const [backLogoSize,      setBackLogoSize]      = useState(44);
 
-  /* QR code foreground color (back side) */
+  /* QR code foreground color */
   const [qrFgColor, setQrFgColor] = useState("#18181B");
 
   /* Front-side optional QR code */
@@ -541,14 +665,14 @@ export default function ProductDetail({ product }) {
   const [frontQrPlacement, setFrontQrPlacement] = useState("bottom-right");
   const [frontQrColor,     setFrontQrColor]     = useState("#18181B");
 
-  /* Card & font colour customization (only when product.allowColorCustomization) */
+  /* Card & font colour customization */
   const [cardColor, setCardColor] = useState("#18181B");
   const [fontColor, setFontColor] = useState("#FFFFFF");
 
   /* form validation errors */
   const [errors, setErrors] = useState({});
 
-  /* background — fixed default, no UI picker */
+  /* background — fixed default */
   const frontBg = DEFAULT_BG;
   const backBg  = DEFAULT_BG;
 
@@ -556,8 +680,12 @@ export default function ProductDetail({ product }) {
 
   function validate() {
     const errs = {};
-    if (!name.trim()) errs.name = "Name is required.";
-    if (!subTitle.trim()) errs.subTitle = "Sub Title is required.";
+    if (designMethod === "customize_online") {
+      if (!name.trim()) errs.name = "Name is required.";
+      if (!subTitle.trim()) errs.subTitle = "Sub Title is required.";
+    } else {
+      if (!uploadedFrontDataUrl) errs.uploadedFront = "Please upload your front design.";
+    }
     return errs;
   }
 
@@ -565,10 +693,11 @@ export default function ProductDetail({ product }) {
     const errs = validate();
     if (Object.keys(errs).length > 0) {
       setErrors(errs);
-      if (isBack) setActiveTab("front");
+      if (designMethod === "customize_online" && errs.name && isBack) setActiveTab("front");
       return;
     }
     setErrors({});
+
     const checkoutItem = {
       id:           Date.now().toString(),
       productId:    product.id,
@@ -579,7 +708,8 @@ export default function ProductDetail({ product }) {
       back_image:   product.back_image   || null,
       rawPrice:     product.rawPrice,
       rawSalePrice: product.rawSalePrice,
-      customization: {
+      design_method: designMethod,
+      customization: designMethod === "customize_online" ? {
         name,
         subTitle,
         moreDetails,
@@ -599,7 +729,9 @@ export default function ProductDetail({ product }) {
         backLogoPlacement,
         backLogoSize,
         qrFgColor,
-      },
+      } : null,
+      uploaded_front_design: designMethod === "upload_own_design" ? (uploadedFrontDataUrl || null) : null,
+      uploaded_back_design:  designMethod === "upload_own_design" ? (uploadedBackDataUrl  || null) : null,
       addedAt: new Date().toISOString(),
     };
 
@@ -636,70 +768,104 @@ export default function ProductDetail({ product }) {
 
             {/* Card image area */}
             <div className="overflow-hidden rounded-[20px] bg-[#F5F5F5]">
-              {/* ── Mockup preview ── */}
+
+              {/* Mockup / uploaded design preview */}
               <div className="px-6 py-8">
-                {(() => {
-                  const frontSrc = product.front_image || product.images?.[0] || null;
-                  const backSrc  = product.back_image  || product.images?.[1] || product.images?.[0] || null;
-                  const activeSrc = isBack ? backSrc : frontSrc;
-
-                  if (activeSrc) {
-                    return (
-                      <CardMockupOverlay
-                        mockupSrc={activeSrc}
-                        alt={`${product.name} — ${isBack ? "back" : "front"}`}
-                        side={isBack ? "back" : "front"}
-                        customization={{
-                          name,
-                          subTitle,
-                          logoDataUrl,
-                          logoPlacement,
-                          logoSize,
-                          frontQrEnabled,
-                          frontQrPlacement,
-                          frontQrColor,
-                          cardColor: product.allowColorCustomization ? cardColor : null,
-                          fontColor: product.allowColorCustomization ? fontColor : null,
-                          backContent,
-                          backLogoDataUrl,
-                          backLogoPlacement,
-                          backLogoSize,
-                          qrFgColor,
-                        }}
-                      />
-                    );
-                  }
-
-                  // Fallback: dynamic card preview (no uploaded mockup)
-                  return (
-                    <div style={{ perspective: "1200px" }}>
-                      <div
-                        style={{
-                          position: "relative",
-                          width: "100%",
-                          maxWidth: "420px",
-                          margin: "0 auto",
-                          aspectRatio: "460 / 276",
-                          transformStyle: "preserve-3d",
-                          transition: "transform 0.65s cubic-bezier(0.4,0,0.2,1)",
-                          transform: isBack ? "rotateY(180deg)" : "rotateY(0deg)",
-                        }}
-                      >
-                        <div style={{ position: "absolute", inset: 0, backfaceVisibility: "hidden", WebkitBackfaceVisibility: "hidden", display: "flex", alignItems: "center", justifyContent: "center" }}>
-                          <FrontCardPreview
-                            bg={product.allowColorCustomization ? { type: "solid", color: cardColor } : frontBg}
-                            name={name} subTitle={subTitle}
-                            logoDataUrl={logoDataUrl} logoPlacement={logoPlacement} logoSize={logoSize}
-                            fontColor={product.allowColorCustomization ? fontColor : null}
+                {designMethod === "upload_own_design" ? (
+                  (() => {
+                    const src = isBack ? uploadedBackDataUrl : uploadedFrontDataUrl;
+                    if (src) {
+                      return (
+                        <div
+                          className="overflow-hidden rounded-[14px] shadow-xl"
+                          style={{ aspectRatio: "5/3", background: "#111" }}
+                        >
+                          {/* eslint-disable-next-line @next/next/no-img-element */}
+                          <img
+                            src={src}
+                            alt={isBack ? "Back design" : "Front design"}
+                            style={{ width: "100%", height: "100%", objectFit: "contain" }}
                           />
                         </div>
-                        <div style={{ position: "absolute", inset: 0, backfaceVisibility: "hidden", WebkitBackfaceVisibility: "hidden", transform: "rotateY(180deg)", display: "flex", alignItems: "center", justifyContent: "center" }}>
-                          <BackSideCardPreview backContent={backContent} bg={backBg} backLogoDataUrl={backLogoDataUrl} backLogoPlacement={backLogoPlacement} backLogoSize={backLogoSize} qrFgColor={qrFgColor} />
+                      );
+                    }
+                    return (
+                      <div
+                        className="flex flex-col items-center justify-center rounded-[14px]"
+                        style={{ aspectRatio: "5/3", background: "#EBEBEB", border: "2px dashed #D1D5DB" }}
+                      >
+                        <div className="text-center text-[#9CA3AF]">
+                          <div className="mb-2 flex justify-center"><UploadIcon /></div>
+                          <p className="text-[13px]">
+                            {isBack ? "Back design not uploaded yet" : "Upload your front design →"}
+                          </p>
                         </div>
                       </div>
-                    </div>
-                  );
-                })()}
+                    );
+                  })()
+                ) : (
+                  (() => {
+                    const frontSrc = product.front_image || product.images?.[0] || null;
+                    const backSrc  = product.back_image  || product.images?.[1] || product.images?.[0] || null;
+                    const activeSrc = isBack ? backSrc : frontSrc;
+
+                    if (activeSrc) {
+                      return (
+                        <CardMockupOverlay
+                          mockupSrc={activeSrc}
+                          alt={`${product.name} — ${isBack ? "back" : "front"}`}
+                          side={isBack ? "back" : "front"}
+                          customization={{
+                            name,
+                            subTitle,
+                            logoDataUrl,
+                            logoPlacement,
+                            logoSize,
+                            frontQrEnabled,
+                            frontQrPlacement,
+                            frontQrColor,
+                            cardColor: product.allowColorCustomization ? cardColor : null,
+                            fontColor: product.allowColorCustomization ? fontColor : null,
+                            backContent,
+                            backLogoDataUrl,
+                            backLogoPlacement,
+                            backLogoSize,
+                            qrFgColor,
+                          }}
+                        />
+                      );
+                    }
+
+                    return (
+                      <div style={{ perspective: "1200px" }}>
+                        <div
+                          style={{
+                            position: "relative",
+                            width: "100%",
+                            maxWidth: "420px",
+                            margin: "0 auto",
+                            aspectRatio: "460 / 276",
+                            transformStyle: "preserve-3d",
+                            transition: "transform 0.65s cubic-bezier(0.4,0,0.2,1)",
+                            transform: isBack ? "rotateY(180deg)" : "rotateY(0deg)",
+                          }}
+                        >
+                          <div style={{ position: "absolute", inset: 0, backfaceVisibility: "hidden", WebkitBackfaceVisibility: "hidden", display: "flex", alignItems: "center", justifyContent: "center" }}>
+                            <FrontCardPreview
+                              bg={product.allowColorCustomization ? { type: "solid", color: cardColor } : frontBg}
+                              name={name} subTitle={subTitle}
+                              logoDataUrl={logoDataUrl} logoPlacement={logoPlacement} logoSize={logoSize}
+                              fontColor={product.allowColorCustomization ? fontColor : null}
+                            />
+                          </div>
+                          <div style={{ position: "absolute", inset: 0, backfaceVisibility: "hidden", WebkitBackfaceVisibility: "hidden", transform: "rotateY(180deg)", display: "flex", alignItems: "center", justifyContent: "center" }}>
+                            <BackSideCardPreview backContent={backContent} bg={backBg} backLogoDataUrl={backLogoDataUrl} backLogoPlacement={backLogoPlacement} backLogoSize={backLogoSize} qrFgColor={qrFgColor} />
+                          </div>
+                        </div>
+                      </div>
+                    );
+                  })()
+                )}
               </div>
 
               {/* Front / Back tabs */}
@@ -814,85 +980,318 @@ export default function ProductDetail({ product }) {
           {/* ── RIGHT COLUMN ── */}
           <div className="flex flex-1 flex-col gap-4">
 
-            <div style={{ position: "relative" }}>
+            {/* Design method selector */}
+            <div className="rounded-[16px] border border-[#F0F0F0] bg-white p-6 shadow-sm">
+              <p className="mb-3 text-[15px] font-semibold text-[#111827]">How do you want to design your card?</p>
+              <div className="flex flex-col gap-1 rounded-[10px] p-1" style={{ background: "#FAFAFA", border: "1px solid #F4F4F4" }}>
+                {[
+                  { value: "customize_online",  label: "Customize Online",    desc: "Use our built-in editor to personalise your card" },
+                  { value: "upload_own_design",  label: "Upload My Own Design", desc: "Upload your own print-ready artwork file" },
+                ].map(({ value, label, desc }) => (
+                  <button
+                    key={value}
+                    onClick={() => { setDesignMethod(value); setErrors({}); }}
+                    className="flex items-start gap-3 rounded-[8px] px-3 py-[10px] text-left transition-colors"
+                    style={{ background: designMethod === value ? "#fff" : "transparent" }}
+                  >
+                    <div
+                      className="mt-[3px] flex h-[18px] w-[18px] shrink-0 items-center justify-center rounded-full border-2 transition-colors"
+                      style={{ borderColor: designMethod === value ? "#28DC4F" : "#D1D5DB" }}
+                    >
+                      {designMethod === value && <div className="h-[8px] w-[8px] rounded-full bg-[#28DC4F]" />}
+                    </div>
+                    <div>
+                      <p className="text-[14px] font-semibold text-[#1E1E1E]">{label}</p>
+                      <p className="mt-0.5 text-[12px] text-[#9CA3AF]">{desc}</p>
+                    </div>
+                  </button>
+                ))}
+              </div>
+            </div>
 
-              {/* ── FRONT SIDE FORM ── */}
-              <div
-                className="rounded-[16px] border border-[#F0F0F0] bg-white p-6 shadow-sm transition-all duration-500"
-                style={{
-                  position:      isBack ? "absolute" : "relative",
-                  width:         "100%",
-                  top:           0,
-                  opacity:       isBack ? 0 : 1,
-                  pointerEvents: isBack ? "none" : "auto",
-                  transform:     isBack ? "translateX(-12px)" : "translateX(0)",
-                  visibility:    isBack ? "hidden" : "visible",
-                }}
-              >
-                <div className="flex flex-col gap-4">
+            {/* ── CUSTOMIZE ONLINE FORMS ── */}
+            {designMethod === "customize_online" && (
+              <div style={{ position: "relative" }}>
 
-                  {/* Card & font colour — shown only when admin enabled it */}
-                  {product.allowColorCustomization && (
-                    <div className="flex flex-col gap-4 rounded-[12px] border border-[#F4F4F4] bg-[#FAFAFA] p-4">
+                {/* FRONT SIDE FORM */}
+                <div
+                  className="rounded-[16px] border border-[#F0F0F0] bg-white p-6 shadow-sm transition-all duration-500"
+                  style={{
+                    position:      isBack ? "absolute" : "relative",
+                    width:         "100%",
+                    top:           0,
+                    opacity:       isBack ? 0 : 1,
+                    pointerEvents: isBack ? "none" : "auto",
+                    transform:     isBack ? "translateX(-12px)" : "translateX(0)",
+                    visibility:    isBack ? "hidden" : "visible",
+                  }}
+                >
+                  <div className="flex flex-col gap-4">
 
-                      {/* Card Colour */}
-                      {(() => {
-                        const isCustomCard = !CARD_COLORS.some((cc) => cc.color.toLowerCase() === cardColor.toLowerCase());
-                        return (
-                          <div className="flex flex-col gap-2">
-                            <div className="flex items-center justify-between">
-                              <p className="text-[15px] font-semibold text-black">Card Colour</p>
-                              {/* Custom colour picker */}
-                              <label
-                                title="Pick a custom card colour"
-                                className="flex cursor-pointer items-center gap-[6px] rounded-[8px] border px-2 py-1 transition-colors hover:bg-[#F0F0F0]"
-                                style={{
-                                  borderColor: isCustomCard ? "#28DC4F" : "#EBEBEB",
-                                  background:  isCustomCard ? "#F0FFF4" : "transparent",
-                                }}
-                              >
-                                {/* Live swatch of current custom colour */}
-                                <span
-                                  className="inline-block h-4 w-4 rounded-[4px] border border-black/10"
-                                  style={{ background: cardColor }}
-                                />
-                                <span className="text-[11px] font-medium text-[#6D6D6D]">
-                                  {isCustomCard ? cardColor.toUpperCase() : "Custom"}
-                                </span>
-                                <input
-                                  type="color"
-                                  value={cardColor}
-                                  onChange={(e) => setCardColor(e.target.value)}
-                                  className="sr-only"
-                                />
-                              </label>
+                    {product.allowColorCustomization && (
+                      <div className="flex flex-col gap-4 rounded-[12px] border border-[#F4F4F4] bg-[#FAFAFA] p-4">
+
+                        {/* Card Colour */}
+                        {(() => {
+                          const isCustomCard = !CARD_COLORS.some((cc) => cc.color.toLowerCase() === cardColor.toLowerCase());
+                          return (
+                            <div className="flex flex-col gap-2">
+                              <div className="flex items-center justify-between">
+                                <p className="text-[15px] font-semibold text-black">Card Colour</p>
+                                <label
+                                  title="Pick a custom card colour"
+                                  className="flex cursor-pointer items-center gap-[6px] rounded-[8px] border px-2 py-1 transition-colors hover:bg-[#F0F0F0]"
+                                  style={{
+                                    borderColor: isCustomCard ? "#28DC4F" : "#EBEBEB",
+                                    background:  isCustomCard ? "#F0FFF4" : "transparent",
+                                  }}
+                                >
+                                  <span
+                                    className="inline-block h-4 w-4 rounded-[4px] border border-black/10"
+                                    style={{ background: cardColor }}
+                                  />
+                                  <span className="text-[11px] font-medium text-[#6D6D6D]">
+                                    {isCustomCard ? cardColor.toUpperCase() : "Custom"}
+                                  </span>
+                                  <input
+                                    type="color"
+                                    value={cardColor}
+                                    onChange={(e) => setCardColor(e.target.value)}
+                                    className="sr-only"
+                                  />
+                                </label>
+                              </div>
+
+                              <div className="grid grid-cols-5 gap-2">
+                                {CARD_COLORS.map((cc) => {
+                                  const selected = cardColor.toLowerCase() === cc.color.toLowerCase();
+                                  const isLight  = cc.color === "#F5F5F5";
+                                  return (
+                                    <button
+                                      key={cc.id}
+                                      type="button"
+                                      title={cc.label}
+                                      onClick={() => {
+                                        setCardColor(cc.color);
+                                        if (cc.color === "#F5F5F5") setFontColor("#18181B");
+                                        else setFontColor("#FFFFFF");
+                                      }}
+                                      className="relative rounded-[8px] transition-all"
+                                      style={{
+                                        height: "36px",
+                                        background: cc.color,
+                                        border: selected ? "2px solid #28DC4F" : "2px solid transparent",
+                                        boxShadow: selected ? "0 0 0 1px #28DC4F" : "0 0 0 1px rgba(0,0,0,0.1)",
+                                      }}
+                                    >
+                                      {selected && (
+                                        <div className="absolute inset-0 flex items-center justify-center">
+                                          <svg width="13" height="13" viewBox="0 0 14 14" fill="none">
+                                            <path d="M2.5 7L5.5 10L11.5 4" stroke={isLight ? "#18181B" : "#fff"} strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
+                                          </svg>
+                                        </div>
+                                      )}
+                                    </button>
+                                  );
+                                })}
+                              </div>
+
+                              <p className="text-[11px] text-[#9CA3AF]">
+                                {isCustomCard
+                                  ? `Custom · ${cardColor.toUpperCase()}`
+                                  : (CARD_COLORS.find((cc) => cc.color.toLowerCase() === cardColor.toLowerCase())?.label ?? "Matte Black")}
+                              </p>
                             </div>
+                          );
+                        })()}
 
+                        {/* Font Colour */}
+                        {(() => {
+                          const isCustomFont = !FONT_COLORS.some((fc) => fc.color.toLowerCase() === fontColor.toLowerCase());
+                          return (
+                            <div className="flex flex-col gap-2">
+                              <div className="flex items-center justify-between">
+                                <p className="text-[14px] font-medium text-black">Text Colour</p>
+                                <label
+                                  title="Pick a custom text colour"
+                                  className="flex cursor-pointer items-center gap-[6px] rounded-[8px] border px-2 py-1 transition-colors hover:bg-[#F0F0F0]"
+                                  style={{
+                                    borderColor: isCustomFont ? "#28DC4F" : "#EBEBEB",
+                                    background:  isCustomFont ? "#F0FFF4" : "transparent",
+                                  }}
+                                >
+                                  <span
+                                    className="inline-block h-4 w-4 rounded-full border border-black/10"
+                                    style={{ background: fontColor }}
+                                  />
+                                  <span className="text-[11px] font-medium text-[#6D6D6D]">
+                                    {isCustomFont ? fontColor.toUpperCase() : "Custom"}
+                                  </span>
+                                  <input
+                                    type="color"
+                                    value={fontColor}
+                                    onChange={(e) => setFontColor(e.target.value)}
+                                    className="sr-only"
+                                  />
+                                </label>
+                              </div>
+
+                              <div className="flex gap-2">
+                                {FONT_COLORS.map((fc) => {
+                                  const selected = fontColor.toLowerCase() === fc.color.toLowerCase();
+                                  const isLight  = ["#ffffff", "#e2e8f0", "#f59e0b"].includes(fc.color.toLowerCase());
+                                  return (
+                                    <button
+                                      key={fc.id}
+                                      type="button"
+                                      title={fc.label}
+                                      onClick={() => setFontColor(fc.color)}
+                                      className="relative h-9 w-9 rounded-full transition-all"
+                                      style={{
+                                        background: fc.color,
+                                        border: selected ? "2px solid #28DC4F" : "2px solid rgba(0,0,0,0.12)",
+                                        boxShadow: selected ? "0 0 0 2px #28DC4F" : "none",
+                                      }}
+                                    >
+                                      {selected && (
+                                        <div className="absolute inset-0 flex items-center justify-center">
+                                          <svg width="12" height="12" viewBox="0 0 14 14" fill="none">
+                                            <path d="M2.5 7L5.5 10L11.5 4" stroke={isLight ? "#18181B" : "#fff"} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+                                          </svg>
+                                        </div>
+                                      )}
+                                    </button>
+                                  );
+                                })}
+                              </div>
+
+                              <p className="text-[11px] text-[#9CA3AF]">
+                                {isCustomFont
+                                  ? `Custom · ${fontColor.toUpperCase()}`
+                                  : (FONT_COLORS.find((fc) => fc.color.toLowerCase() === fontColor.toLowerCase())?.label ?? "White")}
+                              </p>
+                            </div>
+                          );
+                        })()}
+
+                      </div>
+                    )}
+
+                    {[
+                      { label: "Name",         value: name,        setter: setName,        placeholder: "Jane Smith",                                         errorKey: "name"     },
+                      { label: "Sub Title",    value: subTitle,    setter: setSubTitle,    placeholder: "e.g. Phone Number, Job Title or Company Name",        errorKey: "subTitle" },
+                      { label: "More Details", value: moreDetails, setter: setMoreDetails, placeholder: "e.g. Phone Number, Job Title or Company Name",        errorKey: null       },
+                    ].map(({ label, value, setter, placeholder, errorKey }) => (
+                      <div key={label} className="flex flex-col gap-[6px]">
+                        <label className="text-[16px] font-medium text-black">
+                          {label}
+                          {errorKey && <span className="ml-1 text-[#EF4444]">*</span>}
+                        </label>
+                        <div
+                          className="flex items-center rounded-[10px] px-4 py-[10px]"
+                          style={{
+                            background: "#FAFAFA",
+                            border: `1px solid ${errorKey && errors[errorKey] ? "#EF4444" : "#F4F4F4"}`,
+                          }}
+                        >
+                          <input
+                            type="text"
+                            value={value}
+                            onChange={(e) => {
+                              setter(e.target.value);
+                              if (errorKey && errors[errorKey]) setErrors((prev) => ({ ...prev, [errorKey]: "" }));
+                            }}
+                            placeholder={placeholder}
+                            className="w-full bg-transparent text-[14px] text-black outline-none placeholder:text-[#AEAEAE]"
+                          />
+                        </div>
+                        {errorKey && errors[errorKey] && (
+                          <p className="text-[12px] text-[#EF4444]">{errors[errorKey]}</p>
+                        )}
+                      </div>
+                    ))}
+
+                    <UploadZone file={logoFile} onChange={setLogoFile} />
+
+                    {logoDataUrl && (
+                      <div className="flex flex-col gap-3">
+                        <div className="flex items-center gap-3">
+                          {/* eslint-disable-next-line @next/next/no-img-element */}
+                          <img
+                            src={logoDataUrl}
+                            alt="Logo preview"
+                            className="rounded-[8px] border border-[#F0F0F0]"
+                            style={{ height: "48px", maxWidth: "80px", objectFit: "contain" }}
+                          />
+                          <button
+                            onClick={() => { setLogoFile(null); }}
+                            className="rounded-[8px] border border-[#EBEBEB] px-3 py-[6px] text-[12px] font-medium text-[#EF4444] transition-colors hover:border-[#EF4444]"
+                          >
+                            Remove
+                          </button>
+                        </div>
+                        <LogoPlacementPicker value={logoPlacement} onChange={setLogoPlacement} />
+                        <div className="flex items-center gap-3">
+                          <span className="shrink-0 text-[14px] font-medium text-[#1E1E1E]">Logo Size</span>
+                          <input
+                            type="range"
+                            min={20}
+                            max={80}
+                            value={logoSize}
+                            onChange={(e) => setLogoSize(Number(e.target.value))}
+                            className="flex-1 accent-[#28DC4F]"
+                          />
+                          <span className="w-9 text-right text-[12px] text-[#9CA3AF]">{logoSize}px</span>
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Front QR Code (optional) */}
+                    <div className="flex flex-col gap-3 rounded-[12px] border border-[#F4F4F4] bg-[#FAFAFA] p-4">
+                      <button
+                        type="button"
+                        onClick={() => setFrontQrEnabled((v) => !v)}
+                        className="flex items-center justify-between"
+                      >
+                        <div className="flex items-center gap-3">
+                          <div
+                            className="flex h-[18px] w-[18px] shrink-0 items-center justify-center rounded-full border-2 transition-colors"
+                            style={{ borderColor: frontQrEnabled ? "#28DC4F" : "#D1D5DB" }}
+                          >
+                            {frontQrEnabled && <div className="h-[8px] w-[8px] rounded-full bg-[#28DC4F]" />}
+                          </div>
+                          <span className="text-[14px] font-medium text-[#1E1E1E]">Add QR Code on Front</span>
+                        </div>
+                        <span className="text-[11px] font-medium" style={{ color: frontQrEnabled ? "#28DC4F" : "#9CA3AF" }}>
+                          {frontQrEnabled ? "On" : "Off"}
+                        </span>
+                      </button>
+
+                      {frontQrEnabled && (
+                        <div className="flex flex-col gap-3 pt-1">
+                          <div className="flex flex-col gap-2">
+                            <p className="text-[13px] font-medium text-[#1E1E1E]">QR Code Colour</p>
                             <div className="grid grid-cols-5 gap-2">
-                              {CARD_COLORS.map((cc) => {
-                                const selected = cardColor.toLowerCase() === cc.color.toLowerCase();
-                                const isLight  = cc.color === "#F5F5F5";
+                              {QR_COLORS.map((c) => {
+                                const selected = frontQrColor === c.color;
+                                const isLight  = c.color === "#28DC4F";
                                 return (
                                   <button
-                                    key={cc.id}
+                                    key={c.id}
                                     type="button"
-                                    title={cc.label}
-                                    onClick={() => {
-                                      setCardColor(cc.color);
-                                      if (cc.color === "#F5F5F5") setFontColor("#18181B");
-                                      else setFontColor("#FFFFFF");
-                                    }}
+                                    title={c.label}
+                                    onClick={() => setFrontQrColor(c.color)}
                                     className="relative rounded-[8px] transition-all"
                                     style={{
-                                      height: "36px",
-                                      background: cc.color,
+                                      height: "32px",
+                                      background: c.color,
                                       border: selected ? "2px solid #28DC4F" : "2px solid transparent",
-                                      boxShadow: selected ? "0 0 0 1px #28DC4F" : "0 0 0 1px rgba(0,0,0,0.1)",
+                                      boxShadow: selected ? "0 0 0 1px #28DC4F" : "none",
                                     }}
                                   >
                                     {selected && (
                                       <div className="absolute inset-0 flex items-center justify-center">
-                                        <svg width="13" height="13" viewBox="0 0 14 14" fill="none">
+                                        <svg width="12" height="12" viewBox="0 0 14 14" fill="none">
                                           <path d="M2.5 7L5.5 10L11.5 4" stroke={isLight ? "#18181B" : "#fff"} strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
                                         </svg>
                                       </div>
@@ -901,383 +1300,211 @@ export default function ProductDetail({ product }) {
                                 );
                               })}
                             </div>
-
                             <p className="text-[11px] text-[#9CA3AF]">
-                              {isCustomCard
-                                ? `Custom · ${cardColor.toUpperCase()}`
-                                : (CARD_COLORS.find((cc) => cc.color.toLowerCase() === cardColor.toLowerCase())?.label ?? "Matte Black")}
+                              {QR_COLORS.find((c) => c.color === frontQrColor)?.label ?? "Black"}
                             </p>
                           </div>
-                        );
-                      })()}
+                          <LogoPlacementPicker value={frontQrPlacement} onChange={setFrontQrPlacement} label="QR Code Placement" />
+                        </div>
+                      )}
+                    </div>
 
-                      {/* Font Colour */}
-                      {(() => {
-                        const isCustomFont = !FONT_COLORS.some((fc) => fc.color.toLowerCase() === fontColor.toLowerCase());
-                        return (
-                          <div className="flex flex-col gap-2">
-                            <div className="flex items-center justify-between">
-                              <p className="text-[14px] font-medium text-black">Text Colour</p>
-                              {/* Custom colour picker */}
-                              <label
-                                title="Pick a custom text colour"
-                                className="flex cursor-pointer items-center gap-[6px] rounded-[8px] border px-2 py-1 transition-colors hover:bg-[#F0F0F0]"
+                  </div>
+                </div>
+
+                {/* BACK SIDE FORM */}
+                <div
+                  className="rounded-[16px] border border-[#F0F0F0] bg-white p-6 shadow-sm transition-all duration-500"
+                  style={{
+                    position:      isBack ? "relative" : "absolute",
+                    width:         "100%",
+                    top:           0,
+                    opacity:       isBack ? 1 : 0,
+                    pointerEvents: isBack ? "auto" : "none",
+                    transform:     isBack ? "translateX(0)" : "translateX(12px)",
+                    visibility:    isBack ? "visible" : "hidden",
+                  }}
+                >
+                  <div className="flex flex-col gap-3">
+                    <p className="text-[16px] font-medium text-[#1E1E1E]">Choose Back Design</p>
+                    <div className="flex gap-3">
+                      {BACK_DESIGN_OPTIONS.map((opt) => (
+                        <button
+                          key={opt.id}
+                          onClick={() => {
+                            setSelectedBackDesign(opt.id);
+                            setBackContent(opt.id === "qr-only" ? "qr" : "logo");
+                          }}
+                          className="flex flex-col items-center gap-1"
+                        >
+                          <div
+                            className="overflow-hidden rounded-[8px] transition-all"
+                            style={{
+                              width: "90px", height: "56px",
+                              border: selectedBackDesign === opt.id ? "2px solid #28DC4F" : "2px solid #EBEBEB",
+                            }}
+                          >
+                            {opt.preview}
+                          </div>
+                          <span className="text-[12px] font-medium" style={{ color: selectedBackDesign === opt.id ? "#28DC4F" : "#6D6D6D" }}>
+                            {opt.label}
+                          </span>
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+
+                  <div className="my-5 h-px bg-[#F4F4F4]" />
+
+                  <div className="flex flex-col gap-3">
+                    <p className="text-[16px] font-medium text-[#1E1E1E]">Back Content</p>
+
+                    <div className="flex flex-col gap-2 rounded-[10px] p-1" style={{ background: "#FAFAFA", border: "1px solid #F4F4F4" }}>
+                      {[
+                        { value: "logo", label: "Logo" },
+                        { value: "qr",   label: "Place QR Code" },
+                      ].map(({ value, label }) => (
+                        <button
+                          key={value}
+                          onClick={() => setBackContent(value)}
+                          className="flex items-center gap-3 rounded-[8px] px-3 py-[10px] transition-colors"
+                          style={{ background: backContent === value ? "#fff" : "transparent" }}
+                        >
+                          <div
+                            className="flex h-[18px] w-[18px] shrink-0 items-center justify-center rounded-full border-2 transition-colors"
+                            style={{ borderColor: backContent === value ? "#28DC4F" : "#D1D5DB" }}
+                          >
+                            {backContent === value && <div className="h-[8px] w-[8px] rounded-full bg-[#28DC4F]" />}
+                          </div>
+                          <span className="text-[14px] font-normal text-[#1E1E1E]">{label}</span>
+                        </button>
+                      ))}
+                    </div>
+
+                    {backContent === "qr" && (
+                      <div className="flex flex-col gap-2">
+                        <p className="text-[14px] font-medium text-[#1E1E1E]">QR Code Colour</p>
+                        <div className="grid grid-cols-5 gap-2">
+                          {QR_COLORS.map((c) => {
+                            const selected = qrFgColor === c.color;
+                            const isLight  = c.color === "#28DC4F";
+                            return (
+                              <button
+                                key={c.id}
+                                title={c.label}
+                                onClick={() => setQrFgColor(c.color)}
+                                className="relative rounded-[8px] transition-all"
                                 style={{
-                                  borderColor: isCustomFont ? "#28DC4F" : "#EBEBEB",
-                                  background:  isCustomFont ? "#F0FFF4" : "transparent",
+                                  height: "36px",
+                                  background: c.color,
+                                  border: selected ? "2px solid #28DC4F" : "2px solid transparent",
+                                  boxShadow: selected ? "0 0 0 1px #28DC4F" : "none",
                                 }}
                               >
-                                <span
-                                  className="inline-block h-4 w-4 rounded-full border border-black/10"
-                                  style={{ background: fontColor }}
-                                />
-                                <span className="text-[11px] font-medium text-[#6D6D6D]">
-                                  {isCustomFont ? fontColor.toUpperCase() : "Custom"}
-                                </span>
-                                <input
-                                  type="color"
-                                  value={fontColor}
-                                  onChange={(e) => setFontColor(e.target.value)}
-                                  className="sr-only"
-                                />
-                              </label>
-                            </div>
-
-                            <div className="flex gap-2">
-                              {FONT_COLORS.map((fc) => {
-                                const selected = fontColor.toLowerCase() === fc.color.toLowerCase();
-                                const isLight  = ["#ffffff", "#e2e8f0", "#f59e0b"].includes(fc.color.toLowerCase());
-                                return (
-                                  <button
-                                    key={fc.id}
-                                    type="button"
-                                    title={fc.label}
-                                    onClick={() => setFontColor(fc.color)}
-                                    className="relative h-9 w-9 rounded-full transition-all"
-                                    style={{
-                                      background: fc.color,
-                                      border: selected ? "2px solid #28DC4F" : "2px solid rgba(0,0,0,0.12)",
-                                      boxShadow: selected ? "0 0 0 2px #28DC4F" : "none",
-                                    }}
-                                  >
-                                    {selected && (
-                                      <div className="absolute inset-0 flex items-center justify-center">
-                                        <svg width="12" height="12" viewBox="0 0 14 14" fill="none">
-                                          <path d="M2.5 7L5.5 10L11.5 4" stroke={isLight ? "#18181B" : "#fff"} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-                                        </svg>
-                                      </div>
-                                    )}
-                                  </button>
-                                );
-                              })}
-                            </div>
-
-                            <p className="text-[11px] text-[#9CA3AF]">
-                              {isCustomFont
-                                ? `Custom · ${fontColor.toUpperCase()}`
-                                : (FONT_COLORS.find((fc) => fc.color.toLowerCase() === fontColor.toLowerCase())?.label ?? "White")}
-                            </p>
-                          </div>
-                        );
-                      })()}
-
-                    </div>
-                  )}
-
-                  {[
-                    { label: "Name",         value: name,        setter: setName,        placeholder: "Jane Smith",                                         errorKey: "name"     },
-                    { label: "Sub Title",    value: subTitle,    setter: setSubTitle,    placeholder: "e.g. Phone Number, Job Title or Company Name",        errorKey: "subTitle" },
-                    { label: "More Details", value: moreDetails, setter: setMoreDetails, placeholder: "e.g. Phone Number, Job Title or Company Name",        errorKey: null       },
-                  ].map(({ label, value, setter, placeholder, errorKey }) => (
-                    <div key={label} className="flex flex-col gap-[6px]">
-                      <label className="text-[16px] font-medium text-black">
-                        {label}
-                        {errorKey && <span className="ml-1 text-[#EF4444]">*</span>}
-                      </label>
-                      <div
-                        className="flex items-center rounded-[10px] px-4 py-[10px]"
-                        style={{
-                          background: "#FAFAFA",
-                          border: `1px solid ${errorKey && errors[errorKey] ? "#EF4444" : "#F4F4F4"}`,
-                        }}
-                      >
-                        <input
-                          type="text"
-                          value={value}
-                          onChange={(e) => {
-                            setter(e.target.value);
-                            if (errorKey && errors[errorKey]) setErrors((prev) => ({ ...prev, [errorKey]: "" }));
-                          }}
-                          placeholder={placeholder}
-                          className="w-full bg-transparent text-[14px] text-black outline-none placeholder:text-[#AEAEAE]"
-                        />
-                      </div>
-                      {errorKey && errors[errorKey] && (
-                        <p className="text-[12px] text-[#EF4444]">{errors[errorKey]}</p>
-                      )}
-                    </div>
-                  ))}
-
-                  <UploadZone file={logoFile} onChange={setLogoFile} />
-
-                  {/* Logo preview + placement + size */}
-                  {logoDataUrl && (
-                    <div className="flex flex-col gap-3">
-                      <div className="flex items-center gap-3">
-                        {/* eslint-disable-next-line @next/next/no-img-element */}
-                        <img
-                          src={logoDataUrl}
-                          alt="Logo preview"
-                          className="rounded-[8px] border border-[#F0F0F0]"
-                          style={{ height: "48px", maxWidth: "80px", objectFit: "contain" }}
-                        />
-                        <button
-                          onClick={() => { setLogoFile(null); }}
-                          className="rounded-[8px] border border-[#EBEBEB] px-3 py-[6px] text-[12px] font-medium text-[#EF4444] transition-colors hover:border-[#EF4444]"
-                        >
-                          Remove
-                        </button>
-                      </div>
-                      <LogoPlacementPicker value={logoPlacement} onChange={setLogoPlacement} />
-                      <div className="flex items-center gap-3">
-                        <span className="shrink-0 text-[14px] font-medium text-[#1E1E1E]">Logo Size</span>
-                        <input
-                          type="range"
-                          min={20}
-                          max={80}
-                          value={logoSize}
-                          onChange={(e) => setLogoSize(Number(e.target.value))}
-                          className="flex-1 accent-[#28DC4F]"
-                        />
-                        <span className="w-9 text-right text-[12px] text-[#9CA3AF]">{logoSize}px</span>
-                      </div>
-                    </div>
-                  )}
-
-                  {/* ── Front QR Code (optional) ── */}
-                  <div className="flex flex-col gap-3 rounded-[12px] border border-[#F4F4F4] bg-[#FAFAFA] p-4">
-                    {/* Toggle row */}
-                    <button
-                      type="button"
-                      onClick={() => setFrontQrEnabled((v) => !v)}
-                      className="flex items-center justify-between"
-                    >
-                      <div className="flex items-center gap-3">
-                        {/* Radio indicator */}
-                        <div
-                          className="flex h-[18px] w-[18px] shrink-0 items-center justify-center rounded-full border-2 transition-colors"
-                          style={{ borderColor: frontQrEnabled ? "#28DC4F" : "#D1D5DB" }}
-                        >
-                          {frontQrEnabled && <div className="h-[8px] w-[8px] rounded-full bg-[#28DC4F]" />}
+                                {selected && (
+                                  <div className="absolute inset-0 flex items-center justify-center">
+                                    <svg width="13" height="13" viewBox="0 0 14 14" fill="none">
+                                      <path d="M2.5 7L5.5 10L11.5 4" stroke={isLight ? "#18181B" : "#fff"} strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
+                                    </svg>
+                                  </div>
+                                )}
+                              </button>
+                            );
+                          })}
                         </div>
-                        <span className="text-[14px] font-medium text-[#1E1E1E]">Add QR Code on Front</span>
-                      </div>
-                      <span className="text-[11px] font-medium" style={{ color: frontQrEnabled ? "#28DC4F" : "#9CA3AF" }}>
-                        {frontQrEnabled ? "On" : "Off"}
-                      </span>
-                    </button>
-
-                    {/* Sub-options — shown only when enabled */}
-                    {frontQrEnabled && (
-                      <div className="flex flex-col gap-3 pt-1">
-                        {/* QR Colour */}
-                        <div className="flex flex-col gap-2">
-                          <p className="text-[13px] font-medium text-[#1E1E1E]">QR Code Colour</p>
-                          <div className="grid grid-cols-5 gap-2">
-                            {QR_COLORS.map((c) => {
-                              const selected = frontQrColor === c.color;
-                              const isLight  = c.color === "#28DC4F";
-                              return (
-                                <button
-                                  key={c.id}
-                                  type="button"
-                                  title={c.label}
-                                  onClick={() => setFrontQrColor(c.color)}
-                                  className="relative rounded-[8px] transition-all"
-                                  style={{
-                                    height: "32px",
-                                    background: c.color,
-                                    border: selected ? "2px solid #28DC4F" : "2px solid transparent",
-                                    boxShadow: selected ? "0 0 0 1px #28DC4F" : "none",
-                                  }}
-                                >
-                                  {selected && (
-                                    <div className="absolute inset-0 flex items-center justify-center">
-                                      <svg width="12" height="12" viewBox="0 0 14 14" fill="none">
-                                        <path d="M2.5 7L5.5 10L11.5 4" stroke={isLight ? "#18181B" : "#fff"} strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
-                                      </svg>
-                                    </div>
-                                  )}
-                                </button>
-                              );
-                            })}
-                          </div>
-                          <p className="text-[11px] text-[#9CA3AF]">
-                            {QR_COLORS.find((c) => c.color === frontQrColor)?.label ?? "Black"}
-                          </p>
-                        </div>
-
-                        {/* QR Placement */}
-                        <LogoPlacementPicker value={frontQrPlacement} onChange={setFrontQrPlacement} label="QR Code Placement" />
+                        <p className="text-[11px] text-[#9CA3AF]">
+                          {QR_COLORS.find((c) => c.color === qrFgColor)?.label ?? "Black"}
+                        </p>
                       </div>
                     )}
-                  </div>
 
-                </div>
+                    {backContent === "logo" && (
+                      <>
+                        <UploadZone file={backLogoFile} onChange={setBackLogoFile} />
 
-              </div>
-
-              {/* ── BACK SIDE FORM ── */}
-              <div
-                className="rounded-[16px] border border-[#F0F0F0] bg-white p-6 shadow-sm transition-all duration-500"
-                style={{
-                  position:      isBack ? "relative" : "absolute",
-                  width:         "100%",
-                  top:           0,
-                  opacity:       isBack ? 1 : 0,
-                  pointerEvents: isBack ? "auto" : "none",
-                  transform:     isBack ? "translateX(0)" : "translateX(12px)",
-                  visibility:    isBack ? "visible" : "hidden",
-                }}
-              >
-                {/* Choose Back Design */}
-                <div className="flex flex-col gap-3">
-                  <p className="text-[16px] font-medium text-[#1E1E1E]">Choose Back Design</p>
-                  <div className="flex gap-3">
-                    {BACK_DESIGN_OPTIONS.map((opt) => (
-                      <button
-                        key={opt.id}
-                        onClick={() => {
-                          setSelectedBackDesign(opt.id);
-                          setBackContent(opt.id === "qr-only" ? "qr" : "logo");
-                        }}
-                        className="flex flex-col items-center gap-1"
-                      >
-                        <div
-                          className="overflow-hidden rounded-[8px] transition-all"
-                          style={{
-                            width: "90px", height: "56px",
-                            border: selectedBackDesign === opt.id ? "2px solid #28DC4F" : "2px solid #EBEBEB",
-                          }}
-                        >
-                          {opt.preview}
-                        </div>
-                        <span className="text-[12px] font-medium" style={{ color: selectedBackDesign === opt.id ? "#28DC4F" : "#6D6D6D" }}>
-                          {opt.label}
-                        </span>
-                      </button>
-                    ))}
-                  </div>
-                </div>
-
-                <div className="my-5 h-px bg-[#F4F4F4]" />
-
-                {/* Back Content radio */}
-                <div className="flex flex-col gap-3">
-                  <p className="text-[16px] font-medium text-[#1E1E1E]">Back Content</p>
-
-                  <div className="flex flex-col gap-2 rounded-[10px] p-1" style={{ background: "#FAFAFA", border: "1px solid #F4F4F4" }}>
-                    {[
-                      { value: "logo", label: "Logo" },
-                      { value: "qr",   label: "Place QR Code" },
-                    ].map(({ value, label }) => (
-                      <button
-                        key={value}
-                        onClick={() => setBackContent(value)}
-                        className="flex items-center gap-3 rounded-[8px] px-3 py-[10px] transition-colors"
-                        style={{ background: backContent === value ? "#fff" : "transparent" }}
-                      >
-                        <div
-                          className="flex h-[18px] w-[18px] shrink-0 items-center justify-center rounded-full border-2 transition-colors"
-                          style={{ borderColor: backContent === value ? "#28DC4F" : "#D1D5DB" }}
-                        >
-                          {backContent === value && <div className="h-[8px] w-[8px] rounded-full bg-[#28DC4F]" />}
-                        </div>
-                        <span className="text-[14px] font-normal text-[#1E1E1E]">{label}</span>
-                      </button>
-                    ))}
-                  </div>
-
-                  {backContent === "qr" && (
-                    <div className="flex flex-col gap-2">
-                      <p className="text-[14px] font-medium text-[#1E1E1E]">QR Code Colour</p>
-                      <div className="grid grid-cols-5 gap-2">
-                        {QR_COLORS.map((c) => {
-                          const selected = qrFgColor === c.color;
-                          const isLight  = c.color === "#28DC4F";
-                          return (
-                            <button
-                              key={c.id}
-                              title={c.label}
-                              onClick={() => setQrFgColor(c.color)}
-                              className="relative rounded-[8px] transition-all"
-                              style={{
-                                height: "36px",
-                                background: c.color,
-                                border: selected ? "2px solid #28DC4F" : "2px solid transparent",
-                                boxShadow: selected ? "0 0 0 1px #28DC4F" : "none",
-                              }}
-                            >
-                              {selected && (
-                                <div className="absolute inset-0 flex items-center justify-center">
-                                  <svg width="13" height="13" viewBox="0 0 14 14" fill="none">
-                                    <path d="M2.5 7L5.5 10L11.5 4" stroke={isLight ? "#18181B" : "#fff"} strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
-                                  </svg>
-                                </div>
-                              )}
-                            </button>
-                          );
-                        })}
-                      </div>
-                      <p className="text-[11px] text-[#9CA3AF]">
-                        {QR_COLORS.find((c) => c.color === qrFgColor)?.label ?? "Black"}
-                      </p>
-                    </div>
-                  )}
-
-                  {backContent === "logo" && (
-                    <>
-                      <UploadZone file={backLogoFile} onChange={setBackLogoFile} />
-
-                      {/* Back logo preview + placement + size */}
-                      {backLogoDataUrl && (
-                        <div className="flex flex-col gap-3">
-                          <div className="flex items-center gap-3">
-                            {/* eslint-disable-next-line @next/next/no-img-element */}
-                            <img
-                              src={backLogoDataUrl}
-                              alt="Logo preview"
-                              className="rounded-[8px] border border-[#F0F0F0]"
-                              style={{ height: "48px", maxWidth: "80px", objectFit: "contain" }}
-                            />
-                            <button
-                              onClick={() => { setBackLogoFile(null); }}
-                              className="rounded-[8px] border border-[#EBEBEB] px-3 py-[6px] text-[12px] font-medium text-[#EF4444] transition-colors hover:border-[#EF4444]"
-                            >
-                              Remove
-                            </button>
+                        {backLogoDataUrl && (
+                          <div className="flex flex-col gap-3">
+                            <div className="flex items-center gap-3">
+                              {/* eslint-disable-next-line @next/next/no-img-element */}
+                              <img
+                                src={backLogoDataUrl}
+                                alt="Logo preview"
+                                className="rounded-[8px] border border-[#F0F0F0]"
+                                style={{ height: "48px", maxWidth: "80px", objectFit: "contain" }}
+                              />
+                              <button
+                                onClick={() => { setBackLogoFile(null); }}
+                                className="rounded-[8px] border border-[#EBEBEB] px-3 py-[6px] text-[12px] font-medium text-[#EF4444] transition-colors hover:border-[#EF4444]"
+                              >
+                                Remove
+                              </button>
+                            </div>
+                            <LogoPlacementPicker value={backLogoPlacement} onChange={setBackLogoPlacement} />
+                            <div className="flex items-center gap-3">
+                              <span className="shrink-0 text-[14px] font-medium text-[#1E1E1E]">Logo Size</span>
+                              <input
+                                type="range"
+                                min={20}
+                                max={80}
+                                value={backLogoSize}
+                                onChange={(e) => setBackLogoSize(Number(e.target.value))}
+                                className="flex-1 accent-[#28DC4F]"
+                              />
+                              <span className="w-9 text-right text-[12px] text-[#9CA3AF]">{backLogoSize}px</span>
+                            </div>
                           </div>
-                          <LogoPlacementPicker value={backLogoPlacement} onChange={setBackLogoPlacement} />
-                          <div className="flex items-center gap-3">
-                            <span className="shrink-0 text-[14px] font-medium text-[#1E1E1E]">Logo Size</span>
-                            <input
-                              type="range"
-                              min={20}
-                              max={80}
-                              value={backLogoSize}
-                              onChange={(e) => setBackLogoSize(Number(e.target.value))}
-                              className="flex-1 accent-[#28DC4F]"
-                            />
-                            <span className="w-9 text-right text-[12px] text-[#9CA3AF]">{backLogoSize}px</span>
-                          </div>
-                        </div>
-                      )}
-                    </>
-                  )}
+                        )}
+                      </>
+                    )}
+                  </div>
                 </div>
-
               </div>
-            </div>
+            )}
+
+            {/* ── UPLOAD OWN DESIGN FORM ── */}
+            {designMethod === "upload_own_design" && (
+              <div className="rounded-[16px] border border-[#F0F0F0] bg-white p-6 shadow-sm">
+                <div className="flex flex-col gap-5">
+
+                  <DesignUploadZone
+                    label="Front Design"
+                    file={uploadedFrontFile}
+                    onChange={(f) => {
+                      setUploadedFrontFile(f);
+                      if (errors.uploadedFront) setErrors((prev) => ({ ...prev, uploadedFront: "" }));
+                    }}
+                    preview={uploadedFrontDataUrl}
+                    required
+                    error={errors.uploadedFront}
+                  />
+
+                  <DesignUploadZone
+                    label="Back Design"
+                    file={uploadedBackFile}
+                    onChange={setUploadedBackFile}
+                    preview={uploadedBackDataUrl}
+                    required={false}
+                  />
+
+                  {/* Print-ready guidelines */}
+                  <div
+                    className="rounded-[12px] px-4 py-4"
+                    style={{ background: "rgba(40,220,79,0.06)", border: "1px solid rgba(40,220,79,0.2)" }}
+                  >
+                    <p className="mb-2 text-[13px] font-semibold text-[#111827]">
+                      Please upload a print-ready design in the correct card size.
+                    </p>
+                    <ul className="flex flex-col gap-1 pl-4 text-[12px] leading-[20px] text-[#6B7280]" style={{ listStyleType: "disc" }}>
+                      <li>Recommended size: <strong>1200 × 720 px</strong></li>
+                      <li>Aspect ratio: <strong>5:3</strong></li>
+                      <li>High resolution <strong>PNG or PDF</strong> preferred</li>
+                      <li>Include at least 3 mm bleed on each edge</li>
+                    </ul>
+                  </div>
+
+                </div>
+              </div>
+            )}
 
             {/* Buy Now */}
             <button
