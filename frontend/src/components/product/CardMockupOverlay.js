@@ -144,30 +144,18 @@ export default function CardMockupOverlay({
         }}
       />
 
-      {/* Card colour tint — screen blend works on dark mockups; multiply on light ones */}
+      {/* Card colour tint — "color" blend applies hue+saturation while preserving metallic highlights */}
       {c.cardColor && (
-        <>
-          <div
-            style={{
-              position: "absolute",
-              inset: 0,
-              background: c.cardColor,
-              opacity: 0.55,
-              mixBlendMode: "screen",
-              pointerEvents: "none",
-            }}
-          />
-          <div
-            style={{
-              position: "absolute",
-              inset: 0,
-              background: c.cardColor,
-              opacity: 0.18,
-              mixBlendMode: "multiply",
-              pointerEvents: "none",
-            }}
-          />
-        </>
+        <div
+          style={{
+            position: "absolute",
+            inset: 0,
+            background: c.cardColor,
+            opacity: 0.88,
+            mixBlendMode: "color",
+            pointerEvents: "none",
+          }}
+        />
       )}
 
       {/* Overlay layer — same bounding box as wrapper */}
