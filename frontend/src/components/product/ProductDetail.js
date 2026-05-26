@@ -576,6 +576,32 @@ function DesignUploadZone({ label, file, onChange, preview, required = false, er
   );
 }
 
+/* ─── expandable description ─────────────────────────────────── */
+
+function ExpandableDescription({ text, className = "" }) {
+  const [expanded, setExpanded] = useState(false);
+  if (!text) return null;
+  return (
+    <div className={className}>
+      <p className={`text-[14px] leading-relaxed text-[#6B7280] ${expanded ? "" : "line-clamp-2"}`}>
+        {text}
+      </p>
+      <button
+        onClick={() => setExpanded((v) => !v)}
+        className="mt-1 flex items-center gap-1 text-[12px] font-semibold text-[#28DC4F]"
+      >
+        {expanded ? "Read less" : "Read more"}
+        <svg
+          width="12" height="12" viewBox="0 0 12 12" fill="none"
+          style={{ transition: "transform 0.2s", transform: expanded ? "rotate(180deg)" : "rotate(0deg)" }}
+        >
+          <path d="M2 4l4 4 4-4" stroke="#28DC4F" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+        </svg>
+      </button>
+    </div>
+  );
+}
+
 /* ─── section label ──────────────────────────────────────────── */
 
 function SectionLabel({ children }) {
@@ -815,19 +841,19 @@ export default function ProductDetail({ product }) {
       <div className="mx-auto max-w-5xl px-4 pb-28 pt-4 sm:px-6 lg:pb-12 lg:pt-8">
 
         {/* Breadcrumb */}
-        <nav aria-label="Breadcrumb" className="mb-4 flex items-center gap-1">
+        <nav aria-label="Breadcrumb" className="mb-4 hidden items-center gap-1 lg:flex">
           <Link href="/" className="text-[13px] text-[#9CA3AF] transition-colors hover:text-black">Home</Link>
           <ChevronRight />
           <Link href="/#products" className="text-[13px] text-[#9CA3AF] transition-colors hover:text-black">Products</Link>
           <ChevronRight />
-          <span className="text-[13px] text-[#374151]">{product.name}</span>
+          <span className="text-[11px] text-[#374151]">{product.name}</span>
         </nav>
 
         {/* ── MOBILE: name + price above preview ── */}
         <div className="mb-4 lg:hidden">
-          <h1 className="text-[22px] font-bold leading-snug text-black">{product.name}</h1>
+          <h1 className="text-[14px] font-bold leading-snug text-black">{product.name}</h1>
           <div className="mt-2 flex items-baseline gap-2.5">
-            <span className="text-[24px] font-bold text-black">{product.price}</span>
+            <span className="text-[16px] font-bold text-black">{product.price}</span>
             {product.originalPrice && (
               <span className="text-[15px] text-[#BBBBBB] line-through">{product.originalPrice}</span>
             )}
@@ -839,39 +865,63 @@ export default function ProductDetail({ product }) {
           </div>
         </div>
 
+        {/* ── MOBILE ONLY: sticky card preview ── */}
+        <div className="sticky top-[70px] z-20 -mx-4 mb-4 overflow-hidden sm:-mx-6 lg:hidden" style={{ background: "#F3F4F6" }}>
+          <div className="p-3 pb-0">{renderCardPreview()}</div>
+          <div className="flex items-center justify-center border-t border-[#E5E7EB] px-4 py-2.5" style={{ background: "#F3F4F6" }}>
+            <div className="flex rounded-xl p-1" style={{ background: "#E5E7EB" }}>
+              {["front", "back"].map((tab) => (
+                <button
+                  key={tab}
+                  onClick={() => setActiveTab(tab)}
+                  className="rounded-lg px-10 py-2 text-[13px] font-semibold transition-all"
+                  style={{
+                    background: activeTab === tab ? "#28DC4F" : "transparent",
+                    color:      activeTab === tab ? "#000"    : "#9CA3AF",
+                  }}
+                >
+                  {tab === "front" ? "Front" : "Back"}
+                </button>
+              ))}
+            </div>
+          </div>
+        </div>
+
         {/* ── TWO COLUMN LAYOUT ── */}
         <div className="flex flex-col gap-6 lg:flex-row lg:items-start lg:gap-10">
 
           {/* ── LEFT COLUMN ── */}
           <div className="flex flex-col gap-5 lg:sticky lg:top-6 lg:w-[460px] lg:shrink-0">
 
-            {/* Card preview box */}
-            <div className="overflow-hidden rounded-2xl" style={{ background: "#F8F8F8" }}>
-              <div className="p-4 sm:p-6">
+            {/* Card preview box — desktop only */}
+            <div className="hidden overflow-hidden rounded-2xl lg:block" style={{ background: "#F3F4F6" }}>
+              <div className="p-3 pb-0">
                 {renderCardPreview()}
               </div>
 
               {/* Front / Back tab */}
-              <div className="flex border-t border-[#EFEFEF]">
-                {["front", "back"].map((tab) => (
-                  <button
-                    key={tab}
-                    onClick={() => setActiveTab(tab)}
-                    className="flex flex-1 items-center justify-center py-3 text-[14px] font-semibold transition-all"
-                    style={{
-                      background: activeTab === tab ? "#18181B" : "transparent",
-                      color:      activeTab === tab ? "#fff"    : "#9CA3AF",
-                    }}
-                  >
-                    {tab === "front" ? "Front" : "Back"}
-                  </button>
-                ))}
+              <div className="flex items-center justify-center border-t border-[#E5E7EB] px-4 py-2.5" style={{ background: "#F3F4F6" }}>
+                <div className="flex rounded-xl p-1" style={{ background: "#E5E7EB" }}>
+                  {["front", "back"].map((tab) => (
+                    <button
+                      key={tab}
+                      onClick={() => setActiveTab(tab)}
+                      className="rounded-lg px-10 py-2 text-[13px] font-semibold transition-all"
+                      style={{
+                        background: activeTab === tab ? "#28DC4F" : "transparent",
+                        color:      activeTab === tab ? "#000"    : "#9CA3AF",
+                      }}
+                    >
+                      {tab === "front" ? "Front" : "Back"}
+                    </button>
+                  ))}
+                </div>
               </div>
             </div>
 
             {/* DESKTOP: product info under preview */}
             <div className="hidden flex-col gap-3 lg:flex">
-              <h1 className="text-[26px] font-bold leading-snug text-black">{product.name}</h1>
+              <h1 className="text-[22px] font-bold leading-snug text-black">{product.name}</h1>
 
               {product.rating != null && (
                 <div className="flex items-center gap-2">
@@ -881,7 +931,7 @@ export default function ProductDetail({ product }) {
               )}
 
               <div className="flex items-baseline gap-2.5">
-                <span className="text-[28px] font-bold text-black">{product.price}</span>
+                <span className="text-[24px] font-bold text-black">{product.price}</span>
                 {product.originalPrice && (
                   <span className="text-[18px] text-[#BBBBBB] line-through">{product.originalPrice}</span>
                 )}
@@ -893,7 +943,7 @@ export default function ProductDetail({ product }) {
               </div>
 
               <div className="h-px bg-[#F0F0F0]" />
-              <p className="text-[14px] leading-relaxed text-[#6B7280]">{product.description}</p>
+              <ExpandableDescription text={product.description} />
             </div>
 
             {/* Reviews — desktop only */}
@@ -931,56 +981,56 @@ export default function ProductDetail({ product }) {
           </div>
 
           {/* ── RIGHT COLUMN ── */}
-          <div className="flex flex-1 flex-col gap-5">
+          <div className="flex flex-1 flex-col gap-3">
 
             {/* MOBILE: description */}
-            {product.description && (
-              <p className="text-[14px] leading-relaxed text-[#6B7280] lg:hidden">{product.description}</p>
-            )}
+            <ExpandableDescription text={product.description} className="lg:hidden" />
 
             {/* ── DESIGN METHOD TOGGLE ── */}
-            <div className="flex flex-col gap-2">
-              <SectionLabel>How to design</SectionLabel>
-              <div className="flex overflow-hidden rounded-xl border border-[#F0F0F0] bg-[#F9FAFB]">
-                {[
-                  { value: "customize_online",  label: "Customize Online" },
-                  { value: "upload_own_design",  label: "Upload My Design" },
-                ].map(({ value, label }) => (
-                  <button
-                    key={value}
-                    onClick={() => { setDesignMethod(value); setErrors({}); }}
-                    className="flex flex-1 items-center justify-center py-3 text-[13px] font-semibold transition-all"
-                    style={{
-                      background: designMethod === value ? "#18181B" : "transparent",
-                      color:      designMethod === value ? "#fff"    : "#9CA3AF",
-                    }}
-                  >
-                    {label}
-                  </button>
-                ))}
-              </div>
+            <div className="flex rounded-lg bg-[#F3F4F6] p-0.5">
+              {[
+                { value: "customize_online",  label: "Customize Online" },
+                { value: "upload_own_design", label: "Upload My Design"  },
+              ].map(({ value, label }) => (
+                <button
+                  key={value}
+                  onClick={() => { setDesignMethod(value); setErrors({}); }}
+                  className="flex-1 rounded-md py-1.5 text-[12px] font-medium transition-all"
+                  style={{
+                    background: designMethod === value ? "#fff" : "transparent",
+                    color:      designMethod === value ? "#111827" : "#9CA3AF",
+                    boxShadow:  designMethod === value ? "0 1px 3px rgba(0,0,0,0.1)" : "none",
+                  }}
+                >
+                  {label}
+                </button>
+              ))}
             </div>
 
             {/* ── CUSTOMIZE ONLINE ── */}
             {designMethod === "customize_online" && (
-              <div className="flex flex-col gap-5">
+              <div className="flex flex-col gap-3">
 
                 {/* Front side form */}
                 {!isBack && (
-                  <div className="flex flex-col gap-5">
+                  <div className="flex flex-col gap-3">
 
                     {/* Card & font colour */}
                     {product.allowColorCustomization && (
-                      <div className="flex flex-col gap-4">
-                        <SectionLabel>Card Colours</SectionLabel>
+                      <div className="flex flex-col gap-3 rounded-xl border border-[#F0F0F0] bg-white p-3.5">
 
                         {/* Card Colour */}
                         {(() => {
                           const isCustomCard = !CARD_COLORS.some((cc) => cc.color.toLowerCase() === cardColor.toLowerCase());
                           return (
-                            <div className="flex flex-col gap-2">
+                            <div className="flex flex-col gap-1.5">
                               <div className="flex items-center justify-between">
-                                <p className="text-[13px] font-medium text-[#374151]">Card Colour</p>
+                                <p className="text-[12px] font-medium text-[#374151]">
+                                  Card Colour
+                                  <span className="ml-2 text-[11px] text-[#9CA3AF]">
+                                    {isCustomCard ? cardColor.toUpperCase() : (CARD_COLORS.find((cc) => cc.color.toLowerCase() === cardColor.toLowerCase())?.label ?? "")}
+                                  </span>
+                                </p>
                                 <label
                                   title="Custom colour"
                                   className="flex cursor-pointer items-center gap-1.5 rounded-lg border px-2 py-1"
@@ -989,10 +1039,8 @@ export default function ProductDetail({ product }) {
                                     background:  isCustomCard ? "#F0FFF4" : "transparent",
                                   }}
                                 >
-                                  <span className="inline-block h-3.5 w-3.5 rounded border border-black/10" style={{ background: cardColor }} />
-                                  <span className="text-[11px] font-medium text-[#6B7280]">
-                                    {isCustomCard ? cardColor.toUpperCase() : "Custom"}
-                                  </span>
+                                  <span className="inline-block h-3 w-3 rounded border border-black/10" style={{ background: cardColor }} />
+                                  <span className="text-[11px] font-medium text-[#6B7280]">Custom</span>
                                   <input
                                     type="color"
                                     value={cardColor}
@@ -1001,7 +1049,7 @@ export default function ProductDetail({ product }) {
                                   />
                                 </label>
                               </div>
-                              <div className="grid grid-cols-5 gap-2">
+                              <div className="flex gap-2 overflow-x-auto pb-1" style={{ scrollbarWidth: "none" }}>
                                 {CARD_COLORS.map((cc) => {
                                   const selected = cardColor.toLowerCase() === cc.color.toLowerCase();
                                   const isLight  = cc.color === "#F5F5F5";
@@ -1014,9 +1062,9 @@ export default function ProductDetail({ product }) {
                                         setCardColor(cc.color);
                                         setFontColor(cc.color === "#F5F5F5" ? "#18181B" : "#FFFFFF");
                                       }}
-                                      className="relative rounded-xl transition-all"
+                                      className="relative shrink-0 rounded-full transition-all"
                                       style={{
-                                        height: "40px",
+                                        width: "32px", height: "32px",
                                         background: cc.color,
                                         border: selected ? "2.5px solid #28DC4F" : "2px solid transparent",
                                         boxShadow: selected ? "0 0 0 1px #28DC4F" : "0 0 0 1px rgba(0,0,0,0.1)",
@@ -1024,7 +1072,7 @@ export default function ProductDetail({ product }) {
                                     >
                                       {selected && (
                                         <div className="absolute inset-0 flex items-center justify-center">
-                                          <svg width="13" height="13" viewBox="0 0 14 14" fill="none">
+                                          <svg width="12" height="12" viewBox="0 0 14 14" fill="none">
                                             <path d="M2.5 7L5.5 10L11.5 4" stroke={isLight ? "#18181B" : "#fff"} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
                                           </svg>
                                         </div>
@@ -1033,11 +1081,6 @@ export default function ProductDetail({ product }) {
                                   );
                                 })}
                               </div>
-                              <p className="text-[11px] text-[#9CA3AF]">
-                                {isCustomCard
-                                  ? `Custom · ${cardColor.toUpperCase()}`
-                                  : (CARD_COLORS.find((cc) => cc.color.toLowerCase() === cardColor.toLowerCase())?.label ?? "Matte Black")}
-                              </p>
                             </div>
                           );
                         })()}
@@ -1046,9 +1089,14 @@ export default function ProductDetail({ product }) {
                         {(() => {
                           const isCustomFont = !FONT_COLORS.some((fc) => fc.color.toLowerCase() === fontColor.toLowerCase());
                           return (
-                            <div className="flex flex-col gap-2">
+                            <div className="flex flex-col gap-1.5">
                               <div className="flex items-center justify-between">
-                                <p className="text-[13px] font-medium text-[#374151]">Text Colour</p>
+                                <p className="text-[12px] font-medium text-[#374151]">
+                                  Text Colour
+                                  <span className="ml-2 text-[11px] text-[#9CA3AF]">
+                                    {isCustomFont ? fontColor.toUpperCase() : (FONT_COLORS.find((fc) => fc.color.toLowerCase() === fontColor.toLowerCase())?.label ?? "")}
+                                  </span>
+                                </p>
                                 <label
                                   title="Custom text colour"
                                   className="flex cursor-pointer items-center gap-1.5 rounded-lg border px-2 py-1"
@@ -1057,10 +1105,8 @@ export default function ProductDetail({ product }) {
                                     background:  isCustomFont ? "#F0FFF4" : "transparent",
                                   }}
                                 >
-                                  <span className="inline-block h-3.5 w-3.5 rounded-full border border-black/10" style={{ background: fontColor }} />
-                                  <span className="text-[11px] font-medium text-[#6B7280]">
-                                    {isCustomFont ? fontColor.toUpperCase() : "Custom"}
-                                  </span>
+                                  <span className="inline-block h-3 w-3 rounded-full border border-black/10" style={{ background: fontColor }} />
+                                  <span className="text-[11px] font-medium text-[#6B7280]">Custom</span>
                                   <input
                                     type="color"
                                     value={fontColor}
@@ -1069,7 +1115,7 @@ export default function ProductDetail({ product }) {
                                   />
                                 </label>
                               </div>
-                              <div className="flex gap-2.5">
+                              <div className="flex gap-2 overflow-x-auto pb-1" style={{ scrollbarWidth: "none" }}>
                                 {FONT_COLORS.map((fc) => {
                                   const selected = fontColor.toLowerCase() === fc.color.toLowerCase();
                                   const isLight  = ["#ffffff", "#e2e8f0", "#f59e0b"].includes(fc.color.toLowerCase());
@@ -1079,7 +1125,7 @@ export default function ProductDetail({ product }) {
                                       type="button"
                                       title={fc.label}
                                       onClick={() => setFontColor(fc.color)}
-                                      className="relative h-10 w-10 rounded-full transition-all"
+                                      className="relative h-8 w-8 shrink-0 rounded-full transition-all"
                                       style={{
                                         background: fc.color,
                                         border: selected ? "2.5px solid #28DC4F" : "2px solid rgba(0,0,0,0.12)",
@@ -1097,11 +1143,6 @@ export default function ProductDetail({ product }) {
                                   );
                                 })}
                               </div>
-                              <p className="text-[11px] text-[#9CA3AF]">
-                                {isCustomFont
-                                  ? `Custom · ${fontColor.toUpperCase()}`
-                                  : (FONT_COLORS.find((fc) => fc.color.toLowerCase() === fontColor.toLowerCase())?.label ?? "White")}
-                              </p>
                             </div>
                           );
                         })()}
@@ -1109,15 +1150,15 @@ export default function ProductDetail({ product }) {
                     )}
 
                     {/* Name fields */}
-                    <div className="flex flex-col gap-4">
+                    <div className="flex flex-col gap-3 rounded-xl border border-[#F0F0F0] bg-white p-3.5">
                       <SectionLabel>Your Details</SectionLabel>
                       {[
                         { label: "Name",         value: name,        setter: setName,        placeholder: "Jane Smith",                                  errorKey: "name"     },
                         { label: "Sub Title",    value: subTitle,    setter: setSubTitle,    placeholder: "e.g. Product Manager at Acme Co.",            errorKey: "subTitle" },
                         { label: "More Details", value: moreDetails, setter: setMoreDetails, placeholder: "e.g. +91 98765 43210",                       errorKey: null       },
                       ].map(({ label, value, setter, placeholder, errorKey }) => (
-                        <div key={label} className="flex flex-col gap-1.5">
-                          <label className="text-[13px] font-medium text-[#374151]">
+                        <div key={label} className="flex flex-col gap-1">
+                          <label className="text-[12px] font-medium text-[#374151]">
                             {label}
                             {errorKey && <span className="ml-1 text-[#EF4444]">*</span>}
                           </label>
@@ -1129,9 +1170,9 @@ export default function ProductDetail({ product }) {
                               if (errorKey && errors[errorKey]) setErrors((prev) => ({ ...prev, [errorKey]: "" }));
                             }}
                             placeholder={placeholder}
-                            className="w-full rounded-xl px-4 text-[14px] text-black outline-none placeholder:text-[#C4C4C4] transition-colors"
+                            className="w-full rounded-xl px-3 text-[13px] text-black outline-none placeholder:text-[#C4C4C4] transition-colors"
                             style={{
-                              height: "48px",
+                              height: "42px",
                               background: "#F9FAFB",
                               border: `1.5px solid ${errorKey && errors[errorKey] ? "#EF4444" : "#E5E7EB"}`,
                             }}
@@ -1144,7 +1185,7 @@ export default function ProductDetail({ product }) {
                     </div>
 
                     {/* Logo upload */}
-                    <div className="flex flex-col gap-3">
+                    <div className="flex flex-col gap-3 rounded-xl border border-[#F0F0F0] bg-white p-3.5">
                       <SectionLabel>Logo (optional)</SectionLabel>
                       <UploadZone file={logoFile} onChange={setLogoFile} />
 
@@ -1204,7 +1245,7 @@ export default function ProductDetail({ product }) {
                         <div className="mt-4 flex flex-col gap-3 border-t border-[#EBEBEB] pt-4">
                           <div className="flex flex-col gap-2">
                             <p className="text-[12px] font-medium text-[#374151]">QR Colour</p>
-                            <div className="grid grid-cols-5 gap-2">
+                            <div className="flex gap-2 overflow-x-auto pb-1" style={{ scrollbarWidth: "none" }}>
                               {QR_COLORS.map((c) => {
                                 const selected = frontQrColor === c.color;
                                 const isLight  = c.color === "#28DC4F";
@@ -1214,12 +1255,12 @@ export default function ProductDetail({ product }) {
                                     type="button"
                                     title={c.label}
                                     onClick={() => setFrontQrColor(c.color)}
-                                    className="relative rounded-lg transition-all"
+                                    className="relative shrink-0 rounded-full transition-all"
                                     style={{
-                                      height: "36px",
+                                      width: "32px", height: "32px",
                                       background: c.color,
                                       border: selected ? "2px solid #28DC4F" : "2px solid transparent",
-                                      boxShadow: selected ? "0 0 0 1px #28DC4F" : "none",
+                                      boxShadow: selected ? "0 0 0 1px #28DC4F" : "0 0 0 1px rgba(0,0,0,0.1)",
                                     }}
                                   >
                                     {selected && (
@@ -1303,7 +1344,7 @@ export default function ProductDetail({ product }) {
                       {backContent === "qr" && (
                         <div className="flex flex-col gap-2">
                           <p className="text-[13px] font-medium text-[#374151]">QR Colour</p>
-                          <div className="grid grid-cols-5 gap-2">
+                          <div className="flex gap-2 overflow-x-auto pb-1" style={{ scrollbarWidth: "none" }}>
                             {QR_COLORS.map((c) => {
                               const selected = qrFgColor === c.color;
                               const isLight  = c.color === "#28DC4F";
@@ -1312,9 +1353,9 @@ export default function ProductDetail({ product }) {
                                   key={c.id}
                                   title={c.label}
                                   onClick={() => setQrFgColor(c.color)}
-                                  className="relative rounded-xl transition-all"
+                                  className="relative shrink-0 rounded-full transition-all"
                                   style={{
-                                    height: "40px",
+                                    width: "32px", height: "32px",
                                     background: c.color,
                                     border: selected ? "2px solid #28DC4F" : "2px solid transparent",
                                     boxShadow: selected ? "0 0 0 1px #28DC4F" : "0 0 0 1px rgba(0,0,0,0.1)",

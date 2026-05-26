@@ -77,9 +77,9 @@ export default function ProductCards() {
                 <ScrollReveal key={product.id} delay={index * 80}>
                   <div className="overflow-hidden rounded-2xl bg-white shadow-md transition-transform duration-300 hover:-translate-y-1">
 
-                    {/* Image area — #F6F6F6, 208px tall, card preview centered */}
+                    {/* Image area — #F6F6F6, 208px tall, card preview fills section */}
                     <div
-                      className="flex items-center justify-center"
+                      className="overflow-hidden"
                       style={{ height: "208px", background: "#F6F6F6" }}
                     >
                       {image ? (
@@ -87,10 +87,10 @@ export default function ProductCards() {
                         <img
                           src={image}
                           alt={product.name}
-                          style={{ width: "230px", height: "138px", objectFit: "contain" }}
+                          style={{ width: "100%", height: "100%", objectFit: "cover" }}
                         />
                       ) : (
-                        <div style={{ width: "230px", height: "138px", background: "#E5E7EB", borderRadius: "8px" }} />
+                        <div style={{ width: "100%", height: "100%", background: "#E5E7EB" }} />
                       )}
                     </div>
 
