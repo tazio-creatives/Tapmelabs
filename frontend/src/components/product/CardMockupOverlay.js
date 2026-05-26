@@ -151,7 +151,7 @@ export default function CardMockupOverlay({
             position: "absolute",
             inset: 0,
             background: c.cardColor,
-            opacity: 0.88,
+            opacity: 1,
             mixBlendMode: "color",
             pointerEvents: "none",
           }}
