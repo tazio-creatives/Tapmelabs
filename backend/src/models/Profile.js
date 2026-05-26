@@ -60,6 +60,11 @@ const Profile = sequelize.define(
       allowNull: true,
       defaultValue: {},
     },
+    bio: {
+      type: DataTypes.TEXT,
+      allowNull: true,
+      defaultValue: null,
+    },
     is_public: {
       type: DataTypes.BOOLEAN,
       defaultValue: true,

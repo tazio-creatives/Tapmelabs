@@ -745,7 +745,7 @@ export default function ProductDetail({ product }) {
       const src = isBack ? uploadedBackDataUrl : uploadedFrontDataUrl;
       if (src) {
         return (
-          <div className="overflow-hidden rounded-xl" style={{ aspectRatio: "5/3", background: "#111" }}>
+          <div className="overflow-hidden rounded-xl" style={{ aspectRatio: "5/3", background: "#F3F4F6" }}>
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img src={src} alt={isBack ? "Back design" : "Front design"} style={{ width: "100%", height: "100%", objectFit: "contain" }} />
           </div>

@@ -426,6 +426,20 @@ function BasicStep({ data, onChange, selectedTheme, onOpenCrop }) {
         <label className="text-[13px] font-medium text-[#374151]">Phone Number</label>
         <input className={inputCls} type="tel" placeholder="+91 98765 43210" value={data.phone} onChange={(e) => set("phone", e.target.value)} autoComplete="tel" />
       </div>
+      <div className="flex flex-col gap-[6px]">
+        <div className="flex items-center justify-between">
+          <label className="text-[13px] font-medium text-[#374151]">Bio <span className="text-[11px] font-normal text-[#9CA3AF]">(optional)</span></label>
+          <span className="text-[11px] text-[#9CA3AF]">{(data.bio || "").length}/200</span>
+        </div>
+        <textarea
+          className={inputCls}
+          placeholder="A short introduction about yourself..."
+          value={data.bio || ""}
+          onChange={(e) => set("bio", e.target.value.slice(0, 200))}
+          rows={3}
+          style={{ resize: "none", paddingTop: "10px", paddingBottom: "10px" }}
+        />
+      </div>
     </div>
   );
 }
@@ -631,7 +645,7 @@ export default function ProfileSetupPage() {
   const [loadingThemes,    setLoadingThemes]    = useState(true);
   const [themeError,       setThemeError]       = useState("");
   const [selectedTheme,    setSelectedTheme]    = useState("default");
-  const [basic,            setBasic]            = useState({ name: "", email: "", phone: "", profile_image: "" });
+  const [basic,            setBasic]            = useState({ name: "", email: "", phone: "", bio: "", profile_image: "" });
   const [business,         setBusiness]         = useState({ designation: "", company: "", city: "", website: "", category: "", company_logo: "", biz_phone: "", biz_email: "" });
   const [social,           setSocial]           = useState({ whatsapp: "", linkedin: "", messenger: "", instagram: "", twitter: "", snapchat: "" });
   const [saving,           setSaving]           = useState(false);
@@ -713,6 +727,7 @@ export default function ProfileSetupPage() {
         email:         basic.email          || null,
         phone:         basic.phone          || null,
         profile_image: basic.profile_image  || null,
+        bio:           basic.bio            || null,
         designation:   business.designation || null,
         company_name:  business.company     || null,
         company_logo:  business.company_logo || null,

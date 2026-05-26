@@ -46,6 +46,7 @@ function normalizeProfile(raw) {
     social,
     profileImage: p.profile_image || null,
     companyLogo:  p.company_logo || null,
+    bio:          p.bio || "",
     theme_key:    p.theme_key || "default",
     slug:         p.slug || "",
   };
@@ -399,6 +400,13 @@ function DefaultThemeProfile({ profile, onSaveContact, onShare }) {
                 )}
               </div>
             </div>
+
+            {/* Bio */}
+            {profile.bio && (
+              <p style={{ marginTop: "16px", fontFamily: "var(--font-figtree), sans-serif", fontSize: "12px", lineHeight: "18px", color: "#6B7280" }}>
+                {profile.bio}
+              </p>
+            )}
 
             {/* Divider */}
             <div style={{ marginTop: "20px", height: "1px", background: "#E5E7EB" }} />

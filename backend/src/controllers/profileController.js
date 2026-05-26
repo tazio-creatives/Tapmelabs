@@ -51,6 +51,7 @@ async function createProfile(req, res, next) {
     const {
       slug,
       name,
+      bio,
       designation,
       company_name,
       email,
@@ -84,6 +85,7 @@ async function createProfile(req, res, next) {
       user_id: req.user.id,
       slug,
       name: name ?? null,
+      bio: bio ?? null,
       designation: designation ?? null,
       company_name: company_name ?? null,
       email: email ?? null,
@@ -123,6 +125,7 @@ async function updateMyProfile(req, res, next) {
     const {
       slug,
       name,
+      bio,
       designation,
       company_name,
       email,
@@ -149,6 +152,7 @@ async function updateMyProfile(req, res, next) {
     await profile.update({
       ...(slug !== undefined && { slug }),
       ...(name !== undefined && { name }),
+      ...(bio !== undefined && { bio }),
       ...(designation !== undefined && { designation }),
       ...(company_name !== undefined && { company_name }),
       ...(email !== undefined && { email }),
@@ -182,6 +186,7 @@ async function getPublicProfile(req, res, next) {
         "id",
         "slug",
         "name",
+        "bio",
         "designation",
         "company_name",
         "email",
