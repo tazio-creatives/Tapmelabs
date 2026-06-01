@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { Sidebar, TopHeader } from "@/components/dashboard/shared";
@@ -244,64 +244,38 @@ function statusStyle(raw) {
 
 /* ─── QR display ──────────────────────────────────────────────────────── */
 
-function QRCodeSVG({ size = 200 }) {
-  /* Decorative 21×21 module grid – fallback when no profileUrl is available */
-  const G = [
-    [1,1,1,1,1,1,1,0,1,0,1,0,1,0,1,1,1,1,1,1,1],
-    [1,0,0,0,0,0,1,0,0,1,1,0,0,0,1,0,0,0,0,0,1],
-    [1,0,1,1,1,0,1,0,1,0,0,1,1,0,1,0,1,1,1,0,1],
-    [1,0,1,1,1,0,1,0,0,1,0,0,0,0,1,0,1,1,1,0,1],
-    [1,0,1,1,1,0,1,0,1,1,1,0,1,0,1,0,1,1,1,0,1],
-    [1,0,0,0,0,0,1,0,0,0,1,1,0,0,1,0,0,0,0,0,1],
-    [1,1,1,1,1,1,1,0,1,0,1,0,1,0,1,1,1,1,1,1,1],
-    [0,0,0,0,0,0,0,0,0,1,0,1,1,0,0,0,0,0,0,0,0],
-    [1,1,0,0,1,0,1,1,0,1,0,0,1,1,1,0,1,1,0,0,1],
-    [0,1,1,0,0,1,0,0,1,0,1,1,0,0,0,1,0,1,0,1,0],
-    [1,0,0,1,1,0,1,0,0,0,1,0,0,1,1,0,1,0,0,0,1],
-    [0,1,0,1,0,1,0,1,1,1,0,1,0,0,1,1,0,1,1,0,0],
-    [1,1,1,0,0,0,1,0,0,0,1,1,0,0,0,0,1,0,1,1,1],
-    [0,0,0,0,0,0,0,0,1,0,1,1,0,0,1,0,1,0,0,1,0],
-    [1,1,1,1,1,1,1,0,0,0,0,0,1,0,1,0,0,1,0,0,1],
-    [1,0,0,0,0,0,1,0,1,1,1,0,0,1,0,1,1,0,1,0,0],
-    [1,0,1,1,1,0,1,0,0,0,1,1,0,0,1,0,0,0,1,1,0],
-    [1,0,1,1,1,0,1,0,1,1,0,1,1,0,0,1,0,1,0,0,1],
-    [1,0,1,1,1,0,1,0,0,0,1,0,0,1,1,0,1,0,1,1,0],
-    [1,0,0,0,0,0,1,0,1,0,0,0,1,1,0,1,0,1,0,0,1],
-    [1,1,1,1,1,1,1,0,0,1,0,1,1,0,1,0,1,0,1,1,0],
-  ];
-  const cell = size / 21;
-  return (
-    <svg width={size} height={size} viewBox={`0 0 ${size} ${size}`} xmlns="http://www.w3.org/2000/svg">
-      <rect width={size} height={size} fill="white" />
-      {G.flatMap((row, y) =>
-        row.map((v, x) =>
-          v ? (
-            <rect key={`${x}-${y}`} x={x * cell} y={y * cell} width={cell + 0.5} height={cell + 0.5} fill="#111827" />
-          ) : null
-        )
-      )}
-    </svg>
-  );
+function getQrStyleOptions(qrStyle, color) {
+  const map = {
+    minimal:    { dotsOptions: { color, type: "dots"           }, cornersSquareOptions: { color, type: "extra-rounded" }, cornersDotOptions: { color, type: "dot"    } },
+    futuristic: { dotsOptions: { color, type: "square"         }, cornersSquareOptions: { color, type: "square"        }, cornersDotOptions: { color, type: "square" } },
+    glass:      { dotsOptions: { color, type: "rounded"        }, cornersSquareOptions: { color, type: "extra-rounded" }, cornersDotOptions: { color, type: "dot"    } },
+    editorial:  { dotsOptions: { color, type: "classy-rounded" }, cornersSquareOptions: { color, type: "square"        }, cornersDotOptions: { color, type: "square" } },
+    creative:   { dotsOptions: { color, type: "extra-rounded"  }, cornersSquareOptions: { color, type: "extra-rounded" }, cornersDotOptions: { color, type: "dot"    } },
+  };
+  return map[qrStyle] || map.minimal;
 }
 
-function QRDisplay({ profileUrl, size = 180 }) {
-  if (!profileUrl) return <QRCodeSVG size={size} />;
-
-  /* TODO: Replace with local QR generation to avoid the external API and enable download:
-       1. npm install qrcode
-       2. import QRCode from "qrcode"
-       3. const dataUrl = await QRCode.toDataURL(profileUrl)
-       4. Render <img src={dataUrl}> and use dataUrl for anchor download. */
-  return (
-    <img
-      src={`https://api.qrserver.com/v1/create-qr-code/?size=${size}x${size}&data=${encodeURIComponent(profileUrl)}&bgcolor=ffffff&color=111827&margin=0`}
-      alt="QR code for your digital profile"
-      width={size}
-      height={size}
-      style={{ display: "block", borderRadius: "4px" }}
-      onError={(e) => { e.currentTarget.style.display = "none"; }}
-    />
-  );
+function StyledQRDisplay({ profileUrl, qrStyle = "minimal", qrColor = "#18181B", size = 180 }) {
+  const containerRef = useRef(null);
+  useEffect(() => {
+    if (!containerRef.current) return;
+    let cancelled = false;
+    const data = profileUrl || "https://tapmelabs.com";
+    import("qr-code-styling").then(({ default: QRCodeStyling }) => {
+      if (cancelled || !containerRef.current) return;
+      const qr = new QRCodeStyling({
+        width: size, height: size, type: "svg", data,
+        margin: 4, backgroundOptions: { color: "#ffffff" },
+        ...getQrStyleOptions(qrStyle, qrColor),
+      });
+      containerRef.current.innerHTML = "";
+      qr.append(containerRef.current);
+      const svg = containerRef.current.querySelector("svg");
+      if (svg) { svg.style.width = "100%"; svg.style.height = "100%"; }
+    });
+    return () => { cancelled = true; };
+  }, [profileUrl, qrStyle, qrColor, size]);
+  return <div ref={containerRef} style={{ width: size, height: size }} />;
 }
 
 /* ─── icons ────────────────────────────────────────────────────────────── */
@@ -633,7 +607,7 @@ function OrderDetailsSection({ order }) {
 
 /* ─── right column ────────────────────────────────────────────────────── */
 
-function ActionsSection({ profileUrl, onViewProfile, onDownloadQR, onShare, onCopy, copied }) {
+function ActionsSection({ profileUrl, onViewProfile, onDownloadQR, onShare, onCopy, copied, qrStyle, qrColor }) {
   const actionBtns = [
     {
       label:   "Download QR Code",
@@ -672,7 +646,7 @@ function ActionsSection({ profileUrl, onViewProfile, onDownloadQR, onShare, onCo
           className="mx-auto mb-5 flex items-center justify-center rounded-[10px] bg-white p-4 shadow-[0_2px_12px_rgba(0,0,0,0.06)]"
           style={{ width: "fit-content" }}
         >
-          <QRDisplay profileUrl={profileUrl} size={180} />
+          <StyledQRDisplay profileUrl={profileUrl} qrStyle={qrStyle} qrColor={qrColor} size={180} />
         </div>
         <p className="text-center text-[13px] leading-[1.6] text-[#6B7280]">
           Scan this QR code for instantly view and save your digital profile.
@@ -808,21 +782,14 @@ export default function MyCardsPage() {
 
   async function handleDownloadQR() {
     if (!profileUrl) return;
-    const qrApiUrl = `https://api.qrserver.com/v1/create-qr-code/?size=400x400&data=${encodeURIComponent(profileUrl)}&bgcolor=ffffff&color=111827&margin=10`;
-    try {
-      const res = await fetch(qrApiUrl);
-      const blob = await res.blob();
-      const blobUrl = URL.createObjectURL(blob);
-      const a = document.createElement("a");
-      a.href = blobUrl;
-      a.download = `tapme-qr-${profile?.slug || "profile"}.png`;
-      document.body.appendChild(a);
-      a.click();
-      document.body.removeChild(a);
-      URL.revokeObjectURL(blobUrl);
-    } catch {
-      window.open(qrApiUrl, "_blank");
-    }
+    const { default: QRCodeStyling } = await import("qr-code-styling");
+    const qrColor = customization?.qrFgColor || "#18181B";
+    const qr = new QRCodeStyling({
+      width: 400, height: 400, type: "svg", data: profileUrl,
+      margin: 10, backgroundOptions: { color: "#ffffff" },
+      ...getQrStyleOptions(customization?.qrStyle || "minimal", qrColor),
+    });
+    qr.download({ name: `tapme-qr-${profile?.slug || "profile"}`, extension: "svg" });
   }
 
   function handleShare() {
@@ -917,6 +884,8 @@ export default function MyCardsPage() {
               onShare={handleShare}
               onCopy={handleCopy}
               copied={copied}
+              qrStyle={customization?.qrStyle || "minimal"}
+              qrColor={customization?.qrFgColor || "#18181B"}
             />
           </div>
 

@@ -3,7 +3,7 @@
 import { useState, useRef, useEffect } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import CardMockupOverlay from "./CardMockupOverlay";
+import CardMockupOverlay, { QrSvg } from "./CardMockupOverlay";
 
 /* ─── background constants ────────────────────────────────────── */
 
@@ -248,6 +248,14 @@ const QR_COLORS = [
   { id: "rose",     label: "Rose",        color: "#6B2142" },
 ];
 
+const QR_STYLES = [
+  { id: "minimal",    label: "Minimal"    },
+  { id: "futuristic", label: "Futuristic" },
+  { id: "glass",      label: "Glass"      },
+  { id: "editorial",  label: "Editorial"  },
+  { id: "creative",   label: "Creative"   },
+];
+
 const CARD_COLORS = [
   { id: "black",    label: "Matte Black",  color: "#18181B" },
   { id: "navy",     label: "Navy Blue",    color: "#1B2B4B" },
@@ -259,6 +267,23 @@ const CARD_COLORS = [
   { id: "purple",   label: "Deep Purple",  color: "#3D1A78" },
   { id: "gold",     label: "Gold",         color: "#B8860B" },
   { id: "burgundy", label: "Burgundy",     color: "#3D0C11" },
+];
+
+const FONT_OPTIONS = [
+  { id: "default",    label: "Default",           family: "sans-serif",                              url: null },
+  { id: "inter",      label: "Inter",              family: "'Inter', sans-serif",                     url: "https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" },
+  { id: "poppins",    label: "Poppins",            family: "'Poppins', sans-serif",                   url: "https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" },
+  { id: "montserrat", label: "Montserrat",         family: "'Montserrat', sans-serif",                url: "https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600&display=swap" },
+  { id: "raleway",    label: "Raleway",            family: "'Raleway', sans-serif",                   url: "https://fonts.googleapis.com/css2?family=Raleway:wght@400;600&display=swap" },
+  { id: "josefin",    label: "Josefin Sans",       family: "'Josefin Sans', sans-serif",              url: "https://fonts.googleapis.com/css2?family=Josefin+Sans:wght@400;600&display=swap" },
+  { id: "space",      label: "Space Grotesk",      family: "'Space Grotesk', sans-serif",             url: "https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;600&display=swap" },
+  { id: "oswald",     label: "Oswald",             family: "'Oswald', sans-serif",                    url: "https://fonts.googleapis.com/css2?family=Oswald:wght@400;600&display=swap" },
+  { id: "bebas",      label: "Bebas Neue",         family: "'Bebas Neue', sans-serif",                url: "https://fonts.googleapis.com/css2?family=Bebas+Neue&display=swap" },
+  { id: "playfair",   label: "Playfair Display",   family: "'Playfair Display', serif",               url: "https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600&display=swap" },
+  { id: "cormorant",  label: "Cormorant",          family: "'Cormorant Garamond', serif",             url: "https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;600&display=swap" },
+  { id: "cinzel",     label: "Cinzel",             family: "'Cinzel', serif",                         url: "https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600&display=swap" },
+  { id: "dmserif",    label: "DM Serif",           family: "'DM Serif Display', serif",               url: "https://fonts.googleapis.com/css2?family=DM+Serif+Display&display=swap" },
+  { id: "abril",      label: "Abril Fatface",      family: "'Abril Fatface', serif",                  url: "https://fonts.googleapis.com/css2?family=Abril+Fatface&display=swap" },
 ];
 
 const FONT_COLORS = [
@@ -673,9 +698,26 @@ export default function ProductDetail({ product }) {
   const [frontQrEnabled,   setFrontQrEnabled]   = useState(false);
   const [frontQrPlacement, setFrontQrPlacement] = useState("bottom-right");
   const [frontQrColor,     setFrontQrColor]     = useState("#18181B");
+  const [qrStyle,          setQrStyle]          = useState("minimal");
 
   const [cardColor, setCardColor] = useState("#18181B");
   const [fontColor, setFontColor] = useState("#FFFFFF");
+  const [selectedFont, setSelectedFont] = useState(FONT_OPTIONS[0]);
+  const [fontPage, setFontPage] = useState(0);
+  const FONTS_PER_PAGE = 5;
+  const totalFontPages = Math.ceil(FONT_OPTIONS.length / FONTS_PER_PAGE);
+
+  useEffect(() => {
+    if (!selectedFont.url) return;
+    const id = `gfont-${selectedFont.id}`;
+    if (!document.getElementById(id)) {
+      const link = document.createElement("link");
+      link.id   = id;
+      link.rel  = "stylesheet";
+      link.href = selectedFont.url;
+      document.head.appendChild(link);
+    }
+  }, [selectedFont]);
 
   const [errors, setErrors] = useState({});
 
@@ -722,6 +764,9 @@ export default function ProductDetail({ product }) {
         frontQrEnabled, frontQrPlacement, frontQrColor,
         cardColor:  product.allowColorCustomization ? cardColor : null,
         fontColor:  product.allowColorCustomization ? fontColor : null,
+        fontFamily: selectedFont.family,
+        fontLabel:  selectedFont.label,
+        qrStyle,
         selectedBackDesign, backContent, backBg,
         backLogoDataUrl:  backLogoDataUrl || null,
         backLogoPlacement, backLogoSize, qrFgColor,
@@ -779,6 +824,8 @@ export default function ProductDetail({ product }) {
             frontQrEnabled, frontQrPlacement, frontQrColor,
             cardColor: product.allowColorCustomization ? cardColor : null,
             fontColor: product.allowColorCustomization ? fontColor : null,
+            fontFamily: selectedFont.family,
+            qrStyle,
             backContent, backLogoDataUrl, backLogoPlacement, backLogoSize, qrFgColor,
           }}
         />
@@ -1152,6 +1199,60 @@ export default function ProductDetail({ product }) {
                     {/* Name fields */}
                     <div className="flex flex-col gap-3 rounded-xl border border-[#F0F0F0] bg-white p-3.5">
                       <SectionLabel>Your Details</SectionLabel>
+
+                      {/* Font Style picker */}
+                      <div className="flex flex-col gap-1.5">
+                        <div className="flex items-center justify-between">
+                          <p className="text-[12px] font-medium text-[#374151]">Font Style</p>
+                          <p className="text-[11px] text-[#9CA3AF]">{fontPage + 1} / {totalFontPages}</p>
+                        </div>
+                        <div className="flex items-center gap-1.5">
+                          <button
+                            type="button"
+                            onClick={() => setFontPage((p) => Math.max(0, p - 1))}
+                            disabled={fontPage === 0}
+                            style={{ flexShrink: 0, width: 28, height: 28, borderRadius: 8, background: "#F3F4F6", border: "1px solid #E5E7EB", color: fontPage === 0 ? "#D1D5DB" : "#374151", display: "flex", alignItems: "center", justifyContent: "center", cursor: fontPage === 0 ? "default" : "pointer" }}
+                          >
+                            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                              <polyline points="15 18 9 12 15 6" />
+                            </svg>
+                          </button>
+
+                          <div className="flex gap-2 flex-1">
+                            {FONT_OPTIONS.slice(fontPage * FONTS_PER_PAGE, fontPage * FONTS_PER_PAGE + FONTS_PER_PAGE).map((f) => {
+                              const active = selectedFont.id === f.id;
+                              return (
+                                <button
+                                  key={f.id}
+                                  type="button"
+                                  onClick={() => setSelectedFont(f)}
+                                  className="flex-1 rounded-lg py-1.5 text-[12px] transition-all truncate"
+                                  style={{
+                                    fontFamily: f.family,
+                                    fontWeight: 600,
+                                    background: active ? "#18181B" : "#F3F4F6",
+                                    color:      active ? "#28DC4F" : "#374151",
+                                    border:     active ? "1.5px solid #28DC4F" : "1.5px solid transparent",
+                                  }}
+                                >
+                                  {f.label}
+                                </button>
+                              );
+                            })}
+                          </div>
+
+                          <button
+                            type="button"
+                            onClick={() => setFontPage((p) => Math.min(totalFontPages - 1, p + 1))}
+                            disabled={fontPage === totalFontPages - 1}
+                            style={{ flexShrink: 0, width: 28, height: 28, borderRadius: 8, background: "#F3F4F6", border: "1px solid #E5E7EB", color: fontPage === totalFontPages - 1 ? "#D1D5DB" : "#374151", display: "flex", alignItems: "center", justifyContent: "center", cursor: fontPage === totalFontPages - 1 ? "default" : "pointer" }}
+                          >
+                            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                              <polyline points="9 18 15 12 9 6" />
+                            </svg>
+                          </button>
+                        </div>
+                      </div>
                       {[
                         { label: "Name",         value: name,        setter: setName,        placeholder: "Jane Smith",                                  errorKey: "name"     },
                         { label: "Sub Title",    value: subTitle,    setter: setSubTitle,    placeholder: "e.g. Product Manager at Acme Co.",            errorKey: "subTitle" },
@@ -1276,6 +1377,30 @@ export default function ProductDetail({ product }) {
                             </div>
                           </div>
                           <LogoPlacementPicker value={frontQrPlacement} onChange={setFrontQrPlacement} label="QR Placement" />
+
+                          {/* QR Style */}
+                          <div className="flex flex-col gap-2">
+                            <p className="text-[12px] font-medium text-[#374151]">QR Style</p>
+                            <div className="grid grid-cols-5 gap-1.5">
+                              {QR_STYLES.map((s) => {
+                                const active = qrStyle === s.id;
+                                return (
+                                  <button
+                                    key={s.id}
+                                    type="button"
+                                    onClick={() => setQrStyle(s.id)}
+                                    className="flex flex-col items-center gap-1.5 rounded-xl py-2 transition-all"
+                                    style={{ background: active ? "#18181B" : "#F9FAFB", border: active ? "1.5px solid #28DC4F" : "1.5px solid #F0F0F0" }}
+                                  >
+                                    <div className="flex items-center justify-center rounded-md bg-white p-1.5" style={{ width: 36, height: 36 }}>
+                                      <QrSvg color="#18181B" qrStyle={s.id} />
+                                    </div>
+                                    <span className="text-[10px] font-semibold" style={{ color: active ? "#28DC4F" : "#6B7280" }}>{s.label}</span>
+                                  </button>
+                                );
+                              })}
+                            </div>
+                          </div>
                         </div>
                       )}
                     </div>
@@ -1375,6 +1500,30 @@ export default function ProductDetail({ product }) {
                           <p className="text-[11px] text-[#9CA3AF]">
                             {QR_COLORS.find((c) => c.color === qrFgColor)?.label ?? "Black"}
                           </p>
+
+                          {/* QR Style */}
+                          <div className="flex flex-col gap-2 mt-1">
+                            <p className="text-[12px] font-medium text-[#374151]">QR Style</p>
+                            <div className="grid grid-cols-5 gap-1.5">
+                              {QR_STYLES.map((s) => {
+                                const active = qrStyle === s.id;
+                                return (
+                                  <button
+                                    key={s.id}
+                                    type="button"
+                                    onClick={() => setQrStyle(s.id)}
+                                    className="flex flex-col items-center gap-1.5 rounded-xl py-2 transition-all"
+                                    style={{ background: active ? "#18181B" : "#F9FAFB", border: active ? "1.5px solid #28DC4F" : "1.5px solid #F0F0F0" }}
+                                  >
+                                    <div className="flex items-center justify-center rounded-md bg-white p-1.5" style={{ width: 36, height: 36 }}>
+                                      <QrSvg color="#18181B" qrStyle={s.id} />
+                                    </div>
+                                    <span className="text-[10px] font-semibold" style={{ color: active ? "#28DC4F" : "#6B7280" }}>{s.label}</span>
+                                  </button>
+                                );
+                              })}
+                            </div>
+                          </div>
                         </div>
                       )}
 

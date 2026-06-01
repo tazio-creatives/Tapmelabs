@@ -87,7 +87,7 @@ export default function ProductCards() {
                         <img
                           src={image}
                           alt={product.name}
-                          style={{ width: "100%", height: "100%", objectFit: "cover" }}
+                          style={{ width: "100%", height: "100%", objectFit: "contain", padding: "12px" }}
                         />
                       ) : (
                         <div style={{ width: "100%", height: "100%", background: "#E5E7EB" }} />

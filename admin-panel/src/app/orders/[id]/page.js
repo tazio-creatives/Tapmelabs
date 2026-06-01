@@ -3,7 +3,6 @@
 import { useState, useEffect, useRef } from "react";
 import { useParams, useRouter } from "next/navigation";
 import Link from "next/link";
-import QRCode from "react-qr-code";
 import AdminLayout from "@/components/AdminLayout";
 import orderService from "@/services/orderService";
 
@@ -83,9 +82,44 @@ function isLightBg(bg) {
   return (r * 299 + g * 587 + b * 114) / 1000 > 155;
 }
 
+// ── QR styling helpers ────────────────────────────────────────────────────────
+
+function getQrStyleOptions(qrStyle, color) {
+  const map = {
+    minimal:    { dotsOptions: { color, type: "dots"           }, cornersSquareOptions: { color, type: "extra-rounded" }, cornersDotOptions: { color, type: "dot"    } },
+    futuristic: { dotsOptions: { color, type: "square"         }, cornersSquareOptions: { color, type: "square"        }, cornersDotOptions: { color, type: "square" } },
+    glass:      { dotsOptions: { color, type: "rounded"        }, cornersSquareOptions: { color, type: "extra-rounded" }, cornersDotOptions: { color, type: "dot"    } },
+    editorial:  { dotsOptions: { color, type: "classy-rounded" }, cornersSquareOptions: { color, type: "square"        }, cornersDotOptions: { color, type: "square" } },
+    creative:   { dotsOptions: { color, type: "extra-rounded"  }, cornersSquareOptions: { color, type: "extra-rounded" }, cornersDotOptions: { color, type: "dot"    } },
+  };
+  return map[qrStyle] || map.minimal;
+}
+
+function RealQrCode({ color = "#18181B", qrStyle = "minimal", data = "https://tapmelabs.com", width = 200, height = 200 }) {
+  const containerRef = useRef(null);
+  useEffect(() => {
+    if (!containerRef.current) return;
+    let cancelled = false;
+    import("qr-code-styling").then(({ default: QRCodeStyling }) => {
+      if (cancelled || !containerRef.current) return;
+      const qr = new QRCodeStyling({
+        width, height, type: "svg", data,
+        margin: 4, backgroundOptions: { color: "transparent" },
+        ...getQrStyleOptions(qrStyle, color),
+      });
+      containerRef.current.innerHTML = "";
+      qr.append(containerRef.current);
+      const svg = containerRef.current.querySelector("svg");
+      if (svg) { svg.style.width = "100%"; svg.style.height = "100%"; }
+    });
+    return () => { cancelled = true; };
+  }, [color, qrStyle, data, width, height]);
+  return <div ref={containerRef} style={{ width: "100%", height: "100%" }} />;
+}
+
 // ── NFC Card Front (exact replica of customer dashboard design) ───────────────
 
-function FrontCardPreview({ bg, name, subTitle, logoDataUrl, logoPlacement, logoSize, cardRef, fontColor }) {
+function FrontCardPreview({ bg, name, subTitle, logoDataUrl, logoPlacement, logoSize, cardRef, fontColor, fontFamily }) {
   const light = isLightBg(bg);
   const tc    = fontColor || (light ? "rgba(0,0,0,0.85)"  : "rgba(255,255,255,0.9)");
   const stc   = fontColor ? fontColor + "99" : (light ? "rgba(0,0,0,0.45)"  : "rgba(255,255,255,0.45)");
@@ -137,10 +171,10 @@ function FrontCardPreview({ bg, name, subTitle, logoDataUrl, logoPlacement, logo
 
       {/* Bottom-left: name + subtitle */}
       <div style={{ position: "absolute", bottom: "12%", left: "5%", right: "30%", overflow: "hidden" }}>
-        <p style={{ color: tc, fontSize: "clamp(7px,3.5cqw,18px)", fontWeight: 600, lineHeight: 1.3, margin: 0, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
+        <p style={{ color: tc, fontSize: "clamp(7px,3.5cqw,18px)", fontWeight: 600, lineHeight: 1.3, margin: 0, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis", fontFamily: fontFamily || "sans-serif" }}>
           {name || "Customer Name"}
         </p>
-        <p style={{ color: stc, fontSize: "clamp(5px,2.4cqw,13px)", marginTop: "0.25em", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
+        <p style={{ color: stc, fontSize: "clamp(5px,2.4cqw,13px)", marginTop: "0.25em", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis", fontFamily: fontFamily || "sans-serif" }}>
           {subTitle || "Title · Company"}
         </p>
       </div>
@@ -166,7 +200,7 @@ function FrontCardPreview({ bg, name, subTitle, logoDataUrl, logoPlacement, logo
 
 // ── NFC Card Back (exact replica of customer dashboard design) ────────────────
 
-function BackCardPreview({ bg, backContent, backLogoDataUrl, backLogoPlacement, backLogoSize, qrFgColor, cardRef }) {
+function BackCardPreview({ bg, backContent, backLogoDataUrl, backLogoPlacement, backLogoSize, qrFgColor, cardRef, profileUrl, qrStyle }) {
   const qr = qrFgColor || "#18181B";
   const bgStyle = getBgStyle(bg ?? { type: "solid", color: "#18181B" });
 
@@ -197,18 +231,7 @@ function BackCardPreview({ bg, backContent, backLogoDataUrl, backLogoPlacement, 
         {backContent === "qr" ? (
           <>
             <div style={{ width: "28%", aspectRatio: "1", background: "white", borderRadius: "6px", padding: "4%", boxSizing: "border-box", display: "flex", alignItems: "center", justifyContent: "center" }}>
-              <svg viewBox="0 0 22 22" fill="none" style={{ width: "100%", height: "100%" }}>
-                <rect x="0.5"  y="0.5"  width="9" height="9" rx="1" stroke={qr} strokeWidth="1" fill="none" />
-                <rect x="2.5"  y="2.5"  width="5" height="5" fill={qr} />
-                <rect x="12.5" y="0.5"  width="9" height="9" rx="1" stroke={qr} strokeWidth="1" fill="none" />
-                <rect x="14.5" y="2.5"  width="5" height="5" fill={qr} />
-                <rect x="0.5"  y="12.5" width="9" height="9" rx="1" stroke={qr} strokeWidth="1" fill="none" />
-                <rect x="2.5"  y="14.5" width="5" height="5" fill={qr} />
-                <rect x="12.5" y="12.5" width="4" height="4" fill={qr} />
-                <rect x="18.5" y="12.5" width="3" height="3" fill={qr} />
-                <rect x="12.5" y="18.5" width="3" height="3" fill={qr} />
-                <rect x="17.5" y="17.5" width="4" height="4" fill={qr} />
-              </svg>
+              <RealQrCode color={qr} qrStyle={qrStyle || "minimal"} data={profileUrl || "https://tapmelabs.com"} />
             </div>
             <span style={{ fontSize: "clamp(5px,2.2cqw,11px)", fontWeight: 500, letterSpacing: "0.18em", color: "rgba(255,255,255,0.5)" }}>SCAN TO CONNECT</span>
           </>
@@ -493,13 +516,13 @@ export default function OrderDetailPage() {
         <div className="print-card-slot">
           <p className="print-label">FRONT SIDE</p>
           <div className="nfc-card-wrap">
-            <FrontCardPreview bg={cardBg} name={cardName} subTitle={cardSub} logoDataUrl={logoUrl} logoPlacement={cust.logoPlacement || "top-left"} logoSize={cust.logoSize || 44} fontColor={cust.fontColor} />
+            <FrontCardPreview bg={cardBg} name={cardName} subTitle={cardSub} logoDataUrl={logoUrl} logoPlacement={cust.logoPlacement || "top-left"} logoSize={cust.logoSize || 44} fontColor={cust.fontColor} fontFamily={cust.fontFamily} />
           </div>
         </div>
         <div className="print-card-slot">
           <p className="print-label">BACK SIDE</p>
           <div className="nfc-card-wrap">
-            <BackCardPreview bg={backBg} backContent={cust.backContent || "logo"} backLogoDataUrl={cust.backLogoDataUrl} backLogoPlacement={cust.backLogoPlacement} backLogoSize={cust.backLogoSize} qrFgColor={cust.qrFgColor} />
+            <BackCardPreview bg={backBg} backContent={cust.backContent || "logo"} backLogoDataUrl={cust.backLogoDataUrl} backLogoPlacement={cust.backLogoPlacement} backLogoSize={cust.backLogoSize} qrFgColor={cust.qrFgColor} profileUrl={profileUrl} qrStyle={cust.qrStyle} />
           </div>
         </div>
       </div>
@@ -507,10 +530,10 @@ export default function OrderDetailPage() {
       {/* Off-screen cards always in DOM — html-to-image captures these regardless of which face is visible */}
       <div style={{ position: "absolute", left: "-9999px", top: 0, width: "460px", pointerEvents: "none", opacity: 0, zIndex: -1 }}>
         <div ref={frontRef}>
-          <FrontCardPreview bg={cardBg} name={cardName} subTitle={cardSub} logoDataUrl={logoUrl} logoPlacement={cust.logoPlacement || "top-left"} logoSize={cust.logoSize || 44} fontColor={cust.fontColor} />
+          <FrontCardPreview bg={cardBg} name={cardName} subTitle={cardSub} logoDataUrl={logoUrl} logoPlacement={cust.logoPlacement || "top-left"} logoSize={cust.logoSize || 44} fontColor={cust.fontColor} fontFamily={cust.fontFamily} />
         </div>
         <div ref={backRef} style={{ marginTop: "16px" }}>
-          <BackCardPreview bg={backBg} backContent={cust.backContent || "logo"} backLogoDataUrl={cust.backLogoDataUrl} backLogoPlacement={cust.backLogoPlacement} backLogoSize={cust.backLogoSize} qrFgColor={cust.qrFgColor} />
+          <BackCardPreview bg={backBg} backContent={cust.backContent || "logo"} backLogoDataUrl={cust.backLogoDataUrl} backLogoPlacement={cust.backLogoPlacement} backLogoSize={cust.backLogoSize} qrFgColor={cust.qrFgColor} profileUrl={profileUrl} qrStyle={cust.qrStyle} />
         </div>
       </div>
 
@@ -688,8 +711,8 @@ export default function OrderDetailPage() {
                     })()
                   ) : (
                     cardFace === "front"
-                      ? <FrontCardPreview bg={cardBg} name={cardName} subTitle={cardSub} logoDataUrl={logoUrl} logoPlacement={cust.logoPlacement || "top-left"} logoSize={cust.logoSize || 44} fontColor={cust.fontColor} />
-                      : <BackCardPreview  bg={backBg} backContent={cust.backContent || "logo"} backLogoDataUrl={cust.backLogoDataUrl} backLogoPlacement={cust.backLogoPlacement} backLogoSize={cust.backLogoSize} qrFgColor={cust.qrFgColor} />
+                      ? <FrontCardPreview bg={cardBg} name={cardName} subTitle={cardSub} logoDataUrl={logoUrl} logoPlacement={cust.logoPlacement || "top-left"} logoSize={cust.logoSize || 44} fontColor={cust.fontColor} fontFamily={cust.fontFamily} />
+                      : <BackCardPreview  bg={backBg} backContent={cust.backContent || "logo"} backLogoDataUrl={cust.backLogoDataUrl} backLogoPlacement={cust.backLogoPlacement} backLogoSize={cust.backLogoSize} qrFgColor={cust.qrFgColor} profileUrl={profileUrl} qrStyle={cust.qrStyle} />
                   )}
                 </div>
 
@@ -803,8 +826,8 @@ export default function OrderDetailPage() {
                   </div>
 
                   <div className="flex flex-col items-center gap-2 rounded-xl bg-white p-4" style={{ border: "1px solid #E2E8F0" }}>
-                    <div ref={qrRef} className="bg-white p-2 rounded-lg">
-                      <QRCode value={profileUrl} size={120} level="M" />
+                    <div ref={qrRef} className="bg-white p-2 rounded-lg" style={{ width: 136, height: 136 }}>
+                      <RealQrCode color={cust.qrFgColor || "#18181B"} qrStyle={cust.qrStyle || "minimal"} data={profileUrl} width={120} height={120} />
                     </div>
                     <p className="text-[10px] text-slate-400">Scan to verify profile</p>
                     <button
@@ -869,6 +892,14 @@ export default function OrderDetailPage() {
                       <div style={{ width: 18, height: 18, borderRadius: 4, background: cust.fontColor, border: "1px solid #E2E8F0", flexShrink: 0 }} />
                       <span className="font-mono text-[13px] text-slate-800">{cust.fontColor.toUpperCase()}</span>
                     </div>
+                  </div>
+                )}
+                {cust.fontLabel && cust.fontLabel !== "Default" && (
+                  <div className="flex items-center justify-between gap-4 py-2" style={{ borderBottom: "1px solid #F8FAFC" }}>
+                    <span className="text-[12px] text-slate-400 shrink-0 w-28">Font Style</span>
+                    <span className="text-[13px] text-slate-800" style={{ fontFamily: cust.fontFamily || "sans-serif", fontWeight: 600 }}>
+                      {cust.fontLabel}
+                    </span>
                   </div>
                 )}
                 {logoUrl && (
