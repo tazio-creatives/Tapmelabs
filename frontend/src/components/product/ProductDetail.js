@@ -4,6 +4,8 @@ import { useState, useRef, useEffect } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import CardMockupOverlay, { QrSvg } from "./CardMockupOverlay";
+import { extractSvgColors, replaceSvgColors } from "@/utils/svgColorUtils";
+import orderService from "@/services/orderService";
 
 /* ─── background constants ────────────────────────────────────── */
 
@@ -67,36 +69,29 @@ function getLogoStyle(placement, size = 44) {
 
 /* ─── logo placement picker ───────────────────────────────────── */
 
-function LogoPlacementPicker({ value, onChange, label = "Logo Placement" }) {
+function LogoPlacementPicker({ value, onChange }) {
   return (
-    <div className="flex flex-col gap-2">
-      <p className="text-[13px] font-medium text-[#374151]">{label}</p>
-      <div className="grid grid-cols-3 gap-1 rounded-xl bg-[#F5F5F5] p-1.5">
-        {LOGO_PLACEMENTS.map((p) => (
-          <button
-            key={p.id}
-            onClick={() => onChange(p.id)}
-            title={p.label}
-            className="flex items-center justify-center rounded-lg py-2.5 text-[15px] transition-all"
-            style={{
-              background: value === p.id ? "#18181B" : "transparent",
-              color:      value === p.id ? "#28DC4F" : "#9CA3AF",
-            }}
-          >
-            {p.symbol}
-          </button>
-        ))}
-      </div>
-      <p className="text-[11px] text-[#9CA3AF]">
-        {LOGO_PLACEMENTS.find((p) => p.id === value)?.label ?? "Top Left"}
-      </p>
+    <div className="grid grid-cols-3 gap-2">
+      {LOGO_PLACEMENTS.map((p) => (
+        <button
+          key={p.id}
+          onClick={() => onChange(p.id)}
+          title={p.label}
+          className="flex items-center justify-center rounded-full transition-all"
+          style={{
+            width: 20, height: 20,
+            background: value === p.id ? "#28DC4F" : "#E5E7EB",
+            boxShadow: value === p.id ? "0 0 0 2px white, 0 0 0 4px #28DC4F" : "none",
+          }}
+        />
+      ))}
     </div>
   );
 }
 
 /* ─── front card preview ──────────────────────────────────────── */
 
-function FrontCardPreview({ bg, name, subTitle, logoDataUrl, logoPlacement, logoSize, fontColor }) {
+function FrontCardPreview({ bg, name, subTitle, logoDataUrl, logoPlacement, logoSize, fontColor, skinSvgContent = null }) {
   const light = isLightBg(bg);
   const tc     = fontColor || (light ? "rgba(0,0,0,0.85)"  : "rgba(255,255,255,0.9)");
   const stc    = fontColor ? `${fontColor}CC` : (light ? "rgba(0,0,0,0.45)"  : "rgba(255,255,255,0.45)");
@@ -105,37 +100,51 @@ function FrontCardPreview({ bg, name, subTitle, logoDataUrl, logoPlacement, logo
   const ring   = (o) => light ? `rgba(0,0,0,${o})` : `rgba(255,255,255,${o})`;
   const dm     = light ? "#000" : "#fff";
 
+  const isSkinBg = !!skinSvgContent;
+
   return (
     <div
       className="relative overflow-hidden"
       style={{
         width: "100%",
         maxWidth: "420px",
-        aspectRatio: "5 / 3",
+        aspectRatio: "1012 / 638",
         borderRadius: "14px",
         boxShadow: "0 12px 40px rgba(0,0,0,0.35)",
-        containerType: "inline-size",
         ...getBgStyle(bg),
       }}
     >
-      {!light && (
-        <div
-          className="pointer-events-none absolute inset-0"
-          style={{ background: "radial-gradient(ellipse at 75% 20%,rgba(40,220,79,0.09) 0%,transparent 55%)" }}
+      {isSkinBg && (
+        // eslint-disable-next-line @next/next/no-img-element
+        <img
+          src={`data:image/svg+xml;charset=utf-8,${encodeURIComponent(skinSvgContent)}`}
+          alt=""
+          style={{ position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: "cover", display: "block", pointerEvents: "none" }}
         />
       )}
 
-      {["33%", "50%", "66%"].map((sz, i) => (
-        <div
-          key={i}
-          className="pointer-events-none absolute rounded-full"
-          style={{
-            width: sz, height: sz,
-            bottom: `calc(-${sz} / 2)`, right: `calc(-${sz} / 2)`,
-            border: `1px solid ${ring(0.06 - i * 0.015)}`,
-          }}
-        />
-      ))}
+      {!isSkinBg && (
+        <>
+          {!light && (
+            <div
+              className="pointer-events-none absolute inset-0"
+              style={{ background: "radial-gradient(ellipse at 75% 20%,rgba(40,220,79,0.09) 0%,transparent 55%)" }}
+            />
+          )}
+
+          {["33%", "50%", "66%"].map((sz, i) => (
+            <div
+              key={i}
+              className="pointer-events-none absolute rounded-full"
+              style={{
+                width: sz, height: sz,
+                bottom: `calc(-${sz} / 2)`, right: `calc(-${sz} / 2)`,
+                border: `1px solid ${ring(0.06 - i * 0.015)}`,
+              }}
+            />
+          ))}
+        </>
+      )}
 
       {!(logoDataUrl && logoPlacement === "top-left") && (
         <div style={{ position: "absolute", left: "4%", top: "8%", display: "flex", alignItems: "center", gap: "3%" }}>
@@ -257,16 +266,23 @@ const QR_STYLES = [
 ];
 
 const CARD_COLORS = [
-  { id: "black",    label: "Matte Black",  color: "#18181B" },
-  { id: "navy",     label: "Navy Blue",    color: "#1B2B4B" },
-  { id: "white",    label: "Arctic White", color: "#F5F5F5" },
-  { id: "forest",   label: "Forest",       color: "#0D2B1B" },
-  { id: "charcoal", label: "Charcoal",     color: "#2E3440" },
-  { id: "rosegold", label: "Rose Gold",    color: "#C9856C" },
-  { id: "royal",    label: "Royal Blue",   color: "#1E3A8A" },
-  { id: "purple",   label: "Deep Purple",  color: "#3D1A78" },
-  { id: "gold",     label: "Gold",         color: "#B8860B" },
-  { id: "burgundy", label: "Burgundy",     color: "#3D0C11" },
+  { id: "matte-black", label: "Matte Black", color: "#18181B" },
+  { id: "white",       label: "White",       color: "#F8F8F8" },
+  { id: "navy",        label: "Navy",        color: "#1B2B4B" },
+  { id: "emerald",     label: "Emerald",     color: "#064E3B" },
+  { id: "silver",      label: "Silver",      color: "#6B7280" },
+  { id: "gold",        label: "Gold",        color: "#92700A" },
+  { id: "rose-gold",   label: "Rose Gold",   color: "#C9856C" },
+];
+
+const ACCENT_COLORS = [
+  { id: "gold",      label: "Gold",      color: "#D4AF37" },
+  { id: "silver",    label: "Silver",    color: "#C0C0C0" },
+  { id: "green",     label: "Green",     color: "#28DC4F" },
+  { id: "blue",      label: "Blue",      color: "#3B82F6" },
+  { id: "rose-gold", label: "Rose Gold", color: "#E8A598" },
+  { id: "white",     label: "White",     color: "#FFFFFF" },
+  { id: "black",     label: "Black",     color: "#18181B" },
 ];
 
 const FONT_OPTIONS = [
@@ -287,12 +303,12 @@ const FONT_OPTIONS = [
 ];
 
 const FONT_COLORS = [
-  { id: "white",  label: "White",        color: "#FFFFFF" },
-  { id: "black",  label: "Black",        color: "#18181B" },
-  { id: "green",  label: "TapMe Green",  color: "#28DC4F" },
-  { id: "gold",   label: "Gold",         color: "#F59E0B" },
-  { id: "silver", label: "Silver",       color: "#E2E8F0" },
+  { id: "white",  label: "White",  color: "#FFFFFF" },
+  { id: "black",  label: "Black",  color: "#18181B" },
+  { id: "gold",   label: "Gold",   color: "#D4AF37" },
+  { id: "silver", label: "Silver", color: "#C0C0C0" },
 ];
+
 
 /* ─── icons ──────────────────────────────────────────────────── */
 
@@ -627,6 +643,45 @@ function ExpandableDescription({ text, className = "" }) {
   );
 }
 
+/* ─── custom colour swatch ───────────────────────────────────── */
+
+function CustomColorSwatch({ value, onChange, presets }) {
+  const ref = useRef(null);
+  const isCustom = !presets.some((p) => p.toLowerCase() === value.toLowerCase());
+  return (
+    <button
+      type="button"
+      title="Custom color"
+      onClick={() => ref.current?.click()}
+      className="relative shrink-0 rounded-full overflow-hidden transition-all"
+      style={{
+        width: 36, height: 36,
+        background: isCustom
+          ? value
+          : "conic-gradient(red 0deg,yellow 60deg,lime 120deg,aqua 180deg,blue 240deg,magenta 300deg,red 360deg)",
+        boxShadow: isCustom
+          ? `0 0 0 2.5px white, 0 0 0 4.5px ${value}`
+          : "0 0 0 1px rgba(0,0,0,0.12)",
+      }}
+    >
+      {!isCustom && (
+        <div style={{ position: "absolute", inset: 0, display: "flex", alignItems: "center", justifyContent: "center", background: "rgba(0,0,0,0.18)" }}>
+          <svg width="13" height="13" viewBox="0 0 14 14" fill="none">
+            <path d="M7 2v10M2 7h10" stroke="white" strokeWidth="2" strokeLinecap="round"/>
+          </svg>
+        </div>
+      )}
+      <input
+        ref={ref}
+        type="color"
+        value={value}
+        onChange={(e) => onChange(e.target.value)}
+        style={{ position: "absolute", inset: 0, opacity: 0, width: "100%", height: "100%", cursor: "pointer", border: "none", padding: 0 }}
+      />
+    </button>
+  );
+}
+
 /* ─── section label ──────────────────────────────────────────── */
 
 function SectionLabel({ children }) {
@@ -700,10 +755,19 @@ export default function ProductDetail({ product }) {
   const [frontQrColor,     setFrontQrColor]     = useState("#18181B");
   const [qrStyle,          setQrStyle]          = useState("minimal");
 
-  const [cardColor, setCardColor] = useState("#18181B");
-  const [fontColor, setFontColor] = useState("#FFFFFF");
+  const [cardColor,       setCardColor]       = useState("#18181B");
+  const [accentColor,     setAccentColor]     = useState("#D4AF37");
+  const [fontColor,       setFontColor]       = useState("#FFFFFF");
   const [selectedFont, setSelectedFont] = useState(FONT_OPTIONS[0]);
   const [fontPage, setFontPage] = useState(0);
+
+  // SVG background styles from product
+  // selectedSvgStyleIndex: 'plain' = plain colour, number = SVG style
+  const [selectedSvgStyleIndex, setSelectedSvgStyleIndex] = useState("plain");
+  const [svgBgPlainColor, setSvgBgPlainColor] = useState("#18181B");
+  const [svgColorMap, setSvgColorMap] = useState([]);
+  const [svgContent, setSvgContent] = useState(null);
+  const [svgLoading, setSvgLoading] = useState(false);
   const FONTS_PER_PAGE = 5;
   const totalFontPages = Math.ceil(FONT_OPTIONS.length / FONTS_PER_PAGE);
 
@@ -719,12 +783,39 @@ export default function ProductDetail({ product }) {
     }
   }, [selectedFont]);
 
+  useEffect(() => {
+    const styles = product.backgroundStyles ?? [];
+    if (selectedSvgStyleIndex === "plain" || typeof selectedSvgStyleIndex !== "number" || !styles[selectedSvgStyleIndex]) {
+      setSvgContent(null);
+      setSvgColorMap([]);
+      return;
+    }
+    const style = styles[selectedSvgStyleIndex];
+    if (!style.svgUrl) { setSvgContent(null); return; }
+    setSvgLoading(true);
+    fetch(style.svgUrl)
+      .then(r => r.text())
+      .then(text => {
+        setSvgContent(text);
+        setSvgColorMap((style.extractedColors ?? []).map(ec => ({ original: ec.original, selected: ec.original })));
+      })
+      .catch(() => setSvgContent(null))
+      .finally(() => setSvgLoading(false));
+  }, [selectedSvgStyleIndex, product.backgroundStyles]);
+
   const [errors, setErrors] = useState({});
 
   const frontBg = DEFAULT_BG;
   const backBg  = DEFAULT_BG;
 
   const isBack = activeTab === "back";
+
+  const activeSvgOverlay = typeof selectedSvgStyleIndex === "number" && svgContent
+    ? replaceSvgColors(svgContent, svgColorMap)
+    : null;
+
+  // Plain colour override from new section
+  const activeSvgBgColor = selectedSvgStyleIndex === "plain" ? svgBgPlainColor : null;
 
   function validate() {
     const errs = {};
@@ -737,7 +828,7 @@ export default function ProductDetail({ product }) {
     return errs;
   }
 
-  function handleBuyNow() {
+  async function handleBuyNow() {
     const errs = validate();
     if (Object.keys(errs).length > 0) {
       setErrors(errs);
@@ -762,14 +853,25 @@ export default function ProductDetail({ product }) {
         logoDataUrl:      logoDataUrl     || null,
         logoPlacement, logoSize,
         frontQrEnabled, frontQrPlacement, frontQrColor,
-        cardColor:  product.allowColorCustomization ? cardColor : null,
-        fontColor:  product.allowColorCustomization ? fontColor : null,
+        cardColor:       product.allowColorCustomization ? cardColor       : null,
+        accentColor:     product.allowColorCustomization ? accentColor     : null,
+        fontColor:       product.allowColorCustomization ? fontColor       : null,
         fontFamily: selectedFont.family,
         fontLabel:  selectedFont.label,
         qrStyle,
         selectedBackDesign, backContent, backBg,
         backLogoDataUrl:  backLogoDataUrl || null,
         backLogoPlacement, backLogoSize, qrFgColor,
+        svgBackground: typeof selectedSvgStyleIndex === "number" && (product.backgroundStyles ?? [])[selectedSvgStyleIndex]
+          ? {
+              backgroundType:       "svg",
+              backgroundStyleIndex: selectedSvgStyleIndex,
+              backgroundStyleName:  (product.backgroundStyles ?? [])[selectedSvgStyleIndex]?.styleName || "",
+              backgroundStyleFile:  (product.backgroundStyles ?? [])[selectedSvgStyleIndex]?.svgFile || "",
+              selectedSvgColors:    svgColorMap,
+              customizedSvgContent: svgContent ? replaceSvgColors(svgContent, svgColorMap) : null,
+            }
+          : { backgroundType: "plain", plainColor: svgBgPlainColor },
       } : null,
       uploaded_front_design: designMethod === "upload_own_design" ? (uploadedFrontDataUrl || null) : null,
       uploaded_back_design:  designMethod === "upload_own_design" ? (uploadedBackDataUrl  || null) : null,
@@ -781,7 +883,24 @@ export default function ProductDetail({ product }) {
     } catch { }
 
     const token = localStorage.getItem("customerToken");
-    router.push(token ? "/checkout/shipping" : "/register?redirect=checkout");
+    if (token) {
+      try {
+        const res = await orderService.getMyOrders();
+        const orders = res.data?.orders ?? [];
+        const hasActive = orders.some(
+          (o) => ["pending", "paid"].includes(o.payment_status) && o.order_status !== "cancelled"
+        );
+        if (hasActive) {
+          setErrors({ general: "You already have an active order. Please visit your dashboard to track it." });
+          return;
+        }
+      } catch {
+        // if check fails, allow through — backend will enforce as fallback
+      }
+      router.push("/checkout/shipping");
+    } else {
+      router.push("/register?redirect=checkout");
+    }
   }
 
   /* ── card preview renderer ── */
@@ -822,8 +941,11 @@ export default function ProductDetail({ product }) {
           customization={{
             name, subTitle, logoDataUrl, logoPlacement, logoSize,
             frontQrEnabled, frontQrPlacement, frontQrColor,
-            cardColor: product.allowColorCustomization ? cardColor : null,
-            fontColor: product.allowColorCustomization ? fontColor : null,
+            cardColor:        activeSvgBgColor ?? (product.allowColorCustomization ? cardColor : null),
+            accentColor:      product.allowColorCustomization ? accentColor                     : null,
+            fontColor:        product.allowColorCustomization ? fontColor                       : null,
+            backgroundStyle:  activeSvgBgColor ? "plain" : null,
+            skinSvgContent:   activeSvgOverlay,
             fontFamily: selectedFont.family,
             qrStyle,
             backContent, backLogoDataUrl, backLogoPlacement, backLogoSize, qrFgColor,
@@ -845,10 +967,11 @@ export default function ProductDetail({ product }) {
         >
           <div style={{ position: "absolute", inset: 0, backfaceVisibility: "hidden", WebkitBackfaceVisibility: "hidden", display: "flex", alignItems: "center", justifyContent: "center" }}>
             <FrontCardPreview
-              bg={product.allowColorCustomization ? { type: "solid", color: cardColor } : frontBg}
+              bg={activeSvgBgColor ? { type: "solid", color: activeSvgBgColor } : (product.allowColorCustomization ? { type: "solid", color: cardColor } : frontBg)}
               name={name} subTitle={subTitle}
               logoDataUrl={logoDataUrl} logoPlacement={logoPlacement} logoSize={logoSize}
               fontColor={product.allowColorCustomization ? fontColor : null}
+              skinSvgContent={activeSvgOverlay}
             />
           </div>
           <div style={{ position: "absolute", inset: 0, backfaceVisibility: "hidden", WebkitBackfaceVisibility: "hidden", transform: "rotateY(180deg)", display: "flex", alignItems: "center", justifyContent: "center" }}>
@@ -864,9 +987,16 @@ export default function ProductDetail({ product }) {
 
       {/* ── STICKY MOBILE BUY BAR ── */}
       <div
-        className="fixed bottom-0 left-0 right-0 z-50 flex items-center gap-3 border-t border-[#F0F0F0] bg-white px-4 py-3 lg:hidden"
+        className="fixed bottom-0 left-0 right-0 z-50 lg:hidden"
         style={{ boxShadow: "0 -4px 20px rgba(0,0,0,0.06)" }}
       >
+        {errors.general && (
+          <div className="bg-[#FEF2F2] border-t border-[#FECACA] px-4 py-2 text-[12px] text-[#DC2626] flex items-center gap-2">
+            <span>⚠</span>
+            <span>{errors.general} <a href="/dashboard/my-cards" className="underline font-semibold">My Cards</a></span>
+          </div>
+        )}
+      <div className="flex items-center gap-3 border-t border-[#F0F0F0] bg-white px-4 py-3">
         <div className="flex-1 min-w-0">
           <p className="truncate text-[11px] text-[#9CA3AF]">{product.name}</p>
           <div className="flex items-baseline gap-2">
@@ -883,6 +1013,7 @@ export default function ProductDetail({ product }) {
         >
           Buy Now
         </button>
+      </div>
       </div>
 
       <div className="mx-auto max-w-5xl px-4 pb-28 pt-4 sm:px-6 lg:pb-12 lg:pt-8">
@@ -914,24 +1045,34 @@ export default function ProductDetail({ product }) {
 
         {/* ── MOBILE ONLY: sticky card preview ── */}
         <div className="sticky top-[70px] z-20 -mx-4 mb-4 overflow-hidden sm:-mx-6 lg:hidden" style={{ background: "#F3F4F6" }}>
-          <div className="p-3 pb-0">{renderCardPreview()}</div>
-          <div className="flex items-center justify-center border-t border-[#E5E7EB] px-4 py-2.5" style={{ background: "#F3F4F6" }}>
-            <div className="flex rounded-xl p-1" style={{ background: "#E5E7EB" }}>
-              {["front", "back"].map((tab) => (
-                <button
-                  key={tab}
-                  onClick={() => setActiveTab(tab)}
-                  className="rounded-lg px-10 py-2 text-[13px] font-semibold transition-all"
-                  style={{
-                    background: activeTab === tab ? "#28DC4F" : "transparent",
-                    color:      activeTab === tab ? "#000"    : "#9CA3AF",
-                  }}
-                >
-                  {tab === "front" ? "Front" : "Back"}
-                </button>
-              ))}
+          {/* Header: Live Preview + Front/Back tabs */}
+          <div className="flex items-center justify-between border-b border-[#E5E7EB] bg-white px-4 py-2.5">
+            <span className="text-[12px] font-semibold text-[#111827]">Live Preview</span>
+            <div className="flex items-center">
+              {["front", "back"].map((tab) => {
+                const active = activeTab === tab;
+                return (
+                  <button
+                    key={tab}
+                    onClick={() => setActiveTab(tab)}
+                    className="relative flex items-center gap-1.5 px-3 py-2 text-[12px] font-semibold transition-colors"
+                    style={{ color: active ? "#28DC4F" : "#9CA3AF" }}
+                  >
+                    <svg width="14" height="11" viewBox="0 0 14 11" fill="none">
+                      <rect x="0.75" y="0.75" width="12.5" height="8" rx="1.25" stroke="currentColor" strokeWidth="1.3"/>
+                      <path d="M4.5 9.75 H9.5" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round"/>
+                      <line x1="0.75" y1="6.25" x2="13.25" y2="6.25" stroke="currentColor" strokeWidth="1.3"/>
+                    </svg>
+                    {tab === "front" ? "Front" : "Back"}
+                    {active && (
+                      <span className="absolute bottom-0 left-3 right-3 h-[2px] rounded-full bg-[#28DC4F]" />
+                    )}
+                  </button>
+                );
+              })}
             </div>
           </div>
+          <div className="p-3">{renderCardPreview()}</div>
         </div>
 
         {/* ── TWO COLUMN LAYOUT ── */}
@@ -942,27 +1083,35 @@ export default function ProductDetail({ product }) {
 
             {/* Card preview box — desktop only */}
             <div className="hidden overflow-hidden rounded-2xl lg:block" style={{ background: "#F3F4F6" }}>
-              <div className="p-3 pb-0">
-                {renderCardPreview()}
-              </div>
-
-              {/* Front / Back tab */}
-              <div className="flex items-center justify-center border-t border-[#E5E7EB] px-4 py-2.5" style={{ background: "#F3F4F6" }}>
-                <div className="flex rounded-xl p-1" style={{ background: "#E5E7EB" }}>
-                  {["front", "back"].map((tab) => (
-                    <button
-                      key={tab}
-                      onClick={() => setActiveTab(tab)}
-                      className="rounded-lg px-10 py-2 text-[13px] font-semibold transition-all"
-                      style={{
-                        background: activeTab === tab ? "#28DC4F" : "transparent",
-                        color:      activeTab === tab ? "#000"    : "#9CA3AF",
-                      }}
-                    >
-                      {tab === "front" ? "Front" : "Back"}
-                    </button>
-                  ))}
+              {/* Header: Live Preview + Front/Back tabs */}
+              <div className="flex items-center justify-between border-b border-[#E5E7EB] bg-white px-4 py-2.5">
+                <span className="text-[13px] font-semibold text-[#111827]">Live Preview</span>
+                <div className="flex items-center">
+                  {["front", "back"].map((tab) => {
+                    const active = activeTab === tab;
+                    return (
+                      <button
+                        key={tab}
+                        onClick={() => setActiveTab(tab)}
+                        className="relative flex items-center gap-1.5 px-3 py-2 text-[12px] font-semibold transition-colors"
+                        style={{ color: active ? "#28DC4F" : "#9CA3AF" }}
+                      >
+                        <svg width="14" height="11" viewBox="0 0 14 11" fill="none">
+                          <rect x="0.75" y="0.75" width="12.5" height="8" rx="1.25" stroke="currentColor" strokeWidth="1.3"/>
+                          <path d="M4.5 9.75 H9.5" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round"/>
+                          <line x1="0.75" y1="6.25" x2="13.25" y2="6.25" stroke="currentColor" strokeWidth="1.3"/>
+                        </svg>
+                        {tab === "front" ? "Front" : "Back"}
+                        {active && (
+                          <span className="absolute bottom-0 left-3 right-3 h-[2px] rounded-full bg-[#28DC4F]" />
+                        )}
+                      </button>
+                    );
+                  })}
                 </div>
+              </div>
+              <div className="p-3">
+                {renderCardPreview()}
               </div>
             </div>
 
@@ -1036,19 +1185,39 @@ export default function ProductDetail({ product }) {
             {/* ── DESIGN METHOD TOGGLE ── */}
             <div className="flex rounded-lg bg-[#F3F4F6] p-0.5">
               {[
-                { value: "customize_online",  label: "Customize Online" },
-                { value: "upload_own_design", label: "Upload My Design"  },
-              ].map(({ value, label }) => (
+                {
+                  value: "customize_online",
+                  label: "Customize Online",
+                  icon: (
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                      <path d="M12 20h9"/>
+                      <path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/>
+                    </svg>
+                  ),
+                },
+                {
+                  value: "upload_own_design",
+                  label: "Upload My Design",
+                  icon: (
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                      <polyline points="16 16 12 12 8 16"/>
+                      <line x1="12" y1="12" x2="12" y2="21"/>
+                      <path d="M20.39 18.39A5 5 0 0 0 18 9h-1.26A8 8 0 1 0 3 16.3"/>
+                    </svg>
+                  ),
+                },
+              ].map(({ value, label, icon }) => (
                 <button
                   key={value}
                   onClick={() => { setDesignMethod(value); setErrors({}); }}
-                  className="flex-1 rounded-md py-1.5 text-[12px] font-medium transition-all"
+                  className="flex-1 flex items-center justify-center gap-1.5 rounded-md py-1.5 text-[12px] font-medium transition-all"
                   style={{
                     background: designMethod === value ? "#fff" : "transparent",
                     color:      designMethod === value ? "#111827" : "#9CA3AF",
                     boxShadow:  designMethod === value ? "0 1px 3px rgba(0,0,0,0.1)" : "none",
                   }}
                 >
+                  {icon}
                   {label}
                 </button>
               ))}
@@ -1062,148 +1231,186 @@ export default function ProductDetail({ product }) {
                 {!isBack && (
                   <div className="flex flex-col gap-3">
 
-                    {/* Card & font colour */}
-                    {product.allowColorCustomization && (
-                      <div className="flex flex-col gap-3 rounded-xl border border-[#F0F0F0] bg-white p-3.5">
+                    {/* ── 1. Background ── */}
+                    <div className="flex flex-col gap-4 rounded-2xl border border-[#EBEBEB] bg-white p-4">
+                        <p className="text-[14px] font-bold text-[#111827]">1. Background</p>
 
-                        {/* Card Colour */}
-                        {(() => {
-                          const isCustomCard = !CARD_COLORS.some((cc) => cc.color.toLowerCase() === cardColor.toLowerCase());
-                          return (
-                            <div className="flex flex-col gap-1.5">
-                              <div className="flex items-center justify-between">
-                                <p className="text-[12px] font-medium text-[#374151]">
-                                  Card Colour
-                                  <span className="ml-2 text-[11px] text-[#9CA3AF]">
-                                    {isCustomCard ? cardColor.toUpperCase() : (CARD_COLORS.find((cc) => cc.color.toLowerCase() === cardColor.toLowerCase())?.label ?? "")}
-                                  </span>
-                                </p>
-                                <label
-                                  title="Custom colour"
-                                  className="flex cursor-pointer items-center gap-1.5 rounded-lg border px-2 py-1"
-                                  style={{
-                                    borderColor: isCustomCard ? "#28DC4F" : "#E5E7EB",
-                                    background:  isCustomCard ? "#F0FFF4" : "transparent",
-                                  }}
-                                >
-                                  <span className="inline-block h-3 w-3 rounded border border-black/10" style={{ background: cardColor }} />
-                                  <span className="text-[11px] font-medium text-[#6B7280]">Custom</span>
-                                  <input
-                                    type="color"
-                                    value={cardColor}
-                                    onChange={(e) => setCardColor(e.target.value)}
-                                    className="sr-only"
-                                  />
-                                </label>
-                              </div>
-                              <div className="flex gap-2 overflow-x-auto pb-1" style={{ scrollbarWidth: "none" }}>
-                                {CARD_COLORS.map((cc) => {
-                                  const selected = cardColor.toLowerCase() === cc.color.toLowerCase();
-                                  const isLight  = cc.color === "#F5F5F5";
-                                  return (
-                                    <button
-                                      key={cc.id}
-                                      type="button"
-                                      title={cc.label}
-                                      onClick={() => {
-                                        setCardColor(cc.color);
-                                        setFontColor(cc.color === "#F5F5F5" ? "#18181B" : "#FFFFFF");
-                                      }}
-                                      className="relative shrink-0 rounded-full transition-all"
-                                      style={{
-                                        width: "32px", height: "32px",
-                                        background: cc.color,
-                                        border: selected ? "2.5px solid #28DC4F" : "2px solid transparent",
-                                        boxShadow: selected ? "0 0 0 1px #28DC4F" : "0 0 0 1px rgba(0,0,0,0.1)",
-                                      }}
-                                    >
-                                      {selected && (
-                                        <div className="absolute inset-0 flex items-center justify-center">
-                                          <svg width="12" height="12" viewBox="0 0 14 14" fill="none">
-                                            <path d="M2.5 7L5.5 10L11.5 4" stroke={isLight ? "#18181B" : "#fff"} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-                                          </svg>
-                                        </div>
-                                      )}
-                                    </button>
-                                  );
-                                })}
-                              </div>
+                        {/* Style thumbnails */}
+                        <div className="flex gap-2 overflow-x-auto pb-1">
+                          {/* Plain Color option */}
+                          <button
+                            type="button"
+                            onClick={() => { setSelectedSvgStyleIndex("plain"); setSvgContent(null); setSvgColorMap([]); }}
+                            className="flex shrink-0 flex-col items-center gap-1 overflow-hidden rounded-xl transition-all"
+                            style={{
+                              width: 80,
+                              border: selectedSvgStyleIndex === "plain" ? "2px solid #28DC4F" : "2px solid #EBEBEB",
+                              boxShadow: selectedSvgStyleIndex === "plain" ? "0 0 0 1px #28DC4F" : "none",
+                            }}
+                          >
+                            <div className="relative h-12 w-full overflow-hidden" style={{ background: svgBgPlainColor }}>
+                              {selectedSvgStyleIndex === "plain" && (
+                                <div style={{ position: "absolute", top: 3, right: 3, width: 14, height: 14, borderRadius: "50%", background: "#28DC4F", display: "flex", alignItems: "center", justifyContent: "center" }}>
+                                  <svg width="8" height="8" viewBox="0 0 14 14" fill="none"><path d="M2.5 7L5.5 10L11.5 4" stroke="#000" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"/></svg>
+                                </div>
+                              )}
                             </div>
-                          );
-                        })()}
+                            <span className="py-1 text-[9px] font-semibold" style={{ color: selectedSvgStyleIndex === "plain" ? "#28DC4F" : "#6B7280" }}>Plain</span>
+                          </button>
 
-                        {/* Font Colour */}
-                        {(() => {
-                          const isCustomFont = !FONT_COLORS.some((fc) => fc.color.toLowerCase() === fontColor.toLowerCase());
-                          return (
-                            <div className="flex flex-col gap-1.5">
-                              <div className="flex items-center justify-between">
-                                <p className="text-[12px] font-medium text-[#374151]">
-                                  Text Colour
-                                  <span className="ml-2 text-[11px] text-[#9CA3AF]">
-                                    {isCustomFont ? fontColor.toUpperCase() : (FONT_COLORS.find((fc) => fc.color.toLowerCase() === fontColor.toLowerCase())?.label ?? "")}
-                                  </span>
-                                </p>
-                                <label
-                                  title="Custom text colour"
-                                  className="flex cursor-pointer items-center gap-1.5 rounded-lg border px-2 py-1"
-                                  style={{
-                                    borderColor: isCustomFont ? "#28DC4F" : "#E5E7EB",
-                                    background:  isCustomFont ? "#F0FFF4" : "transparent",
-                                  }}
-                                >
-                                  <span className="inline-block h-3 w-3 rounded-full border border-black/10" style={{ background: fontColor }} />
-                                  <span className="text-[11px] font-medium text-[#6B7280]">Custom</span>
-                                  <input
-                                    type="color"
-                                    value={fontColor}
-                                    onChange={(e) => setFontColor(e.target.value)}
-                                    className="sr-only"
-                                  />
-                                </label>
+                          {(product.backgroundStyles ?? []).map((style, idx) => (
+                            <button
+                              key={idx}
+                              type="button"
+                              onClick={() => setSelectedSvgStyleIndex(idx)}
+                              className="flex shrink-0 flex-col items-center gap-1 overflow-hidden rounded-xl transition-all"
+                              style={{
+                                width: 80,
+                                border: selectedSvgStyleIndex === idx ? "2px solid #28DC4F" : "2px solid #EBEBEB",
+                                boxShadow: selectedSvgStyleIndex === idx ? "0 0 0 1px #28DC4F" : "none",
+                                position: "relative",
+                              }}
+                            >
+                              <div className="relative h-12 w-full overflow-hidden" style={{ background: "#111" }}>
+                                {style.svgPreviewUrl && (
+                                  // eslint-disable-next-line @next/next/no-img-element
+                                  <img src={style.svgPreviewUrl} alt={style.styleName} style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+                                )}
+                                {selectedSvgStyleIndex === idx && (
+                                  <div style={{ position: "absolute", top: 3, right: 3, width: 14, height: 14, borderRadius: "50%", background: "#28DC4F", display: "flex", alignItems: "center", justifyContent: "center" }}>
+                                    <svg width="8" height="8" viewBox="0 0 14 14" fill="none"><path d="M2.5 7L5.5 10L11.5 4" stroke="#000" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"/></svg>
+                                  </div>
+                                )}
                               </div>
-                              <div className="flex gap-2 overflow-x-auto pb-1" style={{ scrollbarWidth: "none" }}>
-                                {FONT_COLORS.map((fc) => {
-                                  const selected = fontColor.toLowerCase() === fc.color.toLowerCase();
-                                  const isLight  = ["#ffffff", "#e2e8f0", "#f59e0b"].includes(fc.color.toLowerCase());
-                                  return (
-                                    <button
-                                      key={fc.id}
-                                      type="button"
-                                      title={fc.label}
-                                      onClick={() => setFontColor(fc.color)}
-                                      className="relative h-8 w-8 shrink-0 rounded-full transition-all"
-                                      style={{
-                                        background: fc.color,
-                                        border: selected ? "2.5px solid #28DC4F" : "2px solid rgba(0,0,0,0.12)",
-                                        boxShadow: selected ? "0 0 0 2px #28DC4F" : "none",
-                                      }}
-                                    >
-                                      {selected && (
-                                        <div className="absolute inset-0 flex items-center justify-center">
-                                          <svg width="12" height="12" viewBox="0 0 14 14" fill="none">
-                                            <path d="M2.5 7L5.5 10L11.5 4" stroke={isLight ? "#18181B" : "#fff"} strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" />
-                                          </svg>
-                                        </div>
-                                      )}
-                                    </button>
-                                  );
-                                })}
-                              </div>
+                              <span className="py-1 text-center text-[9px] font-semibold leading-tight px-1" style={{ color: selectedSvgStyleIndex === idx ? "#28DC4F" : "#6B7280" }}>
+                                {style.styleName || `Style ${idx + 1}`}
+                              </span>
+                            </button>
+                          ))}
+                        </div>
+
+                        {/* Plain colour picker */}
+                        {selectedSvgStyleIndex === "plain" && (
+                          <div className="flex flex-col gap-3">
+                            <p className="text-[12px] text-[#6B7280]">Choose a background colour</p>
+                            <div className="flex items-center gap-3">
+                              <div
+                                className="h-10 w-10 shrink-0 rounded-lg"
+                                style={{ background: svgBgPlainColor, border: "1px solid rgba(0,0,0,0.12)" }}
+                              />
+                              <input
+                                type="text"
+                                value={svgBgPlainColor}
+                                onChange={(e) => setSvgBgPlainColor(e.target.value)}
+                                className="w-28 rounded-lg border border-[#E5E7EB] px-2 py-1.5 font-mono text-[13px] outline-none focus:border-[#28DC4F]"
+                              />
+                              <input
+                                type="color"
+                                value={svgBgPlainColor.match(/^#[0-9a-f]{6}$/i) ? svgBgPlainColor : "#000000"}
+                                onChange={(e) => setSvgBgPlainColor(e.target.value)}
+                                className="h-9 w-12 cursor-pointer rounded border border-[#E5E7EB] p-0.5"
+                                title="Pick colour"
+                              />
                             </div>
-                          );
-                        })()}
+                          </div>
+                        )}
+
+                        {/* Color pickers for SVG style */}
+                        {typeof selectedSvgStyleIndex === "number" && (
+                          <div className="flex flex-col gap-3">
+                            {svgLoading ? (
+                              <div className="flex items-center gap-2 text-[12px] text-[#9CA3AF]">
+                                <div className="h-4 w-4 animate-spin rounded-full border-2 border-slate-200 border-t-[#28DC4F]" />
+                                Loading colors…
+                              </div>
+                            ) : svgColorMap.length > 0 ? (
+                              <>
+                                <p className="text-[12px] text-[#6B7280]">We detected {svgColorMap.length} color{svgColorMap.length !== 1 ? "s" : ""} in this background</p>
+                                {(product.backgroundStyles ?? [])[selectedSvgStyleIndex]?.hasEmbeddedImage && (
+                                  <div className="rounded-lg px-3 py-2 text-[11px] text-amber-700" style={{ background: "#FFFBEB", border: "1px solid #FDE68A" }}>
+                                    ⚠ This SVG contains embedded image content, colors may not be editable.
+                                  </div>
+                                )}
+                                <div className="flex flex-col gap-2">
+                                  {svgColorMap.map((entry, ci) => (
+                                    <div key={ci} className="flex items-center gap-3">
+                                      <span className="w-12 shrink-0 text-[11px] text-[#9CA3AF]">Color {ci + 1}</span>
+                                      <div className="h-7 w-7 shrink-0 rounded" style={{ background: entry.selected, border: "1px solid rgba(0,0,0,0.1)" }} />
+                                      <input
+                                        type="text"
+                                        value={entry.selected}
+                                        onChange={(e) => {
+                                          const val = e.target.value;
+                                          setSvgColorMap(prev => prev.map((c, i) => i === ci ? { ...c, selected: val } : c));
+                                        }}
+                                        className="w-24 rounded-lg border border-[#E5E7EB] px-2 py-1 font-mono text-[12px] outline-none focus:border-[#28DC4F]"
+                                      />
+                                      <input
+                                        type="color"
+                                        value={entry.selected.match(/^#[0-9a-f]{6}$/i) ? entry.selected : "#000000"}
+                                        onChange={(e) => setSvgColorMap(prev => prev.map((c, i) => i === ci ? { ...c, selected: e.target.value } : c))}
+                                        className="h-7 w-9 cursor-pointer rounded border border-[#E5E7EB] p-0.5"
+                                        title="Pick color"
+                                      />
+                                    </div>
+                                  ))}
+                                </div>
+                                <button
+                                  type="button"
+                                  onClick={() => setSvgColorMap(prev => prev.map(c => ({ ...c, selected: c.original })))}
+                                  className="self-start rounded-lg border border-[#E5E7EB] px-3 py-1.5 text-[11px] font-medium text-[#374151] hover:bg-[#F9FAFB]"
+                                >
+                                  Reset All
+                                </button>
+                              </>
+                            ) : (
+                              <p className="text-[12px] text-[#9CA3AF]">No editable colors found in this background.</p>
+                            )}
+                          </div>
+                        )}
+                    </div>
+
+                    {/* ── 2. Logo Upload & Position ── */}
+                    <div className="flex flex-col gap-3 rounded-2xl border border-[#EBEBEB] bg-white p-4">
+                      <p className="text-[14px] font-bold text-[#111827]">2. Logo Upload &amp; Position</p>
+                      <div className="flex gap-3 items-center">
+                        {/* Upload zone */}
+                        <div className="flex-1">
+                          <UploadZone file={logoFile} onChange={setLogoFile} />
+                        </div>
+                        {/* Position picker — always visible */}
+                        <div className="flex flex-col items-center gap-2">
+                          <p className="text-[11px] font-medium text-[#9CA3AF]">Position</p>
+                          <LogoPlacementPicker value={logoPlacement} onChange={setLogoPlacement} />
+                        </div>
                       </div>
-                    )}
+                      {logoDataUrl && (
+                        <div className="flex items-center gap-3 pt-1">
+                          {/* eslint-disable-next-line @next/next/no-img-element */}
+                          <img src={logoDataUrl} alt="Logo preview"
+                            className="rounded-lg border border-[#F0F0F0]"
+                            style={{ height: "40px", maxWidth: "64px", objectFit: "contain" }}
+                          />
+                          <div className="flex flex-1 items-center gap-2">
+                            <input type="range" min={20} max={80} value={logoSize}
+                              onChange={(e) => setLogoSize(Number(e.target.value))}
+                              className="flex-1 accent-[#28DC4F]"
+                            />
+                            <span className="w-7 text-right text-[11px] text-[#9CA3AF]">{logoSize}</span>
+                          </div>
+                          <button onClick={() => setLogoFile(null)}
+                            className="rounded-lg border border-[#F0F0F0] px-2.5 py-1 text-[11px] font-medium text-[#EF4444]">
+                            Remove
+                          </button>
+                        </div>
+                      )}
+                    </div>
 
-                    {/* Name fields */}
-                    <div className="flex flex-col gap-3 rounded-xl border border-[#F0F0F0] bg-white p-3.5">
-                      <SectionLabel>Your Details</SectionLabel>
-
-                      {/* Font Style picker */}
+                    {/* ── 3. Font Style ── */}
+                    <div className="flex flex-col gap-3 rounded-2xl border border-[#EBEBEB] bg-white p-4">
+                      <p className="text-[14px] font-bold text-[#111827]">3. Font Style</p>
                       <div className="flex flex-col gap-1.5">
-                        <div className="flex items-center justify-between">
-                          <p className="text-[12px] font-medium text-[#374151]">Font Style</p>
+                        <div className="flex items-center justify-end">
                           <p className="text-[11px] text-[#9CA3AF]">{fontPage + 1} / {totalFontPages}</p>
                         </div>
                         <div className="flex items-center gap-1.5">
@@ -1253,6 +1460,45 @@ export default function ProductDetail({ product }) {
                           </button>
                         </div>
                       </div>
+                    </div>
+
+                    {/* ── 4. Text Color ── */}
+                    {product.allowColorCustomization && (
+                      <div className="flex flex-col gap-3 rounded-2xl border border-[#EBEBEB] bg-white p-4">
+                        <p className="text-[14px] font-bold text-[#111827]">4. Text Color</p>
+                        <div className="flex gap-3 flex-wrap px-0.5 py-1">
+                          <CustomColorSwatch
+                            value={fontColor}
+                            onChange={setFontColor}
+                            presets={FONT_COLORS.map((fc) => fc.color)}
+                          />
+                          {FONT_COLORS.map((fc) => {
+                            const selected = fontColor.toLowerCase() === fc.color.toLowerCase();
+                            return (
+                              <button
+                                key={fc.id}
+                                type="button"
+                                title={fc.label}
+                                onClick={() => setFontColor(fc.color)}
+                                className="shrink-0 rounded-full transition-all"
+                                style={{
+                                  width: 36, height: 36,
+                                  background: fc.color,
+                                  boxShadow: selected
+                                    ? `0 0 0 2.5px white, 0 0 0 4.5px ${fc.color}`
+                                    : "0 0 0 1px rgba(0,0,0,0.12)",
+                                }}
+                              />
+                            );
+                          })}
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Name fields */}
+                    <div className="flex flex-col gap-3 rounded-xl border border-[#F0F0F0] bg-white p-3.5">
+                      <SectionLabel>Your Details</SectionLabel>
+
                       {[
                         { label: "Name",         value: name,        setter: setName,        placeholder: "Jane Smith",                                  errorKey: "name"     },
                         { label: "Sub Title",    value: subTitle,    setter: setSubTitle,    placeholder: "e.g. Product Manager at Acme Co.",            errorKey: "subTitle" },
@@ -1285,41 +1531,6 @@ export default function ProductDetail({ product }) {
                       ))}
                     </div>
 
-                    {/* Logo upload */}
-                    <div className="flex flex-col gap-3 rounded-xl border border-[#F0F0F0] bg-white p-3.5">
-                      <SectionLabel>Logo (optional)</SectionLabel>
-                      <UploadZone file={logoFile} onChange={setLogoFile} />
-
-                      {logoDataUrl && (
-                        <div className="flex flex-col gap-3">
-                          <div className="flex items-center gap-3">
-                            {/* eslint-disable-next-line @next/next/no-img-element */}
-                            <img
-                              src={logoDataUrl}
-                              alt="Logo preview"
-                              className="rounded-lg border border-[#F0F0F0]"
-                              style={{ height: "44px", maxWidth: "72px", objectFit: "contain" }}
-                            />
-                            <button
-                              onClick={() => setLogoFile(null)}
-                              className="rounded-lg border border-[#F0F0F0] px-3 py-1.5 text-[12px] font-medium text-[#EF4444]"
-                            >
-                              Remove
-                            </button>
-                          </div>
-                          <LogoPlacementPicker value={logoPlacement} onChange={setLogoPlacement} />
-                          <div className="flex items-center gap-3">
-                            <span className="shrink-0 text-[13px] font-medium text-[#374151]">Logo Size</span>
-                            <input
-                              type="range" min={20} max={80} value={logoSize}
-                              onChange={(e) => setLogoSize(Number(e.target.value))}
-                              className="flex-1 accent-[#28DC4F]"
-                            />
-                            <span className="w-8 text-right text-[12px] text-[#9CA3AF]">{logoSize}</span>
-                          </div>
-                        </div>
-                      )}
-                    </div>
 
                     {/* Front QR (optional) */}
                     <div className="rounded-xl bg-[#F9FAFB] p-4" style={{ border: "1px solid #F0F0F0" }}>
@@ -1344,39 +1555,42 @@ export default function ProductDetail({ product }) {
 
                       {frontQrEnabled && (
                         <div className="mt-4 flex flex-col gap-3 border-t border-[#EBEBEB] pt-4">
-                          <div className="flex flex-col gap-2">
-                            <p className="text-[12px] font-medium text-[#374151]">QR Colour</p>
-                            <div className="flex gap-2 overflow-x-auto pb-1" style={{ scrollbarWidth: "none" }}>
-                              {QR_COLORS.map((c) => {
-                                const selected = frontQrColor === c.color;
-                                const isLight  = c.color === "#28DC4F";
-                                return (
-                                  <button
-                                    key={c.id}
-                                    type="button"
-                                    title={c.label}
-                                    onClick={() => setFrontQrColor(c.color)}
-                                    className="relative shrink-0 rounded-full transition-all"
-                                    style={{
-                                      width: "32px", height: "32px",
-                                      background: c.color,
-                                      border: selected ? "2px solid #28DC4F" : "2px solid transparent",
-                                      boxShadow: selected ? "0 0 0 1px #28DC4F" : "0 0 0 1px rgba(0,0,0,0.1)",
-                                    }}
-                                  >
-                                    {selected && (
-                                      <div className="absolute inset-0 flex items-center justify-center">
-                                        <svg width="12" height="12" viewBox="0 0 14 14" fill="none">
-                                          <path d="M2.5 7L5.5 10L11.5 4" stroke={isLight ? "#18181B" : "#fff"} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-                                        </svg>
-                                      </div>
-                                    )}
-                                  </button>
-                                );
-                              })}
+                          {/* Colour + Position side by side */}
+                          <div className="flex gap-3 items-start">
+                            <div className="flex flex-col gap-2 flex-1">
+                              <p className="text-[12px] font-medium text-[#374151]">QR Colour</p>
+                              <div className="flex gap-2 flex-wrap">
+                                <CustomColorSwatch
+                                  value={frontQrColor}
+                                  onChange={setFrontQrColor}
+                                  presets={QR_COLORS.map((c) => c.color)}
+                                />
+                                {QR_COLORS.map((c) => {
+                                  const selected = frontQrColor.toLowerCase() === c.color.toLowerCase();
+                                  return (
+                                    <button
+                                      key={c.id}
+                                      type="button"
+                                      title={c.label}
+                                      onClick={() => setFrontQrColor(c.color)}
+                                      className="shrink-0 rounded-full transition-all"
+                                      style={{
+                                        width: 28, height: 28,
+                                        background: c.color,
+                                        boxShadow: selected
+                                          ? `0 0 0 2px white, 0 0 0 4px ${c.color}`
+                                          : "0 0 0 1px rgba(0,0,0,0.1)",
+                                      }}
+                                    />
+                                  );
+                                })}
+                              </div>
+                            </div>
+                            <div className="flex flex-col items-center gap-1.5 shrink-0">
+                              <p className="text-[11px] font-medium text-[#9CA3AF]">Position</p>
+                              <LogoPlacementPicker value={frontQrPlacement} onChange={setFrontQrPlacement} />
                             </div>
                           </div>
-                          <LogoPlacementPicker value={frontQrPlacement} onChange={setFrontQrPlacement} label="QR Placement" />
 
                           {/* QR Style */}
                           <div className="flex flex-col gap-2">
@@ -1467,42 +1681,45 @@ export default function ProductDetail({ product }) {
                       </div>
 
                       {backContent === "qr" && (
-                        <div className="flex flex-col gap-2">
-                          <p className="text-[13px] font-medium text-[#374151]">QR Colour</p>
-                          <div className="flex gap-2 overflow-x-auto pb-1" style={{ scrollbarWidth: "none" }}>
-                            {QR_COLORS.map((c) => {
-                              const selected = qrFgColor === c.color;
-                              const isLight  = c.color === "#28DC4F";
-                              return (
-                                <button
-                                  key={c.id}
-                                  title={c.label}
-                                  onClick={() => setQrFgColor(c.color)}
-                                  className="relative shrink-0 rounded-full transition-all"
-                                  style={{
-                                    width: "32px", height: "32px",
-                                    background: c.color,
-                                    border: selected ? "2px solid #28DC4F" : "2px solid transparent",
-                                    boxShadow: selected ? "0 0 0 1px #28DC4F" : "0 0 0 1px rgba(0,0,0,0.1)",
-                                  }}
-                                >
-                                  {selected && (
-                                    <div className="absolute inset-0 flex items-center justify-center">
-                                      <svg width="12" height="12" viewBox="0 0 14 14" fill="none">
-                                        <path d="M2.5 7L5.5 10L11.5 4" stroke={isLight ? "#18181B" : "#fff"} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-                                      </svg>
-                                    </div>
-                                  )}
-                                </button>
-                              );
-                            })}
+                        <div className="flex flex-col gap-3">
+                          {/* Colour + Position side by side */}
+                          <div className="flex gap-3 items-start">
+                            <div className="flex flex-col gap-2 flex-1">
+                              <p className="text-[12px] font-medium text-[#374151]">QR Colour</p>
+                              <div className="flex gap-2 flex-wrap">
+                                <CustomColorSwatch
+                                  value={qrFgColor}
+                                  onChange={setQrFgColor}
+                                  presets={QR_COLORS.map((c) => c.color)}
+                                />
+                                {QR_COLORS.map((c) => {
+                                  const selected = qrFgColor.toLowerCase() === c.color.toLowerCase();
+                                  return (
+                                    <button
+                                      key={c.id}
+                                      title={c.label}
+                                      onClick={() => setQrFgColor(c.color)}
+                                      className="shrink-0 rounded-full transition-all"
+                                      style={{
+                                        width: 28, height: 28,
+                                        background: c.color,
+                                        boxShadow: selected
+                                          ? `0 0 0 2px white, 0 0 0 4px ${c.color}`
+                                          : "0 0 0 1px rgba(0,0,0,0.1)",
+                                      }}
+                                    />
+                                  );
+                                })}
+                              </div>
+                            </div>
+                            <div className="flex flex-col items-center gap-1.5 shrink-0">
+                              <p className="text-[11px] font-medium text-[#9CA3AF]">Position</p>
+                              <LogoPlacementPicker value={backLogoPlacement} onChange={setBackLogoPlacement} />
+                            </div>
                           </div>
-                          <p className="text-[11px] text-[#9CA3AF]">
-                            {QR_COLORS.find((c) => c.color === qrFgColor)?.label ?? "Black"}
-                          </p>
 
                           {/* QR Style */}
-                          <div className="flex flex-col gap-2 mt-1">
+                          <div className="flex flex-col gap-2">
                             <p className="text-[12px] font-medium text-[#374151]">QR Style</p>
                             <div className="grid grid-cols-5 gap-1.5">
                               {QR_STYLES.map((s) => {
@@ -1523,6 +1740,17 @@ export default function ProductDetail({ product }) {
                                 );
                               })}
                             </div>
+                          </div>
+
+                          {/* QR Size */}
+                          <div className="flex items-center gap-3">
+                            <span className="shrink-0 text-[12px] font-medium text-[#374151]">QR Size</span>
+                            <input
+                              type="range" min={20} max={80} value={backLogoSize}
+                              onChange={(e) => setBackLogoSize(Number(e.target.value))}
+                              className="flex-1 accent-[#28DC4F]"
+                            />
+                            <span className="w-8 text-right text-[12px] text-[#9CA3AF]">{backLogoSize}</span>
                           </div>
                         </div>
                       )}
@@ -1547,7 +1775,6 @@ export default function ProductDetail({ product }) {
                                   Remove
                                 </button>
                               </div>
-                              <LogoPlacementPicker value={backLogoPlacement} onChange={setBackLogoPlacement} />
                               <div className="flex items-center gap-3">
                                 <span className="shrink-0 text-[13px] font-medium text-[#374151]">Logo Size</span>
                                 <input
@@ -1605,6 +1832,12 @@ export default function ProductDetail({ product }) {
 
             {/* DESKTOP: Buy Now */}
             <div className="hidden lg:flex flex-col gap-3">
+              {errors.general && (
+                <div className="rounded-xl bg-[#FEF2F2] border border-[#FECACA] px-4 py-3 text-[13px] text-[#DC2626] flex items-start gap-2">
+                  <span>⚠</span>
+                  <span>{errors.general} <a href="/dashboard/my-cards" className="underline font-semibold">My Cards</a></span>
+                </div>
+              )}
               <button
                 onClick={handleBuyNow}
                 className="w-full rounded-xl py-4 text-[16px] font-bold text-black transition-opacity hover:opacity-90 active:opacity-80"

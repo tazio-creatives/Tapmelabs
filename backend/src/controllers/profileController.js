@@ -195,6 +195,7 @@ async function getPublicProfile(req, res, next) {
         "profile_image",
         "company_logo",
         "theme_key",
+        "theme_customization",
         "social_links",
       ],
     });
@@ -221,12 +222,12 @@ async function getPublicProfile(req, res, next) {
 
 async function updateTheme(req, res, next) {
   try {
-    const { theme_key } = req.body;
+    const { theme_key, theme_customization } = req.body;
 
-    if (!theme_key) {
+    if (!theme_key && theme_customization === undefined) {
       return res.status(400).json({
         success: false,
-        message: "theme_key is required.",
+        message: "theme_key or theme_customization is required.",
         data: null,
       });
     }
@@ -241,12 +242,16 @@ async function updateTheme(req, res, next) {
       });
     }
 
-    await profile.update({ theme_key });
+    const updates = {};
+    if (theme_key !== undefined) updates.theme_key = theme_key;
+    if (theme_customization !== undefined) updates.theme_customization = theme_customization;
+
+    await profile.update(updates);
 
     return res.status(200).json({
       success: true,
       message: "Theme updated successfully.",
-      data: { theme_key: profile.theme_key },
+      data: { theme_key: profile.theme_key, theme_customization: profile.theme_customization },
     });
   } catch (err) {
     next(err);

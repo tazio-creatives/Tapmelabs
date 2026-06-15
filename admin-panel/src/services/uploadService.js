@@ -10,6 +10,15 @@ const uploadService = {
     });
     return response.data;
   },
+
+  async uploadSvgBackground(file) {
+    const formData = new FormData();
+    formData.append("image", file);
+    const response = await api.post("/uploads/svg-background", formData, {
+      headers: { "Content-Type": undefined },
+    });
+    return response.data;
+  },
 };
 
 export default uploadService;

@@ -8,10 +8,6 @@ import profileService from "@/services/profileService";
 import orderService from "@/services/orderService";
 import CardMockupOverlay from "@/components/product/CardMockupOverlay";
 
-// TODO: Later, the backend should store the full card_customization JSON inside
-//       the Order model so this data is durable and retrievable from the API.
-//       Until then, we fall back to localStorage["checkoutItem"] (or "cartItems" for legacy).
-
 /* ─── card background constants ──────────────────────────────────────────── */
 
 const DEFAULT_BG = { type: "solid", id: "matte-black", color: "#18181B" };
@@ -58,7 +54,7 @@ function isLightBg(bg) {
 
 /* ─── card face components (mirrors ProductDetail.js visuals) ───────────── */
 
-function FrontCardPreview({ bg, name, subTitle, logoDataUrl, logoPlacement, logoSize, fontColor }) {
+function FrontCardPreview({ bg, name, subTitle, logoDataUrl, logoPlacement, logoSize, fontColor, skinSvgContent = null }) {
   const light = isLightBg(bg);
   const tc    = fontColor || (light ? "rgba(0,0,0,0.85)"  : "rgba(255,255,255,0.9)");
   const stc   = fontColor ? fontColor + "99" : (light ? "rgba(0,0,0,0.45)"  : "rgba(255,255,255,0.45)");
@@ -76,7 +72,15 @@ function FrontCardPreview({ bg, name, subTitle, logoDataUrl, logoPlacement, logo
         ...getBgStyle(bg),
       }}
     >
-      {!light && (
+      {skinSvgContent && (
+        // eslint-disable-next-line @next/next/no-img-element
+        <img
+          src={`data:image/svg+xml;charset=utf-8,${encodeURIComponent(skinSvgContent)}`}
+          alt=""
+          style={{ position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: "cover", display: "block", pointerEvents: "none" }}
+        />
+      )}
+      {!skinSvgContent && !light && (
         <div style={{ pointerEvents: "none", position: "absolute", inset: 0, background: "radial-gradient(ellipse at 75% 20%,rgba(40,220,79,0.09) 0%,transparent 55%)" }} />
       )}
       {["33%", "50%", "66%"].map((sz, i) => (
@@ -255,27 +259,42 @@ function getQrStyleOptions(qrStyle, color) {
   return map[qrStyle] || map.minimal;
 }
 
-function StyledQRDisplay({ profileUrl, qrStyle = "minimal", qrColor = "#18181B", size = 180 }) {
-  const containerRef = useRef(null);
+function isLightColor(hex) {
+  if (!hex?.startsWith("#") || hex.length < 7) return false;
+  const r = parseInt(hex.slice(1, 3), 16);
+  const g = parseInt(hex.slice(3, 5), 16);
+  const b = parseInt(hex.slice(5, 7), 16);
+  return (r * 299 + g * 587 + b * 114) / 1000 > 180;
+}
+
+function StyledQRDisplay({ profileUrl, qrColor = "#18181B", qrStyle = "minimal", size = 180 }) {
+  const ref  = useRef(null);
+  const data = profileUrl || "https://tapmelabs.com";
+  const qrBg = isLightColor(qrColor) ? "#1a1a1a" : "#ffffff";
+
   useEffect(() => {
-    if (!containerRef.current) return;
+    if (!ref.current) return;
     let cancelled = false;
-    const data = profileUrl || "https://tapmelabs.com";
     import("qr-code-styling").then(({ default: QRCodeStyling }) => {
-      if (cancelled || !containerRef.current) return;
+      if (cancelled || !ref.current) return;
       const qr = new QRCodeStyling({
-        width: size, height: size, type: "svg", data,
-        margin: 4, backgroundOptions: { color: "#ffffff" },
+        width: size,
+        height: size,
+        type: "svg",
+        data,
+        margin: 4,
+        backgroundOptions: { color: qrBg },
         ...getQrStyleOptions(qrStyle, qrColor),
       });
-      containerRef.current.innerHTML = "";
-      qr.append(containerRef.current);
-      const svg = containerRef.current.querySelector("svg");
+      ref.current.innerHTML = "";
+      qr.append(ref.current);
+      const svg = ref.current.querySelector("svg");
       if (svg) { svg.style.width = "100%"; svg.style.height = "100%"; }
     });
     return () => { cancelled = true; };
-  }, [profileUrl, qrStyle, qrColor, size]);
-  return <div ref={containerRef} style={{ width: size, height: size }} />;
+  }, [data, qrColor, qrStyle, size, qrBg]);
+
+  return <div ref={ref} style={{ width: size, height: size }} />;
 }
 
 /* ─── icons ────────────────────────────────────────────────────────────── */
@@ -369,21 +388,22 @@ function PhysicalCardSection({ customization, productImages, profile, onReorder,
   const c = customization || {};
   const imgs = productImages || { front: null, back: null };
 
-  // Profile data always wins over stale checkout customization
-  const cardName    = profile?.name    || c.name    || "";
+  // Card customization logo takes priority; profile logo is fallback only
+  const cardName     = profile?.name    || c.name    || "";
   const cardSubTitle = profile
     ? profile.designation || c.subTitle || ""
     : c.subTitle || "";
-  const cardLogoUrl = profile?.company_logo
-    ? (profile.company_logo.startsWith("http") ? profile.company_logo : `${typeof window !== "undefined" ? window.location.origin : ""}${profile.company_logo.startsWith("/") ? "" : "/"}${profile.company_logo}`)
-    : c.logoDataUrl || null;
+  const profileLogoUrl = profile?.company_logo
+    ? (profile.company_logo.startsWith("http")
+        ? profile.company_logo
+        : `${typeof window !== "undefined" ? window.location.origin : ""}${profile.company_logo.startsWith("/") ? "" : "/"}${profile.company_logo}`)
+    : null;
+  const cardLogoUrl = c.logoDataUrl || profileLogoUrl || null;
 
   return (
     <SectionCard>
-      {/* Header */}
       <div className="mb-6 flex items-center justify-between">
         <h2 className="text-[20px] font-bold text-[#111827]">Physical NFC Card</h2>
-        {/* Card status defaults to Active — TODO: wire to GET /api/cards/:id once NFC card API is implemented */}
         <ActiveBadge />
       </div>
 
@@ -433,13 +453,24 @@ function PhysicalCardSection({ customization, productImages, profile, onReorder,
                 ? imgs.front || null
                 : imgs.back  || imgs.front || null;
 
+              const svgBg     = c.svgBackground;
+              const skinSvg   = svgBg?.backgroundType === "svg" ? (svgBg.customizedSvgContent || null) : null;
+              const resolvedFrontBg = svgBg?.backgroundType === "plain"
+                ? { type: "solid", color: svgBg.plainColor }
+                : c.cardColor
+                  ? { type: "solid", color: c.cardColor }
+                  : (c.frontBg || DEFAULT_BG);
+              const resolvedBackBg = c.cardColor
+                ? { type: "solid", color: c.cardColor }
+                : (c.backBg || DEFAULT_BG);
+
               if (mockupSrc) {
                 return (
                   <CardMockupOverlay
                     mockupSrc={mockupSrc}
                     alt={`Card ${cardSide} side`}
                     side={cardSide}
-                    customization={{ ...c, name: cardName, subTitle: cardSubTitle, logoDataUrl: cardLogoUrl, frontBg: c.cardColor ? { type: "solid", color: c.cardColor } : (c.frontBg || DEFAULT_BG), backBg: c.cardColor ? { type: "solid", color: c.cardColor } : (c.backBg || DEFAULT_BG) }}
+                    customization={{ ...c, name: cardName, subTitle: cardSubTitle, logoDataUrl: cardLogoUrl, skinSvgContent: skinSvg, frontBg: resolvedFrontBg, backBg: resolvedBackBg }}
                     className="rounded-[12px] overflow-hidden"
                   />
                 );
@@ -462,13 +493,14 @@ function PhysicalCardSection({ customization, productImages, profile, onReorder,
                     {/* Front face */}
                     <div style={{ position: "absolute", inset: 0, backfaceVisibility: "hidden", WebkitBackfaceVisibility: "hidden", display: "flex", alignItems: "center", justifyContent: "center" }}>
                       <FrontCardPreview
-                        bg={c.cardColor ? { type: "solid", color: c.cardColor } : (c.frontBg || DEFAULT_BG)}
+                        bg={resolvedFrontBg}
                         name={cardName}
                         subTitle={cardSubTitle}
                         logoDataUrl={cardLogoUrl}
                         logoPlacement={c.logoPlacement}
                         logoSize={c.logoSize}
                         fontColor={c.fontColor}
+                        skinSvgContent={skinSvg}
                       />
                     </div>
                     {/* Back face */}
@@ -607,7 +639,7 @@ function OrderDetailsSection({ order }) {
 
 /* ─── right column ────────────────────────────────────────────────────── */
 
-function ActionsSection({ profileUrl, onViewProfile, onDownloadQR, onShare, onCopy, copied, qrStyle, qrColor }) {
+function ActionsSection({ profileUrl, onViewProfile, onDownloadQR, onShare, onCopy, copied, qrColor, qrStyle }) {
   const actionBtns = [
     {
       label:   "Download QR Code",
@@ -643,10 +675,10 @@ function ActionsSection({ profileUrl, onViewProfile, onDownloadQR, onShare, onCo
       {/* QR section */}
       <div className="rounded-[12px] bg-[#F9FAFB] px-6 py-8">
         <div
-          className="mx-auto mb-5 flex items-center justify-center rounded-[10px] bg-white p-4 shadow-[0_2px_12px_rgba(0,0,0,0.06)]"
-          style={{ width: "fit-content" }}
+          className="mx-auto mb-5 flex items-center justify-center rounded-[10px] p-4 shadow-[0_2px_12px_rgba(0,0,0,0.06)]"
+          style={{ width: "fit-content", backgroundColor: isLightColor(qrColor || "#18181B") ? "#1a1a1a" : "#ffffff" }}
         >
-          <StyledQRDisplay profileUrl={profileUrl} qrStyle={qrStyle} qrColor={qrColor} size={180} />
+          <StyledQRDisplay profileUrl={profileUrl} qrColor={qrColor} qrStyle={qrStyle} size={180} />
         </div>
         <p className="text-center text-[13px] leading-[1.6] text-[#6B7280]">
           Scan this QR code for instantly view and save your digital profile.
@@ -737,6 +769,16 @@ export default function MyCardsPage() {
         // 1. Try API order's card_customization (future-proofed once backend stores it)
         if (order?.card_customization) {
           const cust = order.card_customization;
+
+          // Set product images so CardMockupOverlay is used (shows backgroundStyle, fontFamily, accentColor etc.)
+          if (order.product) {
+            const imgs = Array.isArray(order.product.images) ? order.product.images : [];
+            setProductImages({
+              front: order.product.front_image || imgs[0] || null,
+              back:  order.product.back_image  || imgs[1] || imgs[0] || null,
+            });
+          }
+
           if (cust.design_method === "upload_own_design") {
             setDesignMethod("upload_own_design");
             setUploadedFrontDesign(cust.uploaded_front_design || null);
@@ -884,8 +926,8 @@ export default function MyCardsPage() {
               onShare={handleShare}
               onCopy={handleCopy}
               copied={copied}
-              qrStyle={customization?.qrStyle || "minimal"}
               qrColor={customization?.qrFgColor || "#18181B"}
+              qrStyle={customization?.qrStyle || "minimal"}
             />
           </div>
 

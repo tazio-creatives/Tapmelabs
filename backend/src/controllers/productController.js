@@ -16,6 +16,7 @@ async function createProduct(req, res, next) {
       front_image,
       back_image,
       allow_color_customization,
+      background_styles,
       status,
     } = req.body;
 
@@ -47,6 +48,7 @@ async function createProduct(req, res, next) {
       front_image: front_image ?? null,
       back_image: back_image ?? null,
       allow_color_customization: allow_color_customization ?? false,
+      background_styles: background_styles ?? [],
       status: status ?? "draft",
     });
 
@@ -142,6 +144,7 @@ async function updateProduct(req, res, next) {
       front_image,
       back_image,
       allow_color_customization,
+      background_styles,
       status,
     } = req.body;
 
@@ -170,6 +173,7 @@ async function updateProduct(req, res, next) {
       ...(front_image !== undefined && { front_image }),
       ...(back_image !== undefined && { back_image }),
       ...(allow_color_customization !== undefined && { allow_color_customization }),
+      ...(background_styles !== undefined && { background_styles }),
       ...(status !== undefined && { status }),
     });
 

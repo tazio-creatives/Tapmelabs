@@ -15,7 +15,8 @@
     "qr-code-styling": "^1.9.2",
     "react": "19.2.4",
     "react-dom": "19.2.4",
-    "react-easy-crop": "^5.5.7"
+    "react-easy-crop": "^5.5.7",
+    "react-qr-code": "^2.0.21"
   },
   "devDependencies": {
     "@tailwindcss/postcss": "^4",

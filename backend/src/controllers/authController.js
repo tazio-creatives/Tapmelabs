@@ -1,7 +1,9 @@
+const crypto = require("crypto");
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
+const { Op } = require("sequelize");
 const { User } = require("../models");
-const { sendOtpEmail } = require("../utils/mailer");
+const { sendOtpEmail, sendPasswordResetEmail } = require("../utils/mailer");
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 
@@ -299,4 +301,69 @@ async function updateMe(req, res, next) {
   }
 }
 
-module.exports = { register, login, me, updateMe, verifyOtp, resendOtp, changePassword };
+// ── POST /api/auth/forgot-password ────────────────────────────────────────────
+
+async function forgotPassword(req, res, next) {
+  try {
+    const { email } = req.body;
+    if (!email) {
+      return res.status(400).json({ success: false, message: "Email is required.", data: null });
+    }
+
+    const user = await User.findOne({ where: { email } });
+    if (!user) {
+      // Don't reveal whether the email is registered
+      return res.status(200).json({ success: true, message: "If this email is registered, a reset link has been sent.", data: null });
+    }
+
+    const token   = crypto.randomBytes(32).toString("hex");
+    const expires = new Date(Date.now() + 15 * 60 * 1000); // 15 minutes
+
+    user.reset_password_token   = token;
+    user.reset_password_expires = expires;
+    await user.save();
+
+    const resetUrl = `${process.env.FRONTEND_URL || "http://localhost:3000"}/reset-password?token=${token}`;
+    await sendPasswordResetEmail(user.email, { name: user.full_name, resetUrl });
+
+    return res.status(200).json({ success: true, message: "Password reset link sent to your email.", data: null });
+  } catch (err) {
+    next(err);
+  }
+}
+
+// ── POST /api/auth/reset-password ─────────────────────────────────────────────
+
+async function resetPassword(req, res, next) {
+  try {
+    const { token, password } = req.body;
+    if (!token || !password) {
+      return res.status(400).json({ success: false, message: "Token and new password are required.", data: null });
+    }
+    if (password.length < 8) {
+      return res.status(400).json({ success: false, message: "Password must be at least 8 characters.", data: null });
+    }
+
+    const user = await User.findOne({
+      where: {
+        reset_password_token:   token,
+        reset_password_expires: { [Op.gt]: new Date() },
+      },
+    });
+
+    if (!user) {
+      return res.status(400).json({ success: false, message: "Invalid or expired reset link. Please request a new one.", data: null });
+    }
+
+    user.password               = await bcrypt.hash(password, 12);
+    user.reset_password_token   = null;
+    user.reset_password_expires = null;
+    await user.save();
+
+    return res.status(200).json({ success: true, message: "Password reset successfully. You can now log in.", data: null });
+  } catch (err) {
+    next(err);
+  }
+}
+
+module.exports = { register, login, me, updateMe, verifyOtp, resendOtp, changePassword, forgotPassword, resetPassword };

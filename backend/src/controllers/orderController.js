@@ -1,4 +1,5 @@
 const { Order, User, Product } = require("../models");
+const { Op } = require("sequelize");
 const Profile = require("../models/Profile");
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
@@ -31,6 +32,22 @@ async function createOrder(req, res, next) {
       return res.status(404).json({
         success: false,
         message: "Product not found.",
+        data: null,
+      });
+    }
+
+    // Block if user already has an active (non-failed, non-cancelled) order
+    const existingOrder = await Order.findOne({
+      where: {
+        user_id: req.user.id,
+        payment_status: { [Op.in]: ["pending", "paid"] },
+        order_status:   { [Op.ne]: "cancelled" },
+      },
+    });
+    if (existingOrder) {
+      return res.status(409).json({
+        success: false,
+        message: "You already have an active order. Visit your dashboard to track it.",
         data: null,
       });
     }
@@ -72,7 +89,7 @@ async function getMyOrders(req, res, next) {
         {
           model: Product,
           as: "product",
-          attributes: ["id", "name", "slug", "price", "sale_price", "images"],
+          attributes: ["id", "name", "slug", "price", "sale_price", "images", "front_image", "back_image"],
         },
       ],
       order: [["created_at", "DESC"]],

@@ -105,14 +105,16 @@ function createUploadHandler(folder) {
 
 // ── Upload handlers per type ──────────────────────────────────────────────────
 
-const uploadProductImage  = createUploadHandler("products");
-const uploadProfileImage  = createUploadHandler("profiles");
-const uploadCompanyLogo   = createUploadHandler("logos");
-const uploadThemePreview  = createUploadHandler("themes");
+const uploadProductImage    = createUploadHandler("products");
+const uploadProfileImage    = createUploadHandler("profiles");
+const uploadCompanyLogo     = createUploadHandler("logos");
+const uploadThemePreview    = createUploadHandler("themes");
+const uploadSvgBackground   = createUploadHandler("svg-backgrounds");
 
 module.exports = {
   uploadProductImage,
   uploadProfileImage,
   uploadCompanyLogo,
   uploadThemePreview,
+  uploadSvgBackground,
 };

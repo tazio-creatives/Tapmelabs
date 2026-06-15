@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import Image from "next/image";
 import authService from "@/services/authService";
+import RealProfilePreviewCard from "@/components/dashboard/ProfilePreviewCard";
 
 /* ─── icons ─────────────────────────────────────────────────────────────── */
 
@@ -171,170 +172,42 @@ export function TopHeader({ onMenuClick, initials = "JS" }) {
 
 /* ─── profile preview card ──────────────────────────────────────────────── */
 
-function SocialIcon({ platform, size = 28 }) {
-  const s = size;
-  if (platform === "whatsapp") return (
-    <svg width={s} height={s} viewBox="0 0 32 32" fill="none">
-      <circle cx="16" cy="16" r="16" fill="#25D366"/>
-      <path fill="white" d="M16 7.5A8.5 8.5 0 0 0 9.1 20.1L7.5 24.5l4.5-1.6A8.5 8.5 0 1 0 16 7.5Zm0 15.5a7 7 0 0 1-3.8-1.1l-.3-.2-3 1 .9-2.9-.2-.3A7 7 0 1 1 16 23Zm3.7-5.2c-.2-.1-1.2-.6-1.4-.7-.2-.1-.3-.1-.4.1l-.6.7c-.1.1-.2.2-.4.1-.2-.1-1-.4-1.8-1.2a7 7 0 0 1-1.4-1.6c-.1-.2 0-.3.1-.4l.4-.4.2-.4V14l-.7-1.7c-.2-.4-.4-.4-.4-.4H12a.9.9 0 0 0-.7.3 2.7 2.7 0 0 0-.8 2c0 1.5 1.1 3 1.2 3.2 1.4 2.1 3 2.7 4.7 3.4.4.1.7.1 1 .1.4 0 .7 0 1.1-.2.5-.2.8-.5 1-.8.2-.3.2-.6 0-.8l-.8-.7Z"/>
-    </svg>
-  );
-  if (platform === "linkedin") return (
-    <svg width={s} height={s} viewBox="0 0 32 32" fill="none">
-      <circle cx="16" cy="16" r="16" fill="#0A66C2"/>
-      <path fill="white" d="M11 14H8.5V24H11V14Zm-1.3-4.3a1.5 1.5 0 1 0 0 3 1.5 1.5 0 0 0 0-3ZM24 18.5c0-2.6-1.3-4.5-3.8-4.5-1 0-2 .6-2.5 1.6V14h-2.5V24h2.8v-5.8c0-1.2.6-2.1 1.7-2.1 1.1 0 1.5.9 1.5 2.1V24H24V18.5Z"/>
-    </svg>
-  );
-  if (platform === "messenger") return (
-    <svg width={s} height={s} viewBox="0 0 32 32" fill="none">
-      <circle cx="16" cy="16" r="16" fill="#0084FF"/>
-      <path fill="white" d="M16 8C11.6 8 8 11.3 8 15.5c0 2.2 1 4.1 2.7 5.5V24l2.7-1.5c.7.2 1.5.3 2.6.3 4.4 0 8-3.3 8-7.5S20.4 8 16 8Zm.8 10-2.3-2.5-4.3 2.5 4.6-4.9 2.3 2.9 4.3-2.9-4.6 4.9Z"/>
-    </svg>
-  );
-  if (platform === "instagram") return (
-    <svg width={s} height={s} viewBox="0 0 32 32" fill="none">
-      <circle cx="16" cy="16" r="16" fill="#C13584"/>
-      <rect x="10" y="10" width="12" height="12" rx="3.5" fill="none" stroke="white" strokeWidth="1.5"/>
-      <circle cx="16" cy="16" r="3" fill="none" stroke="white" strokeWidth="1.5"/>
-      <circle cx="20.2" cy="11.8" r="0.9" fill="white"/>
-    </svg>
-  );
-  if (platform === "twitter") return (
-    <svg width={s} height={s} viewBox="0 0 32 32" fill="none">
-      <circle cx="16" cy="16" r="16" fill="#000000"/>
-      <path fill="white" d="M17.8 14.9 22.5 9h-1.1l-4.1 4.8L14 9H9.5l5 7.1L9.5 23H10.6l4.4-5.1 3.5 5.1H23l-5.2-8.1Zm-1.5 1.8-.5-.7-4-5.7H13l3.2 4.6.5.7 4.2 5.9H19.7l-3.4-4.8Z"/>
-    </svg>
-  );
-  if (platform === "snapchat") return (
-    <svg width={s} height={s} viewBox="0 0 32 32" fill="none">
-      <circle cx="16" cy="16" r="16" fill="#FFFC00"/>
-      <path fill="#1a1a1a" d="M16 8c-2.4 0-4.4 2-4.4 4.4V13c-.6.1-1.3-.2-1.3-.2s-.3.7.5 1.2c-.3.5-.8 1.5-2 1.9s.2 1 .8 1c.5 0 .6.3.4.7-.3.4-1 .9-1.3 1.2.5.7 2 1.4 4.4 1.6.3.6.8 1.6 1.6 1.6h.2c.8 0 1.4-.9 1.6-1.6 2.4-.2 3.9-.9 4.4-1.6-.3-.3-1-.8-1.3-1.2-.2-.4-.1-.7.4-.7.6 0 1.3-.4.8-1-1.2-.5-1.7-1.4-2-1.9.8-.5.5-1.2.5-1.2s-.8.3-1.3.2v-.6C20.4 10 18.4 8 16 8Z"/>
-    </svg>
-  );
-  return null;
-}
-
-const SOCIAL_KEYS_ALL = ["whatsapp", "linkedin", "messenger", "instagram", "twitter", "snapchat"];
-
 export function ProfilePreviewCard({
-  name            = "Jane Smith",
-  designation     = "Marketing Director",
-  company         = "TechCorp Inc.",
-  city            = "Mumbai",
-  phone           = "+91 98765 43210",
-  email           = "jane@techcorp.com",
-  website         = "jane.tapmelabs.com",
+  /* individual props (legacy callers) */
+  name            = "",
+  designation     = "",
+  company         = "",
+  city            = "",
+  phone           = "",
+  email           = "",
+  website         = "",
   connectedSocials = [],
   profileImage    = null,
   companyLogo     = null,
   bizPhone        = null,
   bizEmail        = null,
-  showActions     = false,
+  /* new props */
+  profile         = null,
+  themeKey        = "default",
 }) {
-  const visibleSocials = connectedSocials.filter((k) => SOCIAL_KEYS_ALL.includes(k));
-  const firstName = (name || "Jane").split(" ")[0];
-  const lastName  = (name || "Jane Smith").split(" ").slice(1).join(" ");
+  const profileObj = profile || {
+    name,
+    email,
+    phone,
+    profile_image: profileImage,
+    designation,
+    company_name: company,
+    company_logo: companyLogo,
+    website,
+    social_links: {
+      city,
+      work_phone: bizPhone,
+      work_email: bizEmail,
+      ...Object.fromEntries(connectedSocials.map((k) => [k, "1"])),
+    },
+  };
 
-  return (
-    <div className="flex flex-col overflow-hidden bg-white" style={{ borderRadius: "16px", border: "1px solid rgb(229,229,229)" }}>
-      {/* NFC Card */}
-      <div className="flex flex-col px-[25px] pt-[25px]">
-        <div className="relative overflow-hidden" style={{ width: "100%", height: "280px", borderRadius: "9px" }}>
-          {profileImage ? (
-            // eslint-disable-next-line @next/next/no-img-element
-            <img src={profileImage} alt={name} style={{ width: "100%", height: "100%", objectFit: "cover", objectPosition: "top center", display: "block" }} />
-          ) : (
-            <Image src="/images/dashboard/profile-card-bg.png" alt="NFC Card" fill sizes="(max-width: 1280px) 350px, 350px" style={{ objectFit: "cover" }} />
-          )}
-          <div className="absolute inset-0" style={{ background: "linear-gradient(to top, rgba(0,0,0,0.60) 0%, transparent 55%)" }} />
-          <div className="absolute bottom-4 left-4">
-            <p className="font-semibold leading-tight text-white" style={{ fontSize: "24px", fontWeight: 600 }}>
-              {firstName}<br />{lastName}
-            </p>
-          </div>
-        </div>
-
-        {/* Bio row */}
-        <div className="mt-[16px] flex items-center gap-3 pb-[20px]">
-          {companyLogo ? (
-            // eslint-disable-next-line @next/next/no-img-element
-            <img src={companyLogo} alt={company} style={{ width: 48, height: 48, borderRadius: "5px", objectFit: "contain", flexShrink: 0 }} />
-          ) : (
-            <Image src="/images/dashboard/profile-avatar.png" alt="Avatar" width={48} height={48} style={{ borderRadius: "5px", objectFit: "cover", flexShrink: 0 }} />
-          )}
-          <p className="text-[12px] leading-[1.5] text-[#21283F]">
-            {designation}<br />at {company}<br />in {city}, India.
-          </p>
-        </div>
-      </div>
-
-      <div className="mx-[25px] h-px bg-[#E5E5E5]" />
-
-      {/* Contact */}
-      <div className="flex flex-col px-[65px] py-[20px]">
-        <div className="flex items-center gap-3 py-[5px]">
-          <Icon k="phone" size={14} color="#1C1B1F" strokeWidth={1.6} />
-          <span className="text-[12px] font-semibold text-[#21283F]">{phone}</span>
-        </div>
-        <div className="flex items-center gap-3 py-[5px]">
-          <Icon k="mail" size={14} color="#1C1B1F" strokeWidth={1.6} />
-          <span className="truncate text-[12px] text-[#21283F]">{email}</span>
-        </div>
-        <div className="flex items-center gap-3 py-[5px]">
-          <Icon k="globe" size={14} color="#1C1B1F" strokeWidth={1.6} />
-          <span className="truncate text-[12px] text-[#21283F]">{website}</span>
-        </div>
-        {bizPhone && (
-          <div className="flex items-center gap-3 py-[5px]">
-            <Icon k="phone" size={14} color="#1C1B1F" strokeWidth={1.6} />
-            <span className="text-[12px] font-semibold text-[#21283F]">
-              {bizPhone} <span style={{ color: "#9CA3AF", fontSize: 10 }}>(work)</span>
-            </span>
-          </div>
-        )}
-        {bizEmail && (
-          <div className="flex items-center gap-3 py-[5px]">
-            <Icon k="mail" size={14} color="#1C1B1F" strokeWidth={1.6} />
-            <span className="truncate text-[12px] text-[#21283F]">
-              {bizEmail} <span style={{ color: "#9CA3AF", fontSize: 10 }}>(work)</span>
-            </span>
-          </div>
-        )}
-      </div>
-
-      <div className="mx-[25px] h-px bg-[#E5E5E5]" />
-
-      {/* Socials */}
-      {visibleSocials.length > 0 && (
-        <div className="flex flex-wrap items-center justify-center gap-[16px] py-[20px] px-[16px]">
-          {visibleSocials.map((key) => (
-            <button key={key} className="transition-transform hover:scale-110">
-              <SocialIcon platform={key} size={28} />
-            </button>
-          ))}
-        </div>
-      )}
-
-      {/* Actions — only in list/card view, not in edit previews */}
-      {showActions && (
-        <div className="flex flex-col items-center gap-[24px] px-[34px] pb-[25px]">
-          <button
-            className="flex items-center justify-center gap-2 transition-opacity hover:opacity-80"
-            style={{ width: "124px", height: "32px", borderRadius: "20px", border: "1px solid rgb(164,182,196)", fontSize: "12px", color: "rgb(28,27,31)" }}
-          >
-            <Icon k="download" size={13} color="rgb(28,27,31)" strokeWidth={1.8} />
-            Save Contact
-          </button>
-
-          <div className="flex w-full items-center justify-center overflow-hidden" style={{ height: "50px", borderRadius: "99px", background: "#000000" }}>
-            <button className="flex flex-1 items-center justify-center text-[14px] text-white transition-opacity hover:opacity-80">Share</button>
-            <div className="h-5 w-px bg-white/30" />
-            <Link href="/dashboard/profile/basics" className="flex flex-1 items-center justify-center text-[14px] text-white transition-opacity hover:opacity-80">Edit Profile</Link>
-          </div>
-        </div>
-      )}
-    </div>
-  );
+  return <RealProfilePreviewCard profile={profileObj} themeKey={themeKey} />;
 }
 
 /* ─── profile tabs ──────────────────────────────────────────────────────── */

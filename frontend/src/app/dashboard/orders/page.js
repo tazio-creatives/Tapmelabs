@@ -144,7 +144,7 @@ function OrderDetailPanel({ order, onClose }) {
   const productName = order.product?.name || order.product_name || order.items?.[0]?.product_name || "NFC Card";
   const productImage = order.product?.images?.[0] || order.product_image || order.items?.[0]?.product_image || null;
   const total = order.total_amount ?? order.amount ?? order.total ?? 0;
-  const shipping = order.shipping_cost ?? (total >= 999 ? 0 : 99);
+  const shipping = order.shipping_cost ?? (total >= 799 ? 0 : 99);
   const subtotal = total - shipping;
 
   const STEPS = [

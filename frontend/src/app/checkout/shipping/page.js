@@ -206,7 +206,7 @@ export default function CheckoutShippingPage() {
   };
 
   const subtotal = Number(checkoutItem?.rawSalePrice ?? checkoutItem?.rawPrice ?? 0);
-  const shipping = subtotal >= 999 ? 0 : 99;
+  const shipping = subtotal >= 799 ? 0 : 99;
   const total    = subtotal + shipping;
 
   function validate() {
@@ -400,8 +400,8 @@ export default function CheckoutShippingPage() {
                 <div className="flex flex-col gap-3 rounded-[12px] bg-[#F9F9F9] p-4">
                   {[
                     { icon: <ShieldIcon />, text: <>Secure checkout with <strong className="text-[#111827]">256-bit SSL</strong> encryption</> },
-                    { icon: <TruckIcon />,  text: <>Free shipping on orders above <strong className="text-[#111827]">₹999</strong></> },
-                    { icon: <FlashIcon />,  text: <>Dispatch within <strong className="text-[#111827]">24 hours</strong></> },
+                    { icon: <TruckIcon />,  text: <>Free shipping on orders above <strong className="text-[#111827]">₹799</strong></> },
+                    { icon: <FlashIcon />,  text: <>Dispatch within <strong className="text-[#111827]">4 days</strong></> },
                   ].map((b, i) => (
                     <div key={i} className="flex items-start gap-3">
                       <div className="mt-[1px] shrink-0">{b.icon}</div>

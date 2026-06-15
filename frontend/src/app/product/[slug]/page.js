@@ -29,6 +29,7 @@ function mapProduct(raw) {
     front_image:           raw.front_image || null,
     back_image:            raw.back_image  || null,
     allowColorCustomization: raw.allow_color_customization ?? false,
+    backgroundStyles:      Array.isArray(raw.background_styles) ? raw.background_styles.filter(s => s.status) : [],
     rawPrice:              price,
     rawSalePrice:          salePrice,
 

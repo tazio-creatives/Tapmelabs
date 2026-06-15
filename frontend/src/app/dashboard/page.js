@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
 import { Sidebar as SharedSidebar } from "@/components/dashboard/shared";
 import ProfilePreviewCard from "@/components/dashboard/ProfilePreviewCard";
 import profileService   from "@/services/profileService";
@@ -144,6 +145,13 @@ function ActionsSection({ profileUrl, onViewProfile, onDownloadQR, onShare, onCo
           <Icon k="eye" size={15} color="white" strokeWidth={2} />
           View Digital Profile
         </button>
+        <Link
+          href="/dashboard/themes"
+          className="flex h-[44px] w-full items-center justify-center gap-2 rounded-[8px] border border-[#E5E7EB] text-[13px] font-medium text-[#374151] transition-colors hover:bg-[#F9FAFB] no-underline"
+        >
+          <Icon k="palette" size={15} color="#374151" strokeWidth={1.8} />
+          Edit Theme
+        </Link>
         <button
           onClick={onDownloadQR}
           className="flex h-[44px] w-full items-center justify-center gap-2 rounded-[8px] border border-[#E5E7EB] text-[13px] font-medium text-[#374151] transition-colors hover:bg-[#F9FAFB]"

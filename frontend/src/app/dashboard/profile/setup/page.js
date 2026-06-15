@@ -2,22 +2,21 @@
 
 import { useState, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
-import Image from "next/image";
 import CropImageModal from "@/components/dashboard/CropImageModal";
 import api from "@/services/api";
 import profileService from "@/services/profileService";
-import themeService from "@/services/themeService";
 import ProfilePreviewCard, { THEME_STYLES } from "@/components/dashboard/ProfilePreviewCard";
 
-/* ─── theme normalizer ────────────────────────────────────────────────── */
+/* ─── all available themes ────────────────────────────────────────────── */
 
-function normalizeTheme(t) {
-  return {
-    key:           t.key ?? t.theme_key ?? t.id ?? "",
-    name:          t.name || t.theme_name || "Unnamed",
-    preview_image: t.preview_image || t.previewImage || t.image || null,
-  };
-}
+const FRONTEND_THEMES = [
+  { key: "default",      name: "Default"      },
+  { key: "classic",      name: "Classic"      },
+  { key: "professional", name: "Professional" },
+  { key: "midnight",     name: "Midnight"     },
+  { key: "royal",        name: "Royal"        },
+  { key: "violet",       name: "Violet"       },
+];
 
 /* ─── slug generator ──────────────────────────────────────────────────── */
 
@@ -131,6 +130,16 @@ function SnapchatIcon() {
   );
 }
 
+function CustomUrlIcon() {
+  return (
+    <svg width="28" height="28" viewBox="0 0 28 28" fill="none">
+      <circle cx="14" cy="14" r="14" fill="#6366F1" />
+      <path stroke="white" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" fill="none"
+        d="M11.5 16.5l5-5M13.2 10.8l1.3-1.3a3.5 3.5 0 0 1 5 5l-1.3 1.3M9.8 14l-1.3 1.3a3.5 3.5 0 0 0 5 5l1.3-1.3" />
+    </svg>
+  );
+}
+
 /* ─── blurred dashboard background ───────────────────────────────────── */
 
 function DashboardBg() {
@@ -218,17 +227,39 @@ function DashboardBg() {
   );
 }
 
-/* ─── preview filename map (API key → local file key) ────────────────── */
+/* ─── phone mockup frame ──────────────────────────────────────────────── */
 
-const PREVIEW_KEY_MAP = { midnight: "midnight-dark" };
+function PhoneMockupThumb({ children }) {
+  return (
+    <div style={{
+      borderRadius: 22,
+      border: "3px solid #1a1a1a",
+      background: "#1a1a1a",
+      boxShadow: "0 6px 20px rgba(0,0,0,0.22), inset 0 1px 0 rgba(255,255,255,0.07)",
+      overflow: "hidden",
+      position: "relative",
+    }}>
+      {/* Side buttons */}
+      <div style={{ position: "absolute", right: -5, top: 44, width: 3, height: 18, background: "#2a2a2a", borderRadius: 3 }} />
+      <div style={{ position: "absolute", left: -5, top: 38, width: 3, height: 14, background: "#2a2a2a", borderRadius: 3 }} />
+      <div style={{ position: "absolute", left: -5, top: 58, width: 3, height: 14, background: "#2a2a2a", borderRadius: 3 }} />
+      {/* Notch bar */}
+      <div style={{ height: 17, background: "#1a1a1a", display: "flex", alignItems: "center", justifyContent: "center" }}>
+        <div style={{ width: 36, height: 7, background: "#0a0a0a", borderRadius: 4 }} />
+      </div>
+      {/* Screen */}
+      <div style={{ overflow: "hidden" }}>{children}</div>
+      {/* Home indicator */}
+      <div style={{ height: 12, background: "#1a1a1a", display: "flex", alignItems: "center", justifyContent: "center" }}>
+        <div style={{ width: 32, height: 3, background: "#333", borderRadius: 2 }} />
+      </div>
+    </div>
+  );
+}
 
-/* ─── Theme card (matches Themes page design) ─────────────────────────── */
+/* ─── Theme card ──────────────────────────────────────────────────────── */
 
-function ThemeCard({ theme, isSelected, onSelect }) {
-  const fileKey      = PREVIEW_KEY_MAP[theme.key] || theme.key;
-  const localPreview = `/images/dashboard/themes/preview-${fileKey}.png`;
-  const previewSrc   = theme.preview_image || localPreview;
-
+function ThemeCard({ theme, isSelected, onSelect, profile }) {
   return (
     <div
       className="group relative cursor-pointer overflow-visible rounded-[16px] border border-[#E5E5E5] bg-white transition-all duration-200 hover:shadow-[0_8px_32px_rgba(0,0,0,0.10)]"
@@ -243,17 +274,15 @@ function ThemeCard({ theme, isSelected, onSelect }) {
         </div>
       )}
 
-      <div className="mx-[16px] mt-[16px] overflow-hidden rounded-[10px]">
-        <Image
-          src={previewSrc}
-          alt={`${theme.name} theme preview`}
-          width={315}
-          height={505}
-          sizes="(max-width: 580px) calc(50vw - 56px), 220px"
-          style={{ width: "100%", height: "auto", display: "block" }}
-          priority={isSelected}
-          onError={(e) => { e.currentTarget.style.display = "none"; }}
-        />
+      {/* Live theme preview inside phone mockup */}
+      <div className="mx-[16px] mt-[16px]">
+        <PhoneMockupThumb>
+          <div style={{ height: 185, overflow: "hidden" }}>
+            <div style={{ width: "200%", transformOrigin: "top left", transform: "scale(0.5)", pointerEvents: "none" }}>
+              <ProfilePreviewCard profile={profile} themeKey={theme.key} />
+            </div>
+          </div>
+        </PhoneMockupThumb>
       </div>
 
       <div className="mx-[16px] mt-[10px] pb-[16px]">
@@ -272,7 +301,7 @@ function ThemeCard({ theme, isSelected, onSelect }) {
 
 /* ─── Step 1 — Theme selection ────────────────────────────────────────── */
 
-function ThemeStep({ themes, loading, error, onRetry, selected, onSelect }) {
+function ThemeStep({ themes, loading, error, onRetry, selected, onSelect, profile }) {
   if (loading) {
     return (
       <div className="flex h-[220px] items-center justify-center">
@@ -315,6 +344,7 @@ function ThemeStep({ themes, loading, error, onRetry, selected, onSelect }) {
           theme={theme}
           isSelected={selected === theme.key}
           onSelect={onSelect}
+          profile={profile}
         />
       ))}
     </div>
@@ -597,43 +627,171 @@ const PLATFORMS = [
   { key: "snapchat",  label: "Snapchat",  Icon: SnapchatIcon,  placeholder: "@username"                },
 ];
 
+const REMOVE_BTN = ({ onClick }) => (
+  <button
+    type="button"
+    onClick={onClick}
+    className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full border border-[#FEE2E2] bg-white text-[#EF4444] transition-colors hover:bg-[#FFF5F5]"
+  >
+    <svg width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round">
+      <path d="M2 2l8 8M10 2l-8 8" />
+    </svg>
+  </button>
+);
+
 function SocialStep({ data, onChange }) {
+  const iconInputRef = useRef(null);
+  const [uploadingIdx, setUploadingIdx] = useState(-1);
+  const pendingIdxRef = useRef(-1);
+
   function set(field, val) { onChange((prev) => ({ ...prev, [field]: val })); }
+
+  function getUrls() { return data.custom_urls || [{ url: "", icon: "" }]; }
+
+  function setUrlField(index, field, val) {
+    onChange((prev) => {
+      const urls = [...getUrls()];
+      urls[index] = { ...urls[index], [field]: val };
+      return { ...prev, custom_urls: urls };
+    });
+  }
+
+  function addUrl() {
+    onChange((prev) => ({ ...prev, custom_urls: [...getUrls(), { url: "", icon: "" }] }));
+  }
+
+  function removeUrl(index) {
+    onChange((prev) => {
+      const urls = getUrls().filter((_, i) => i !== index);
+      return { ...prev, custom_urls: urls.length ? urls : [{ url: "", icon: "" }] };
+    });
+  }
+
+  async function handleIconFile(e) {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    if (iconInputRef.current) iconInputRef.current.value = "";
+    const idx = pendingIdxRef.current;
+    if (idx < 0) return;
+    setUploadingIdx(idx);
+    try {
+      const formData = new FormData();
+      formData.append("image", file);
+      const res = await api.post("/uploads/company-logo", formData, { headers: { "Content-Type": undefined } });
+      const url = res.data?.data?.url;
+      if (url) setUrlField(idx, "icon", url);
+    } catch { /* silent */ }
+    finally { setUploadingIdx(-1); pendingIdxRef.current = -1; }
+  }
+
+  function triggerIconUpload(index) {
+    pendingIdxRef.current = index;
+    iconInputRef.current?.click();
+  }
+
+  const customUrls = getUrls();
 
   return (
     <div className="flex flex-col gap-3">
+
+      {/* Platform rows */}
       {PLATFORMS.map(({ key, label, Icon, placeholder }) => (
-        <div key={key} className="flex items-center gap-3 rounded-[10px] border border-[#E5E7EB] bg-white px-3 py-2 transition-all focus-within:border-[#28DC4F] focus-within:ring-2 focus-within:ring-[#28DC4F]/15">
-          <Icon />
-          <div className="flex flex-1 flex-col">
-            <span className="text-[11px] font-medium text-[#9CA3AF]">{label}</span>
-            <input
-              type="text"
-              placeholder={placeholder}
-              value={data[key]}
-              onChange={(e) => set(key, e.target.value)}
-              className="bg-transparent text-[13px] text-[#111827] outline-none placeholder:text-[#D1D5DB]"
-            />
-          </div>
-          {data[key] && (
-            <div className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-[#28DC4F]">
-              <CheckIcon />
+        <div key={key} className="flex items-center gap-2">
+          <div className="flex flex-1 items-center gap-3 rounded-[10px] border border-[#E5E7EB] bg-white px-3 py-2 transition-all focus-within:border-[#28DC4F] focus-within:ring-2 focus-within:ring-[#28DC4F]/15">
+            <Icon />
+            <div className="flex flex-1 flex-col">
+              <span className="text-[11px] font-medium text-[#9CA3AF]">{label}</span>
+              <input
+                type="text"
+                placeholder={placeholder}
+                value={data[key] || ""}
+                onChange={(e) => set(key, e.target.value)}
+                className="bg-transparent text-[13px] text-[#111827] outline-none placeholder:text-[#D1D5DB]"
+              />
             </div>
-          )}
+            {data[key] && (
+              <div className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-[#28DC4F]">
+                <CheckIcon />
+              </div>
+            )}
+          </div>
+          {data[key] && <REMOVE_BTN onClick={() => set(key, "")} />}
         </div>
       ))}
+
+      {/* Custom URLs */}
+      <div className="flex flex-col gap-2">
+        {customUrls.map((item, index) => (
+          <div key={index} className="flex items-center gap-2">
+
+            {/* Icon upload circle */}
+            <button
+              type="button"
+              title="Upload custom icon"
+              onClick={() => triggerIconUpload(index)}
+              className="relative flex h-[42px] w-[42px] shrink-0 cursor-pointer items-center justify-center overflow-hidden rounded-full border-2 border-dashed border-[#E5E7EB] bg-[#F9FAFB] transition-colors hover:border-[#28DC4F] hover:bg-[#F0FDF4]"
+            >
+              {uploadingIdx === index ? (
+                <SpinnerIcon size={16} color="green" />
+              ) : item.icon ? (
+                // eslint-disable-next-line @next/next/no-img-element
+                <img src={item.icon} alt="icon" className="h-full w-full object-cover" />
+              ) : (
+                <CustomUrlIcon />
+              )}
+            </button>
+
+            {/* URL input */}
+            <div className="flex flex-1 items-center gap-3 rounded-[10px] border border-[#E5E7EB] bg-white px-3 py-2 transition-all focus-within:border-[#28DC4F] focus-within:ring-2 focus-within:ring-[#28DC4F]/15">
+              <div className="flex flex-1 flex-col">
+                <span className="text-[11px] font-medium text-[#9CA3AF]">
+                  Custom URL {customUrls.length > 1 ? index + 1 : ""}
+                </span>
+                <input
+                  type="url"
+                  placeholder="https://yourwebsite.com"
+                  value={item.url || ""}
+                  onChange={(e) => setUrlField(index, "url", e.target.value)}
+                  className="bg-transparent text-[13px] text-[#111827] outline-none placeholder:text-[#D1D5DB]"
+                />
+              </div>
+              {item.url && (
+                <div className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-[#28DC4F]">
+                  <CheckIcon />
+                </div>
+              )}
+            </div>
+
+            {/* Remove */}
+            {customUrls.length > 1 && <REMOVE_BTN onClick={() => removeUrl(index)} />}
+          </div>
+        ))}
+
+        <button
+          type="button"
+          onClick={addUrl}
+          className="flex items-center gap-2 self-start rounded-[8px] border border-dashed border-[#28DC4F] px-3 py-[7px] text-[12px] font-medium text-[#28DC4F] transition-colors hover:bg-[#F0FDF4]"
+        >
+          <svg width="13" height="13" viewBox="0 0 13 13" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round">
+            <path d="M6.5 1v11M1 6.5h11" />
+          </svg>
+          Add More URL
+        </button>
+      </div>
+
+      <input ref={iconInputRef} type="file" accept="image/*" className="hidden" onChange={handleIconFile} />
     </div>
   );
 }
 
 /* ─── Page ────────────────────────────────────────────────────────────── */
 
-const STEP_TITLES    = ["Choose Your Theme", "Basic Information", "Business Details", "Social Media"];
+const STEP_TITLES    = ["Basic Information", "Business Details", "Social Media", "Choose Your Theme"];
 const STEP_SUBTITLES = [
-  "Pick a look for your digital profile card.",
   "Let people know who you are.",
   "Add your professional details.",
   "Connect your social accounts.",
+  "Pick a look for your digital profile card.",
 ];
 const TOTAL_STEPS = 4;
 
@@ -647,7 +805,7 @@ export default function ProfileSetupPage() {
   const [selectedTheme,    setSelectedTheme]    = useState("default");
   const [basic,            setBasic]            = useState({ name: "", email: "", phone: "", bio: "", profile_image: "" });
   const [business,         setBusiness]         = useState({ designation: "", company: "", city: "", website: "", category: "", company_logo: "", biz_phone: "", biz_email: "" });
-  const [social,           setSocial]           = useState({ whatsapp: "", linkedin: "", messenger: "", instagram: "", twitter: "", snapchat: "" });
+  const [social,           setSocial]           = useState({ whatsapp: "", linkedin: "", messenger: "", instagram: "", twitter: "", snapchat: "", custom_urls: [{ url: "", icon: "" }] });
   const [saving,           setSaving]           = useState(false);
   const [error,            setError]            = useState("");
   const [checkingProfile,  setCheckingProfile]  = useState(true);
@@ -687,19 +845,9 @@ export default function ProfileSetupPage() {
   }, [router]); // eslint-disable-line react-hooks/exhaustive-deps
 
   function fetchThemes() {
-    setLoadingThemes(true);
+    setThemes(FRONTEND_THEMES);
+    setLoadingThemes(false);
     setThemeError("");
-    themeService.getActiveThemes()
-      .then((response) => {
-        const themeList = response?.data?.themes || response?.data?.data?.themes || [];
-        setThemes(Array.isArray(themeList) ? themeList.map(normalizeTheme).filter((t) => t.key === "default") : []);
-      })
-      .catch(() => {
-        setThemeError("Unable to load themes. Please try again.");
-      })
-      .finally(() => {
-        setLoadingThemes(false);
-      });
   }
 
   function openCrop(state) {
@@ -739,7 +887,8 @@ export default function ProfileSetupPage() {
           ...(social.messenger       ? { messenger:   social.messenger       } : {}),
           ...(social.instagram       ? { instagram:   social.instagram       } : {}),
           ...(social.twitter         ? { twitter:     social.twitter         } : {}),
-          ...(social.snapchat        ? { snapchat:    social.snapchat        } : {}),
+          ...(social.snapchat ? { snapchat: social.snapchat } : {}),
+          custom_urls: (social.custom_urls || []).filter(item => item?.url).map(item => ({ url: item.url, icon: item.icon || null })),
           ...(business.city          ? { city:        business.city          } : {}),
           ...(business.category      ? { category:    business.category      } : {}),
           ...(business.biz_phone     ? { work_phone:  business.biz_phone     } : {}),
@@ -796,6 +945,7 @@ export default function ProfileSetupPage() {
     name:          basic.name            || null,
     email:         basic.email           || null,
     phone:         basic.phone           || null,
+    bio:           basic.bio             || null,
     profile_image: basic.profile_image   || null,
     designation:   business.designation  || null,
     company_name:  business.company      || null,
@@ -808,6 +958,7 @@ export default function ProfileSetupPage() {
       instagram:  social.instagram     || null,
       twitter:    social.twitter       || null,
       snapchat:   social.snapchat      || null,
+      custom_urls: (social.custom_urls || []).filter(item => item?.url),
       city:       business.city        || null,
       work_phone: business.biz_phone   || null,
       work_email: business.biz_email   || null,
@@ -848,7 +999,7 @@ export default function ProfileSetupPage() {
               {/* ── Form side ─────────────────────────────────── */}
               <div className="min-w-0 flex-1 px-5 pb-6 pt-5 sm:px-8 sm:pb-8 sm:pt-6">
 
-                {/* Back | Step X/4 | Skip */}
+                {/* Back | Step X/4 */}
                 <div className="flex items-center justify-between">
                   <button
                     type="button"
@@ -864,13 +1015,7 @@ export default function ProfileSetupPage() {
                     {step + 1} / {TOTAL_STEPS}
                   </span>
 
-                  <button
-                    type="button"
-                    onClick={handleSkip}
-                    className="text-[13px] font-medium text-[#9CA3AF] transition-colors hover:text-[#111827]"
-                  >
-                    Skip
-                  </button>
+                  <div className="w-9" />
                 </div>
 
                 {/* Step heading */}
@@ -884,16 +1029,6 @@ export default function ProfileSetupPage() {
                 {/* Step content */}
                 <div className="mt-6">
                   {step === 0 && (
-                    <ThemeStep
-                      themes={themes}
-                      loading={loadingThemes}
-                      error={themeError}
-                      onRetry={fetchThemes}
-                      selected={selectedTheme}
-                      onSelect={setSelectedTheme}
-                    />
-                  )}
-                  {step === 1 && (
                     <BasicStep
                       data={basic}
                       onChange={setBasic}
@@ -901,15 +1036,26 @@ export default function ProfileSetupPage() {
                       onOpenCrop={openCrop}
                     />
                   )}
-                  {step === 2 && (
+                  {step === 1 && (
                     <BusinessStep
                       data={business}
                       onChange={setBusiness}
                       onOpenCrop={openCrop}
                     />
                   )}
-                  {step === 3 && (
+                  {step === 2 && (
                     <SocialStep data={social} onChange={setSocial} />
+                  )}
+                  {step === 3 && (
+                    <ThemeStep
+                      themes={themes}
+                      loading={loadingThemes}
+                      error={themeError}
+                      onRetry={fetchThemes}
+                      selected={selectedTheme}
+                      onSelect={setSelectedTheme}
+                      profile={liveProfile}
+                    />
                   )}
                 </div>
 
@@ -943,20 +1089,10 @@ export default function ProfileSetupPage() {
                 <p className="mb-3 text-[11px] font-semibold uppercase tracking-wider text-[#9CA3AF]">
                   Live Preview
                 </p>
-                {step === 0 ? (
-                  <div className="overflow-hidden rounded-[12px] border border-[#E5E5E5] bg-white">
-                    <Image
-                      src={`/images/dashboard/themes/preview-${PREVIEW_KEY_MAP[selectedTheme] || selectedTheme || "default"}.png`}
-                      alt="Theme preview"
-                      width={260}
-                      height={416}
-                      style={{ width: "100%", height: "auto", display: "block" }}
-                      onError={(e) => { e.currentTarget.style.display = "none"; }}
-                    />
-                  </div>
-                ) : (
-                  <ProfilePreviewCard profile={liveProfile} themeKey={selectedTheme} />
-                )}
+                <ProfilePreviewCard
+                  profile={liveProfile}
+                  themeKey={selectedTheme}
+                />
               </div>
 
             </div>

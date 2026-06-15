@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
 import {
   Icon,
@@ -76,19 +76,6 @@ function SnapchatLogo() {
   );
 }
 
-/* ─── platform config ─────────────────────────────────────────────────── */
-
-const PLATFORMS = [
-  { key: "whatsapp",  label: "WhatsApp",  Logo: WhatsAppLogo  },
-  { key: "linkedin",  label: "LinkedIn",  Logo: LinkedInLogo  },
-  { key: "messenger", label: "Messenger", Logo: MessengerLogo },
-  { key: "instagram", label: "Instagram", Logo: InstagramLogo },
-  { key: "twitter",   label: "Twitter",   Logo: TwitterLogo   },
-  { key: "snapchat",  label: "Snapchat",  Logo: SnapchatLogo  },
-];
-
-const PLATFORM_KEYS = PLATFORMS.map((p) => p.key);
-
 /* ─── icons ───────────────────────────────────────────────────────────── */
 
 function CheckCircle() {
@@ -108,6 +95,40 @@ function PlusCircle() {
     </svg>
   );
 }
+
+function RemoveBtn({ onClick }) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      style={{ width: 24, height: 24, borderRadius: "50%", border: "1px solid #E5E7EB", background: "#F9FAFB", display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", flexShrink: 0, color: "#9CA3AF", fontSize: 14, lineHeight: 1 }}
+    >
+      ×
+    </button>
+  );
+}
+
+function CustomUrlIcon() {
+  return (
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#7B61FF" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/>
+      <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/>
+    </svg>
+  );
+}
+
+/* ─── platform config ─────────────────────────────────────────────────── */
+
+const PLATFORMS = [
+  { key: "whatsapp",  label: "WhatsApp",  Logo: WhatsAppLogo  },
+  { key: "linkedin",  label: "LinkedIn",  Logo: LinkedInLogo  },
+  { key: "messenger", label: "Messenger", Logo: MessengerLogo },
+  { key: "instagram", label: "Instagram", Logo: InstagramLogo },
+  { key: "twitter",   label: "Twitter",   Logo: TwitterLogo   },
+  { key: "snapchat",  label: "Snapchat",  Logo: SnapchatLogo  },
+];
+
+const PLATFORM_KEYS = PLATFORMS.map((p) => p.key);
 
 /* ─── helpers ─────────────────────────────────────────────────────────── */
 
@@ -131,12 +152,15 @@ export default function SocialPage() {
   const [sidebarOpen,        setSidebarOpen]        = useState(false);
   const [initials,           setInitials]           = useState("U");
   const [platforms,          setPlatforms]          = useState(() => initPlatforms(null));
+  const [customUrls,         setCustomUrls]         = useState([{ url: "", icon: "" }]);
+  const [uploadingIdx,       setUploadingIdx]       = useState(null);
+  const pendingIdxRef                               = useRef(null);
+  const fileInputRef                                = useRef(null);
   const [hasProfile,         setHasProfile]         = useState(false);
   const [loading,            setLoading]            = useState(true);
   const [saving,             setSaving]             = useState(false);
   const [success,            setSuccess]            = useState(false);
   const [apiError,           setApiError]           = useState("");
-  /* preview-only fields from API */
   const [previewName,        setPreviewName]        = useState("");
   const [previewDesignation, setPreviewDesignation] = useState("");
   const [previewCompany,     setPreviewCompany]     = useState("");
@@ -148,6 +172,7 @@ export default function SocialPage() {
   const [previewCompanyLogo, setPreviewCompanyLogo] = useState("");
   const [previewBizPhone,    setPreviewBizPhone]    = useState("");
   const [previewBizEmail,    setPreviewBizEmail]    = useState("");
+  const [previewThemeKey,    setPreviewThemeKey]    = useState("default");
   const [preservedLinks,     setPreservedLinks]     = useState({});
 
   useEffect(() => {
@@ -169,20 +194,24 @@ export default function SocialPage() {
         if (p) {
           setHasProfile(true);
           setPlatforms(initPlatforms(p.social_links));
+          const sl = p.social_links || {};
+          const existingUrls = Array.isArray(sl.custom_urls) && sl.custom_urls.length > 0
+            ? sl.custom_urls
+            : [{ url: "", icon: "" }];
+          setCustomUrls(existingUrls);
           setPreviewName(p.name || "");
           setPreviewDesignation(p.designation || "");
           setPreviewCompany(p.company_name || "");
-          setPreviewCity(p.city || "");
+          setPreviewCity(p.city || sl.city || "");
           const raw = p.phone || "";
           setPreviewPhone(raw.startsWith("+91 ") ? `+91 ${raw.slice(4)}` : raw.startsWith("+91") ? raw : raw ? `+91 ${raw}` : "");
           setPreviewEmail(p.email || "");
           setPreviewWebsite(p.website || "");
           setPreviewProfileImg(p.profile_image || "");
           setPreviewCompanyLogo(p.company_logo || "");
-          setPreviewCity(p.city || p.social_links?.city || "");
-          const sl = p.social_links || {};
           setPreviewBizPhone(sl.work_phone || "");
           setPreviewBizEmail(sl.work_email || "");
+          setPreviewThemeKey(p.theme_key || "default");
           setPreservedLinks({
             ...(sl.work_phone  ? { work_phone:  sl.work_phone  } : {}),
             ...(sl.work_email  ? { work_email:  sl.work_email  } : {}),
@@ -199,35 +228,63 @@ export default function SocialPage() {
       .finally(() => setLoading(false));
   }, [router]);
 
-  const connectedSocials = Object.entries(platforms)
-    .filter(([, v]) => v.connected)
-    .map(([k]) => k);
-
+  /* platform helpers */
   function toggleEdit(key) {
-    setPlatforms((prev) => ({
-      ...prev,
-      [key]: { ...prev[key], editing: !prev[key].editing },
-    }));
+    setPlatforms((prev) => ({ ...prev, [key]: { ...prev[key], editing: !prev[key].editing } }));
   }
-
   function setUrl(key, url) {
     setPlatforms((prev) => ({ ...prev, [key]: { ...prev[key], url } }));
   }
-
   function savePlatform(key) {
     const url = platforms[key].url.trim();
     if (!url) return;
-    setPlatforms((prev) => ({
-      ...prev,
-      [key]: { connected: true, url, editing: false },
-    }));
+    setPlatforms((prev) => ({ ...prev, [key]: { connected: true, url, editing: false } }));
+  }
+  function editConnected(key) {
+    setPlatforms((prev) => ({ ...prev, [key]: { ...prev[key], editing: true } }));
+  }
+  function removePlatform(key) {
+    setPlatforms((prev) => ({ ...prev, [key]: { connected: false, url: "", editing: false } }));
   }
 
-  function editConnected(key) {
-    setPlatforms((prev) => ({
-      ...prev,
-      [key]: { ...prev[key], editing: true },
-    }));
+  /* custom url helpers */
+  function updateCustomUrl(idx, field, value) {
+    setCustomUrls((prev) => prev.map((item, i) => i === idx ? { ...item, [field]: value } : item));
+  }
+  function addCustomUrl() {
+    setCustomUrls((prev) => [...prev, { url: "", icon: "" }]);
+  }
+  function removeCustomUrl(idx) {
+    setCustomUrls((prev) => prev.length === 1 ? [{ url: "", icon: "" }] : prev.filter((_, i) => i !== idx));
+  }
+
+  /* icon upload */
+  function triggerIconUpload(idx) {
+    pendingIdxRef.current = idx;
+    fileInputRef.current?.click();
+  }
+
+  async function handleIconFile(e) {
+    const file = e.target.files?.[0];
+    const idx  = pendingIdxRef.current;
+    e.target.value = "";
+    if (!file || idx === null) return;
+
+    setUploadingIdx(idx);
+    try {
+      const token = localStorage.getItem("customerToken");
+      const fd    = new FormData();
+      fd.append("file", file);
+      const res  = await fetch("http://localhost:5000/api/uploads/company-logo", { method: "POST", headers: { Authorization: `Bearer ${token}` }, body: fd });
+      const json = await res.json();
+      const url  = json?.url || json?.data?.url || json?.file?.url || "";
+      if (url) updateCustomUrl(idx, "icon", url);
+    } catch {
+      // upload failed silently
+    } finally {
+      setUploadingIdx(null);
+      pendingIdxRef.current = null;
+    }
   }
 
   const handleSave = async () => {
@@ -238,12 +295,13 @@ export default function SocialPage() {
     try {
       const social_links = { ...preservedLinks };
       Object.entries(platforms).forEach(([key, val]) => {
-        if (val.connected && val.url.trim()) {
-          social_links[key] = val.url.trim();
-        } else {
-          delete social_links[key];
-        }
+        if (val.connected && val.url.trim()) social_links[key] = val.url.trim();
+        else delete social_links[key];
       });
+      const filteredUrls = customUrls.filter((item) => item.url.trim());
+      if (filteredUrls.length > 0) {
+        social_links.custom_urls = filteredUrls.map((item) => ({ url: item.url.trim(), icon: item.icon || null }));
+      }
 
       if (!hasProfile) {
         const stored = JSON.parse(localStorage.getItem("customerUser") || "{}");
@@ -257,12 +315,28 @@ export default function SocialPage() {
 
       router.push("/dashboard/themes");
     } catch (err) {
-      setApiError(
-        err.response?.data?.message || err.message || "Failed to save. Please try again."
-      );
+      setApiError(err.response?.data?.message || err.message || "Failed to save. Please try again.");
     } finally {
       setSaving(false);
     }
+  };
+
+  const liveProfile = {
+    name: previewName,
+    email: previewEmail,
+    phone: previewPhone,
+    profile_image: previewProfileImg || null,
+    designation: previewDesignation,
+    company_name: previewCompany,
+    company_logo: previewCompanyLogo || null,
+    website: previewWebsite,
+    social_links: {
+      ...Object.fromEntries(Object.entries(platforms).filter(([, v]) => v.connected && v.url).map(([k, v]) => [k, v.url])),
+      city: previewCity,
+      work_phone: previewBizPhone,
+      work_email: previewBizEmail,
+      custom_urls: customUrls.filter((item) => item.url),
+    },
   };
 
   if (loading) {
@@ -283,6 +357,9 @@ export default function SocialPage() {
     <div className="flex h-screen overflow-hidden bg-[#F7F8F9]">
       <Sidebar open={sidebarOpen} onClose={() => setSidebarOpen(false)} activeNav="Dashboard" />
 
+      {/* hidden file input for icon upload */}
+      <input ref={fileInputRef} type="file" accept="image/*" style={{ display: "none" }} onChange={handleIconFile} />
+
       <div className="flex min-w-0 flex-1 flex-col overflow-hidden">
         <TopHeader onMenuClick={() => setSidebarOpen(true)} initials={initials} />
 
@@ -299,9 +376,7 @@ export default function SocialPage() {
 
             <div className="rounded-[16px] border border-[#EBEBEB] bg-white p-8">
               <div className="flex flex-col gap-8">
-
                 <div className="flex flex-col gap-6">
-                  {/* Section heading */}
                   <div>
                     <h2 className="text-[24px] font-bold text-[#111827]">Social</h2>
                     <p className="mt-2 max-w-[410px] text-[14px] text-[#6B7280]">
@@ -309,17 +384,9 @@ export default function SocialPage() {
                     </p>
                   </div>
 
-                  {/* Error banner */}
                   {apiError && (
                     <div className="rounded-[8px] border border-[#FEE2E2] bg-[#FFF5F5] px-4 py-3 text-[13px] text-[#EF4444]">
                       {apiError}
-                    </div>
-                  )}
-
-                  {/* Success banner */}
-                  {success && (
-                    <div className="rounded-[8px] border border-[#D1FAE5] bg-[#F0FDF4] px-4 py-3 text-[13px] text-[#16A34A]">
-                      Social links saved successfully!
                     </div>
                   )}
 
@@ -328,51 +395,43 @@ export default function SocialPage() {
                     {PLATFORMS.map(({ key, label, Logo }) => {
                       const pData = platforms[key];
 
-                      /* Connected + not editing */
                       if (pData.connected && !pData.editing) {
                         return (
-                          <div
-                            key={key}
-                            className="flex items-center justify-between rounded-[12px] border border-[#E5E7EB] px-4 py-[16px]"
-                          >
+                          <div key={key} className="flex items-center justify-between rounded-[12px] border border-[#E5E7EB] px-4 py-[16px]">
                             <div className="flex items-center gap-3">
                               <Logo />
                               <span className="text-[16px] font-medium text-black">{label}</span>
                               <CheckCircle />
                             </div>
-                            <button
-                              onClick={() => editConnected(key)}
-                              className="text-[14px] text-[#7B91A3] transition-colors hover:text-[#111827]"
-                            >
-                              Edit
-                            </button>
+                            <div className="flex items-center gap-3">
+                              <button onClick={() => editConnected(key)} className="text-[14px] text-[#7B91A3] transition-colors hover:text-[#111827]">
+                                Edit
+                              </button>
+                              <RemoveBtn onClick={() => removePlatform(key)} />
+                            </div>
                           </div>
                         );
                       }
 
-                      /* Editing / expanded */
                       if (pData.editing) {
                         return (
-                          <div
-                            key={key}
-                            className="rounded-[12px] border border-[#E5E7EB] px-4 py-[16px]"
-                          >
-                            {/* Top row */}
+                          <div key={key} className="rounded-[12px] border border-[#E5E7EB] px-4 py-[16px]">
                             <div className="flex items-center justify-between">
                               <div className="flex items-center gap-3">
                                 <Logo />
                                 <span className="text-[16px] font-medium text-black">{label}</span>
                               </div>
-                              <button
-                                onClick={() => savePlatform(key)}
-                                className="rounded-[8px] px-4 py-[6px] text-[14px] font-medium text-white transition-opacity hover:opacity-90"
-                                style={{ background: "#28DC4F" }}
-                              >
-                                Save
-                              </button>
+                              <div className="flex items-center gap-2">
+                                <button
+                                  onClick={() => savePlatform(key)}
+                                  className="rounded-[8px] px-4 py-[6px] text-[14px] font-medium text-white transition-opacity hover:opacity-90"
+                                  style={{ background: "#28DC4F" }}
+                                >
+                                  Save
+                                </button>
+                                <RemoveBtn onClick={() => removePlatform(key)} />
+                              </div>
                             </div>
-
-                            {/* URL input row */}
                             <div className="mt-3 flex items-center gap-3 border-b border-[#E5E7EB] pb-2">
                               <input
                                 type="url"
@@ -388,12 +447,8 @@ export default function SocialPage() {
                         );
                       }
 
-                      /* Not connected */
                       return (
-                        <div
-                          key={key}
-                          className="flex items-center justify-between rounded-[12px] border border-[#E5E7EB] px-4 py-[16px]"
-                        >
+                        <div key={key} className="flex items-center justify-between rounded-[12px] border border-[#E5E7EB] px-4 py-[16px]">
                           <div className="flex items-center gap-3">
                             <Logo />
                             <span className="text-[16px] font-medium text-black">{label}</span>
@@ -409,9 +464,54 @@ export default function SocialPage() {
                       );
                     })}
                   </div>
+
+                  {/* Custom URLs */}
+                  <div className="flex flex-col gap-3">
+                    <p className="text-[15px] font-semibold text-[#111827]">Custom Links</p>
+                    {customUrls.map((item, idx) => (
+                      <div key={idx} style={{ display: "flex", alignItems: "center", gap: 10, background: "#F9FAFB", border: "1px solid #E5E7EB", borderRadius: 12, padding: "10px 14px" }}>
+                        {/* Icon upload circle */}
+                        <button
+                          type="button"
+                          onClick={() => triggerIconUpload(idx)}
+                          style={{ width: 36, height: 36, borderRadius: "50%", border: "1.5px dashed #D1D5DB", background: item.icon ? "transparent" : "#F3F4F6", display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", flexShrink: 0, overflow: "hidden", position: "relative" }}
+                        >
+                          {uploadingIdx === idx ? (
+                            <svg style={{ animation: "spin 0.75s linear infinite" }} width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#9CA3AF" strokeWidth="2.5"><circle cx="12" cy="12" r="9" strokeOpacity="0.3"/><path d="M12 3a9 9 0 0 1 9 9" strokeLinecap="round"/></svg>
+                          ) : item.icon ? (
+                            // eslint-disable-next-line @next/next/no-img-element
+                            <img src={item.icon} alt="icon" style={{ width: "100%", height: "100%", objectFit: "cover", borderRadius: "50%" }} />
+                          ) : (
+                            <CustomUrlIcon />
+                          )}
+                        </button>
+
+                        {/* URL input */}
+                        <input
+                          type="url"
+                          placeholder="https://yourlink.com"
+                          value={item.url}
+                          onChange={(e) => updateCustomUrl(idx, "url", e.target.value)}
+                          style={{ flex: 1, background: "transparent", border: "none", outline: "none", fontSize: 14, color: "#111827" }}
+                        />
+
+                        {/* Remove */}
+                        <RemoveBtn onClick={() => removeCustomUrl(idx)} />
+                      </div>
+                    ))}
+
+                    {/* Add More URL */}
+                    <button
+                      type="button"
+                      onClick={addCustomUrl}
+                      style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 8, border: "1.5px dashed #28DC4F", borderRadius: 12, padding: "10px 0", background: "transparent", cursor: "pointer", color: "#16A34A", fontSize: 14, fontWeight: 500 }}
+                    >
+                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+                      Add More URL
+                    </button>
+                  </div>
                 </div>
 
-                {/* Save Changes button */}
                 <button
                   onClick={handleSave}
                   disabled={saving}
@@ -431,43 +531,16 @@ export default function SocialPage() {
               </div>
             </div>
 
-            {/* Mobile preview */}
             <div className="mt-6 xl:hidden">
               <p className="mb-3 text-[15px] font-semibold text-[#111827]">Profile Preview</p>
-              <ProfilePreviewCard
-                name={previewName}
-                designation={previewDesignation}
-                company={previewCompany}
-                city={previewCity}
-                phone={previewPhone}
-                email={previewEmail}
-                website={previewWebsite}
-                connectedSocials={connectedSocials}
-                profileImage={previewProfileImg || null}
-                companyLogo={previewCompanyLogo || null}
-                bizPhone={previewBizPhone || null}
-                bizEmail={previewBizEmail || null}
-              />
+              <ProfilePreviewCard profile={liveProfile} themeKey={previewThemeKey} />
             </div>
           </main>
 
           {/* ── Right preview panel ── */}
           <aside className="hidden w-[400px] shrink-0 overflow-y-auto border-l border-[#EBEBEB] bg-white p-5 xl:block">
             <p className="mb-4 text-[13px] font-semibold text-[#6B7280]">Profile Preview</p>
-            <ProfilePreviewCard
-              name={previewName}
-              designation={previewDesignation}
-              company={previewCompany}
-              city={previewCity}
-              phone={previewPhone}
-              email={previewEmail}
-              website={previewWebsite}
-              connectedSocials={connectedSocials}
-              profileImage={previewProfileImg || null}
-              companyLogo={previewCompanyLogo || null}
-              bizPhone={previewBizPhone || null}
-              bizEmail={previewBizEmail || null}
-            />
+            <ProfilePreviewCard profile={liveProfile} />
           </aside>
         </div>
       </div>

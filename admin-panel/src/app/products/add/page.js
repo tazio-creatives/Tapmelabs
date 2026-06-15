@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import AdminLayout from "@/components/AdminLayout";
 import productService from "@/services/productService";
 import uploadService from "@/services/uploadService";
+import { extractSvgColors } from "@/utils/svgColorUtils";
 
 const inputCls = "w-full rounded-lg border border-slate-200 px-3 py-2.5 text-[13px] text-slate-800 outline-none focus:border-green-400 focus:ring-2 focus:ring-green-100 bg-white";
 
@@ -47,6 +48,9 @@ export default function AddProductPage() {
   const [mockupUploading, setMockupUploading] = useState({ front: false, back: false });
   const [mockupError, setMockupError] = useState("");
   const [allowColorCustomization, setAllowColorCustomization] = useState(false);
+  const [backgroundStyles, setBackgroundStyles] = useState([]);
+  const [svgUploading, setSvgUploading] = useState(false);
+  const [svgUploadError, setSvgUploadError] = useState("");
   const [saving, setSaving]           = useState(false);
   const [success, setSuccess]         = useState("");
   const [error, setError]             = useState("");
@@ -115,7 +119,7 @@ export default function AddProductPage() {
         status:                    form.status,
       };
 
-      await productService.createProduct(payload);
+      await productService.createProduct({ ...payload, background_styles: backgroundStyles });
       setSuccess("Product created successfully.");
       setTimeout(() => router.push("/products"), 800);
     } catch (err) {
@@ -320,6 +324,140 @@ export default function AddProductPage() {
                 />
               </button>
             </div>
+          </Section>
+
+          {/* Background Styles */}
+          <Section title="Background Styles">
+            <p className="text-[11px] text-slate-400">Upload SVG background designs. Colors are extracted automatically and can be customized by customers.</p>
+
+            {backgroundStyles.length > 0 && (
+              <div className="flex flex-col gap-3">
+                {backgroundStyles.map((style, idx) => (
+                  <div key={idx} className="rounded-lg p-3 flex flex-col gap-3" style={{ border: "1px solid #E2E8F0", background: "#F8FAFC" }}>
+                    <div className="flex items-center justify-between gap-2">
+                      <div className="flex items-center gap-2 flex-1 min-w-0">
+                        {/* SVG preview thumbnail */}
+                        <div className="shrink-0 rounded overflow-hidden" style={{ width: 64, height: 40, border: "1px solid #E2E8F0", background: "#111" }}>
+                          {style.svgPreviewUrl && (
+                            // eslint-disable-next-line @next/next/no-img-element
+                            <img src={style.svgPreviewUrl} alt={style.styleName} style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+                          )}
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <p className="text-[12px] font-semibold text-slate-700 truncate">{style.styleName || `Style ${idx + 1}`}</p>
+                          <p className="text-[11px] text-slate-400 truncate">{style.svgFile}</p>
+                        </div>
+                      </div>
+                      <div className="flex items-center gap-2 shrink-0">
+                        {/* Enable/disable toggle */}
+                        <button
+                          type="button"
+                          onClick={() => setBackgroundStyles(prev => prev.map((s, i) => i === idx ? { ...s, status: !s.status } : s))}
+                          className="relative inline-flex h-5 w-9 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors"
+                          style={{ background: style.status ? "#28DC4F" : "#D1D5DB" }}
+                          title={style.status ? "Disable" : "Enable"}
+                        >
+                          <span className="inline-block h-4 w-4 rounded-full bg-white shadow transition-transform" style={{ transform: style.status ? "translateX(16px)" : "translateX(0)" }} />
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => setBackgroundStyles(prev => prev.filter((_, i) => i !== idx))}
+                          className="flex h-6 w-6 items-center justify-center rounded-full text-red-400 hover:bg-red-50"
+                          title="Remove"
+                        >
+                          <svg width="10" height="10" viewBox="0 0 10 10" fill="none"><path d="M1 1l8 8M9 1L1 9" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round"/></svg>
+                        </button>
+                      </div>
+                    </div>
+
+                    {/* Style name input */}
+                    <input
+                      type="text"
+                      placeholder="Style name (e.g. Modern Wave)"
+                      value={style.styleName}
+                      onChange={(e) => setBackgroundStyles(prev => prev.map((s, i) => i === idx ? { ...s, styleName: e.target.value } : s))}
+                      className={inputCls}
+                    />
+
+                    {/* Extracted colors */}
+                    {style.hasEmbeddedImage && (
+                      <div className="rounded-lg px-3 py-2 text-[11px] text-amber-700" style={{ background: "#FFFBEB", border: "1px solid #FDE68A" }}>
+                        ⚠ This SVG contains embedded image content, colors may not be editable.
+                      </div>
+                    )}
+                    {style.extractedColors?.length > 0 && (
+                      <div className="flex flex-col gap-1.5">
+                        <p className="text-[11px] font-medium text-slate-500">Extracted colors ({style.extractedColors.length})</p>
+                        <div className="flex flex-wrap gap-2">
+                          {style.extractedColors.map((ec, ci) => (
+                            <div key={ci} className="flex items-center gap-1.5 rounded-full px-2.5 py-1" style={{ background: "#F1F5F9", border: "1px solid #E2E8F0" }}>
+                              <div className="h-3.5 w-3.5 rounded-full shrink-0" style={{ background: ec.original, border: "1px solid rgba(0,0,0,0.1)" }} />
+                              <span className="text-[10px] font-mono text-slate-600">{ec.original}</span>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                ))}
+              </div>
+            )}
+
+            {/* Upload new SVG */}
+            <label className={`flex cursor-pointer flex-col items-center justify-center rounded-lg border-2 border-dashed p-6 text-center transition-colors ${svgUploading ? "border-slate-200 bg-slate-50" : "border-slate-200 hover:border-green-400 hover:bg-green-50/30"}`}>
+              <input
+                type="file"
+                accept=".svg,image/svg+xml"
+                className="hidden"
+                disabled={svgUploading}
+                onChange={async (e) => {
+                  const file = e.target.files?.[0];
+                  e.target.value = "";
+                  if (!file) return;
+                  setSvgUploadError("");
+                  setSvgUploading(true);
+                  try {
+                    const text = await file.text();
+                    const colors = extractSvgColors(text);
+                    const hasEmbeddedImage = /<image[\s>]/i.test(text);
+                    const res = await uploadService.uploadSvgBackground(file);
+                    const url = res.data?.url;
+                    if (url) {
+                      setBackgroundStyles(prev => [...prev, {
+                        styleName: file.name.replace(/\.svg$/i, "").replace(/[-_]/g, " "),
+                        svgFile: res.data?.filename,
+                        svgPreviewUrl: url,
+                        svgUrl: url,
+                        extractedColors: colors.map(c => ({ original: c, current: c })),
+                        hasEmbeddedImage,
+                        status: true,
+                      }]);
+                    }
+                  } catch (err) {
+                    setSvgUploadError(err.response?.data?.message || "SVG upload failed.");
+                  } finally {
+                    setSvgUploading(false);
+                  }
+                }}
+              />
+              {svgUploading ? (
+                <>
+                  <div className="mb-2 h-5 w-5 animate-spin rounded-full border-2 border-slate-300 border-t-green-500" />
+                  <p className="text-[13px] text-slate-500">Uploading…</p>
+                </>
+              ) : (
+                <>
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#94A3B8" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className="mb-2">
+                    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                    <polyline points="17 8 12 3 7 8"/>
+                    <line x1="12" y1="3" x2="12" y2="15"/>
+                  </svg>
+                  <p className="text-[13px] text-slate-500">Click to upload SVG background</p>
+                  <p className="mt-1 text-[11px] text-slate-400">SVG only · Max 2 MB</p>
+                </>
+              )}
+            </label>
+            {svgUploadError && <p className="text-[12px] text-red-500">{svgUploadError}</p>}
           </Section>
 
           {/* Status */}

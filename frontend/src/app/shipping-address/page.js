@@ -142,7 +142,7 @@ export default function ShippingAddressPage() {
     const price = Number(item.rawSalePrice ?? item.rawPrice ?? 0);
     return sum + price;
   }, 0);
-  const shipping = subtotal >= 999 ? 0 : 99;
+  const shipping = subtotal >= 799 ? 0 : 99;
   const total    = subtotal + shipping;
 
   // Client-side validation
@@ -559,14 +559,14 @@ export default function ShippingAddressPage() {
                   <div className="flex items-start gap-3">
                     <div className="mt-[1px] shrink-0"><TruckIcon /></div>
                     <p className="text-[13px] leading-[1.5] text-[#4B5563]">
-                      Free shipping on orders above <span className="font-medium text-[#111827]">₹999</span>
+                      Free shipping on orders above <span className="font-medium text-[#111827]">₹799</span>
                     </p>
                   </div>
 
                   <div className="flex items-start gap-3">
                     <div className="mt-[1px] shrink-0"><FlashIcon /></div>
                     <p className="text-[13px] leading-[1.5] text-[#4B5563]">
-                      Dispatch within <span className="font-medium text-[#111827]">24 hours</span>
+                      Dispatch within <span className="font-medium text-[#111827]">4 days</span>
                     </p>
                   </div>
                 </div>

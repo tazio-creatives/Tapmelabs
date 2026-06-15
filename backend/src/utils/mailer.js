@@ -132,4 +132,35 @@ async function sendPaymentSuccessEmail(to, { customerName, orderId, orderNumber,
   });
 }
 
-module.exports = { sendOtpEmail, sendPaymentSuccessEmail };
+async function sendPasswordResetEmail(to, { name, resetUrl }) {
+  await transporter.sendMail({
+    from:    process.env.EMAIL_FROM,
+    to,
+    subject: "Reset your TapMe password",
+    text:    `Hi ${name},\n\nClick the link below to reset your password. It expires in 15 minutes.\n\n${resetUrl}\n\nIf you did not request this, you can safely ignore this email.`,
+    html: `
+      <div style="font-family:sans-serif;max-width:480px;margin:0 auto;padding:32px 24px;background:#fff;border-radius:16px;border:1px solid #F0F0F0">
+        ${LOGO_HEADER}
+        <h2 style="margin:0 0 8px;font-size:22px;color:#111827">Reset your password</h2>
+        <p style="margin:0 0 24px;font-size:14px;color:#6D6D6D;line-height:1.6">
+          Hi ${name}, we received a request to reset your TapMe password.
+          Click the button below — the link expires in <strong>15 minutes</strong>.
+        </p>
+        <div style="text-align:center;margin-bottom:24px">
+          <a href="${resetUrl}" style="display:inline-block;background:#28DC4F;color:#000;font-weight:700;font-size:15px;padding:14px 32px;border-radius:99px;text-decoration:none">
+            Reset Password
+          </a>
+        </div>
+        <p style="margin:0 0 8px;font-size:12px;color:#9CA3AF">
+          Or copy this link into your browser:
+        </p>
+        <p style="margin:0 0 24px;font-size:12px;color:#6D6D6D;word-break:break-all">${resetUrl}</p>
+        <p style="margin:0;font-size:12px;color:#9CA3AF">
+          If you did not request a password reset, you can safely ignore this email.
+        </p>
+      </div>
+    `,
+  });
+}
+
+module.exports = { sendOtpEmail, sendPaymentSuccessEmail, sendPasswordResetEmail };

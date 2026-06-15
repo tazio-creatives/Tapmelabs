@@ -206,7 +206,7 @@ export default function PaymentFailedPage() {
   const total         = Number(currentOrder.total_amount);
 
   const subtotal     = Number(checkoutItem?.rawSalePrice ?? checkoutItem?.rawPrice ?? 0);
-  const shippingCost = checkoutItem ? (subtotal >= 999 ? 0 : 99) : 0;
+  const shippingCost = checkoutItem ? (subtotal >= 799 ? 0 : 99) : 0;
 
   return (
     <>

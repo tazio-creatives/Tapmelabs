@@ -36,6 +36,11 @@ async function updateTheme(theme_key) {
   return response.data;
 }
 
+async function updateThemeCustomization(theme_customization) {
+  const response = await api.put("/profiles/theme", { theme_customization });
+  return response.data;
+}
+
 // ── GET /api/profiles/public/:slug ───────────────────────────────────────────
 // Public endpoint — no token required.
 // Returns a customer's public profile card data (used on /u/:slug).
@@ -50,6 +55,7 @@ const profileService = {
   createProfile,
   updateMyProfile,
   updateTheme,
+  updateThemeCustomization,
   getPublicProfile,
 };
 

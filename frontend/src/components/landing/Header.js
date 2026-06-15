@@ -109,21 +109,21 @@ export default function Header() {
           <div className="hidden items-center justify-end gap-[30px] md:flex">
             <nav className="flex items-center gap-[30px] px-2 py-[7px]">
               <a
-                href="#home"
+                href="/#home"
                 className="text-[15px] font-medium leading-[22.4px] tracking-[-0.64px] text-[#6D6D6D] transition-colors hover:text-black"
               >
                 Home
               </a>
 
               <a
-                href="#products"
+                href="/#products"
                 className="text-[14.6px] font-medium leading-[22.4px] tracking-[-0.64px] text-[#6D6D6D] transition-colors hover:text-black"
               >
                 Products
               </a>
 
               <a
-                href="#contact"
+                href="/#contact"
                 className="text-[14.8px] font-medium leading-[22.4px] tracking-[-0.64px] text-[#6D6D6D] transition-colors hover:text-black"
               >
                 Contact Us

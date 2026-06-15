@@ -25,17 +25,28 @@ api.interceptors.request.use(
 
 // ── Response interceptor ──────────────────────────────────────────────────────
 // On 401, clear stored credentials and redirect to login.
-// Exception: payment gateway endpoints — a 401 there means bad API keys on the
-// backend, not an expired user session, so we must NOT log the user out.
+// Exceptions: auth endpoints (wrong password is a 401 but not a session expiry)
+// and payment gateway endpoints (401 there means bad backend API keys).
 
-const PAYMENT_PATHS = ["/payments/create-razorpay-order", "/payments/verify-razorpay-payment"];
+const NO_REDIRECT_PATHS = [
+  "/auth/login",
+  "/auth/register",
+  "/auth/verify-otp",
+  "/auth/resend-otp",
+  "/auth/forgot-password",
+  "/auth/reset-password",
+  "/payments/create-razorpay-order",
+  "/payments/verify-razorpay-payment",
+];
 
 api.interceptors.response.use(
   (response) => response,
   (error) => {
     const url = error.config?.url || "";
-    const isPaymentEndpoint = PAYMENT_PATHS.some((p) => url.includes(p));
-    if (error.response?.status === 401 && !isPaymentEndpoint && typeof window !== "undefined") {
+    const skipRedirect =
+      NO_REDIRECT_PATHS.some((p) => url.includes(p)) ||
+      (typeof window !== "undefined" && window.location.pathname === "/login");
+    if (error.response?.status === 401 && !skipRedirect && typeof window !== "undefined") {
       localStorage.removeItem("customerToken");
       localStorage.removeItem("customerUser");
       window.location.href = "/login";

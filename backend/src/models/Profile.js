@@ -65,6 +65,11 @@ const Profile = sequelize.define(
       allowNull: true,
       defaultValue: null,
     },
+    theme_customization: {
+      type: DataTypes.JSON,
+      allowNull: true,
+      defaultValue: null,
+    },
     is_public: {
       type: DataTypes.BOOLEAN,
       defaultValue: true,

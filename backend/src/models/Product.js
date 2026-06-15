@@ -52,6 +52,11 @@ const Product = sequelize.define(
       allowNull: false,
       defaultValue: false,
     },
+    background_styles: {
+      type: DataTypes.JSON,
+      allowNull: true,
+      defaultValue: [],
+    },
     status: {
       type: DataTypes.ENUM("active", "draft", "out_of_stock"),
       defaultValue: "draft",

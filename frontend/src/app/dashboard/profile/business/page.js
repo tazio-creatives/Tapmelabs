@@ -52,6 +52,7 @@ export default function BusinessPage() {
   const [previewPhone,      setPreviewPhone]      = useState("");
   const [previewEmail,      setPreviewEmail]      = useState("");
   const [previewProfileImg, setPreviewProfileImg] = useState("");
+  const [previewThemeKey,   setPreviewThemeKey]   = useState("default");
 
   const fileInputRef = useRef(null);
 
@@ -90,6 +91,7 @@ export default function BusinessPage() {
           setPreviewPhone(raw.startsWith("+91 ") ? `+91 ${raw.slice(4)}` : raw.startsWith("+91") ? raw : raw ? `+91 ${raw}` : "");
           setPreviewEmail(p.email || "");
           setPreviewProfileImg(p.profile_image || "");
+          setPreviewThemeKey(p.theme_key || "default");
         }
       })
       .catch((err) => {
@@ -390,6 +392,7 @@ export default function BusinessPage() {
                   bizPhone={workPhone || null}
                   bizEmail={workEmail || null}
                   connectedSocials={previewSocials}
+                  themeKey={previewThemeKey}
                 />
               </div>
             </main>

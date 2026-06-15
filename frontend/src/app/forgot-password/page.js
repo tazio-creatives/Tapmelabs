@@ -1,9 +1,10 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Link from "next/link";
 import Header from "@/components/landing/Header";
 import Footer from "@/components/landing/Footer";
+import api from "@/services/api";
 
 /* ─── blurred background ─────────────────────────────────────── */
 
@@ -74,13 +75,11 @@ const MailCheckIcon = () => (
 
 function ModalLogo() {
   return (
-    <div className="flex items-center justify-center gap-[8px]">
-      <svg width="32" height="32" viewBox="0 0 40 40" fill="none">
-        <path d="M1.875 30.199C1.875 25.3665 5.79251 21.449 10.625 21.449H23.4375C25.6812 21.449 27.5 19.6301 27.5 17.3865C27.5 15.1428 25.6812 13.324 23.4375 13.324H4.0625V8.94897H23.4375C28.0974 8.94897 31.875 12.7266 31.875 17.3865C31.875 22.0464 28.0974 25.824 23.4375 25.824H10.625C8.20875 25.824 6.25 27.7827 6.25 30.199V31.449H1.875V30.199Z" fill="#18181B" />
-        <path d="M34.2477 8.75089C36.6257 10.8686 38.1256 13.9518 38.1256 17.3866C38.1256 21.028 36.4401 24.2741 33.8092 26.3935L30.192 24.3046C32.6785 22.9974 34.3756 20.3908 34.3756 17.3866C34.3756 14.605 32.9203 12.1644 30.7311 10.7802L34.2477 8.75089Z" fill="#28DC4F" />
-        <circle cx="23.125" cy="17.5" r="1.875" fill="#28DC4F" />
-      </svg>
-      <span className="text-[20px] font-semibold text-[#18181B]">Tap<span className="text-[#28DC4F]">Me</span></span>
+    <div className="flex items-center justify-center gap-[10px]">
+      {/* eslint-disable-next-line @next/next/no-img-element */}
+      <img src="/images/logo.svg" alt="TapMe" width={32} height={32} />
+      {/* eslint-disable-next-line @next/next/no-img-element */}
+      <img src="/images/logo-text.svg" alt="TAPME LABS" style={{ height: 13 }} />
     </div>
   );
 }
@@ -89,10 +88,24 @@ function ModalLogo() {
 
 export default function ForgotPasswordPage() {
   /* step: "request" | "sent" */
-  const [step,    setStep]    = useState("request");
-  const [email,   setEmail]   = useState("");
-  const [loading, setLoading] = useState(false);
-  const [error,   setError]   = useState("");
+  const [step,      setStep]      = useState("request");
+  const [email,     setEmail]     = useState("");
+  const [loading,   setLoading]   = useState(false);
+  const [error,     setError]     = useState("");
+  const [resending, setResending] = useState(false);
+  const [countdown, setCountdown] = useState(0);
+
+  /* start 60-second countdown whenever we land on "sent" */
+  useEffect(() => {
+    if (step === "sent") setCountdown(60);
+  }, [step]);
+
+  /* tick the countdown down every second */
+  useEffect(() => {
+    if (countdown <= 0) return;
+    const t = setTimeout(() => setCountdown((c) => c - 1), 1000);
+    return () => clearTimeout(t);
+  }, [countdown]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -101,26 +114,25 @@ export default function ForgotPasswordPage() {
     setLoading(true);
 
     try {
-      /*
-       * ─────────────────────────────────────────────────────────
-       * TODO: Forgot Password API integration
-       *
-       * const res = await fetch("/api/auth/forgot-password", {
-       *   method: "POST",
-       *   headers: { "Content-Type": "application/json" },
-       *   body: JSON.stringify({ email }),
-       * });
-       * const data = await res.json();
-       * if (!res.ok) throw new Error(data.message || "Failed to send reset link");
-       * // Advance to "sent" confirmation step
-       * ─────────────────────────────────────────────────────────
-       */
-      await new Promise((r) => setTimeout(r, 1200)); // remove when API is connected
+      await api.post("/auth/forgot-password", { email });
       setStep("sent");
     } catch (err) {
-      setError(err.message);
+      setError(err.response?.data?.message || err.message || "Failed to send reset link. Please try again.");
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleResend = async () => {
+    if (resending || countdown > 0) return;
+    setResending(true);
+    try {
+      await api.post("/auth/forgot-password", { email });
+      setCountdown(60);
+    } catch {
+      /* silently ignore — user can try again when countdown resets */
+    } finally {
+      setResending(false);
     }
   };
 
@@ -248,19 +260,34 @@ export default function ForgotPasswordPage() {
                 </div>
 
                 {/* Resend */}
-                <div className="mt-5 text-center">
-                  <span className="text-[13px] text-[#6D6D6D]">Didn&apos;t receive it? </span>
+                <div className="mt-5 flex items-center justify-center gap-2">
+                  <span className="text-[13px] text-[#6D6D6D]">Didn&apos;t receive it?</span>
                   <button
                     type="button"
-                    onClick={() => {
-                      /*
-                       * TODO: Resend reset link API call
-                       * await fetch("/api/auth/forgot-password", { method: "POST", ... });
-                       */
-                    }}
-                    className="text-[13px] font-semibold text-[#111827] transition-colors hover:text-[#28DC4F]"
+                    onClick={handleResend}
+                    disabled={resending || countdown > 0}
+                    className="flex items-center gap-1.5 text-[13px] font-semibold transition-colors disabled:cursor-not-allowed"
+                    style={{ color: resending || countdown > 0 ? "#9CA3AF" : "#111827" }}
                   >
-                    Resend email
+                    {resending ? (
+                      <>
+                        <svg className="animate-spin" style={{ animationDuration: "0.75s" }} width="13" height="13" viewBox="0 0 14 14" fill="none">
+                          <circle cx="7" cy="7" r="5" stroke="rgba(0,0,0,0.15)" strokeWidth="2" />
+                          <circle cx="7" cy="7" r="5" stroke="#6B7280" strokeWidth="2" strokeLinecap="round" strokeDasharray="10 20" />
+                        </svg>
+                        Sending...
+                      </>
+                    ) : countdown > 0 ? (
+                      <>
+                        <svg width="13" height="13" viewBox="0 0 14 14" fill="none">
+                          <circle cx="7" cy="7" r="5.5" stroke="#9CA3AF" strokeWidth="1.5" />
+                          <path d="M7 4v3l2 1.5" stroke="#9CA3AF" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round" />
+                        </svg>
+                        Resend in {countdown}s
+                      </>
+                    ) : (
+                      <span className="hover:text-[#28DC4F]">Resend email</span>
+                    )}
                   </button>
                 </div>
 

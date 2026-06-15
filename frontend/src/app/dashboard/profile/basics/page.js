@@ -43,6 +43,7 @@ export default function BasicsPage() {
   const [previewCity,        setPreviewCity]        = useState("");
   const [previewWebsite,     setPreviewWebsite]     = useState("");
   const [previewSocials,     setPreviewSocials]     = useState([]);
+  const [previewThemeKey,    setPreviewThemeKey]    = useState("default");
 
   const fileInputRef = useRef(null);
 
@@ -76,6 +77,7 @@ export default function BasicsPage() {
           const sl = p.social_links || {};
           const SOCIAL_KEYS = ["whatsapp", "linkedin", "messenger", "instagram", "twitter", "snapchat"];
           setPreviewSocials(SOCIAL_KEYS.filter((k) => !!sl[k]));
+          setPreviewThemeKey(p.theme_key || "default");
         }
       })
       .catch((err) => {
@@ -328,6 +330,7 @@ export default function BasicsPage() {
                   website={previewWebsite}
                   profileImage={profileImage || null}
                   connectedSocials={previewSocials}
+                  themeKey={previewThemeKey}
                 />
               </div>
             </main>

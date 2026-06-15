@@ -1,9 +1,9 @@
 const NAV_LINKS = [
-  { label: "Home",             href: "#home"     },
-  { label: "Products",         href: "#products" },
-  { label: "Design Your Card", href: "#products" },
-  { label: "Contact Us",       href: "#contact"  },
-  { label: "Profile Login",    href: "/login"    },
+  { label: "Home",             href: "/#home"     },
+  { label: "Products",         href: "/#products" },
+  { label: "Design Your Card", href: "/#products" },
+  { label: "Contact Us",       href: "/#contact"  },
+  { label: "Profile Login",    href: "/login"     },
 ];
 
 const LEGAL_LINKS = [
@@ -45,7 +45,7 @@ const SOCIAL = [
 
 export default function Footer() {
   return (
-    <footer className="bg-[#0A0A0A]">
+    <footer id="contact" className="bg-[#0A0A0A]">
       <div className="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8">
 
         {/* Main footer content */}

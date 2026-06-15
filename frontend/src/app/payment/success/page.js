@@ -217,7 +217,7 @@ export default function PaymentSuccessPage() {
   const deliveryToStr   = addDays(currentOrder.created_at, 6);
 
   const subtotal     = Number(checkoutItem?.rawSalePrice ?? checkoutItem?.rawPrice ?? 0);
-  const shippingCost = checkoutItem ? (subtotal >= 999 ? 0 : 99) : 0;
+  const shippingCost = checkoutItem ? (subtotal >= 799 ? 0 : 99) : 0;
   const total        = Number(currentOrder.total_amount);
 
   const addr = currentOrder.shipping_address || {};
