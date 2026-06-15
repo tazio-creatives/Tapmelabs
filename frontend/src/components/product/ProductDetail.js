@@ -792,12 +792,12 @@ export default function ProductDetail({ product }) {
     }
     const style = styles[selectedSvgStyleIndex];
     if (!style.svgUrl) { setSvgContent(null); return; }
+    setSvgColorMap((style.extractedColors ?? []).map(ec => ({ original: ec.original, selected: ec.original })));
     setSvgLoading(true);
     fetch(style.svgUrl)
       .then(r => r.text())
       .then(text => {
         setSvgContent(text);
-        setSvgColorMap((style.extractedColors ?? []).map(ec => ({ original: ec.original, selected: ec.original })));
       })
       .catch(() => setSvgContent(null))
       .finally(() => setSvgLoading(false));

@@ -63,7 +63,10 @@ const adminDashboardRoutes = require("./src/routes/adminDashboardRoutes");
 const paymentRoutes        = require("./src/routes/paymentRoutes");
 
 // ── Static files ──────────────────────────────────────────────────────────────
-app.use("/uploads", express.static(path.join(__dirname, "uploads")));
+app.use("/uploads", (req, res, next) => {
+  res.setHeader("Access-Control-Allow-Origin", "*");
+  next();
+}, express.static(path.join(__dirname, "uploads")));
 
 // ── Routes ────────────────────────────────────────────────────────────────────
 app.get("/", (req, res) => {
