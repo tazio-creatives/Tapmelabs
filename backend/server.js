@@ -57,10 +57,16 @@ const orderRoutes          = require("./src/routes/orderRoutes");
 const nfcCardRoutes        = require("./src/routes/nfcCardRoutes");
 const themeRoutes          = require("./src/routes/themeRoutes");
 const analyticsRoutes      = require("./src/routes/analyticsRoutes");
-const uploadRoutes         = require("./src/routes/uploadRoutes");
-const adminCustomerRoutes  = require("./src/routes/adminCustomerRoutes");
-const adminDashboardRoutes = require("./src/routes/adminDashboardRoutes");
-const paymentRoutes        = require("./src/routes/paymentRoutes");
+const uploadRoutes              = require("./src/routes/uploadRoutes");
+const adminCustomerRoutes       = require("./src/routes/adminCustomerRoutes");
+const adminDashboardRoutes      = require("./src/routes/adminDashboardRoutes");
+const paymentRoutes             = require("./src/routes/paymentRoutes");
+const resellerAuthRoutes        = require("./src/routes/resellerAuthRoutes");
+const resellerOrderRoutes       = require("./src/routes/resellerOrderRoutes");
+const resellerPaymentRoutes     = require("./src/routes/resellerPaymentRoutes");
+const resellerCommissionRoutes  = require("./src/routes/resellerCommissionRoutes");
+const resellerProfileRoutes     = require("./src/routes/resellerProfileRoutes");
+const adminResellerRoutes       = require("./src/routes/adminResellerRoutes");
 
 // ── Static files ──────────────────────────────────────────────────────────────
 app.use("/uploads", (req, res, next) => {
@@ -81,9 +87,15 @@ app.use("/api/nfc-cards",       nfcCardRoutes);
 app.use("/api/themes",          themeRoutes);
 app.use("/api/analytics",       analyticsRoutes);
 app.use("/api/uploads",         uploadRoutes);
-app.use("/api/admin/customers", adminCustomerRoutes);
-app.use("/api/admin/dashboard", adminDashboardRoutes);
-app.use("/api/payments",        paymentRoutes);
+app.use("/api/admin/customers",  adminCustomerRoutes);
+app.use("/api/admin/dashboard",  adminDashboardRoutes);
+app.use("/api/admin/resellers",  adminResellerRoutes);
+app.use("/api/payments",         paymentRoutes);
+app.use("/api/reseller/auth",       resellerAuthRoutes);
+app.use("/api/reseller/orders",     resellerOrderRoutes);
+app.use("/api/reseller/payment",    resellerPaymentRoutes);
+app.use("/api/reseller/commission", resellerCommissionRoutes);
+app.use("/api/reseller/profile",    resellerProfileRoutes);
 
 // ── 404 handler ───────────────────────────────────────────────────────────────
 app.use((req, res) => {
