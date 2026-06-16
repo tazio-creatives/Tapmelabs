@@ -189,7 +189,6 @@ export default function PaymentRedirectPage() {
         theme: { color: "#28DC4F" },
 
         handler: async function (response) {
-          // Verify signature on backend — never trust client-side only
           try {
             await paymentService.verifyRazorpayPayment({
               order_id:            order.id,
@@ -197,23 +196,31 @@ export default function PaymentRedirectPage() {
               razorpay_payment_id: response.razorpay_payment_id,
               razorpay_signature:  response.razorpay_signature,
             });
+            paymentDone = true;
             persistStatus("paid", response.razorpay_payment_id);
+            rzp.close();
             router.push("/payment/success");
           } catch {
             persistStatus("failed");
+            rzp.close();
             router.push("/payment/failed");
           }
         },
 
         modal: {
           ondismiss: function () {
-            persistStatus("failed");
-            router.push("/payment/failed");
+            if (!paymentDone) {
+              persistStatus("failed");
+              router.push("/payment/failed");
+            }
           },
         },
       };
 
-      const rzp = new window.Razorpay(options);
+      let paymentDone = false;
+      let rzp;
+
+      rzp = new window.Razorpay(options);
 
       rzp.on("payment.failed", function () {
         persistStatus("failed");
