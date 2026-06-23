@@ -1,6 +1,7 @@
 "use client";
 import { useState, useEffect } from "react";
-import { useParams, useSearchParams, Suspense } from "next/navigation";
+import { useParams, useSearchParams } from "next/navigation";
+import { Suspense } from "react";
 import Header from "@/components/landing/Header";
 import Footer from "@/components/landing/Footer";
 
