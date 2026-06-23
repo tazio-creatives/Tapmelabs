@@ -1,12 +1,12 @@
 "use client";
 import { useState, useEffect } from "react";
-import { useParams, useSearchParams } from "next/navigation";
+import { useParams, useSearchParams, Suspense } from "next/navigation";
 import Header from "@/components/landing/Header";
 import Footer from "@/components/landing/Footer";
 
 const API = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000/api";
 
-export default function PublicFormPage() {
+function PublicFormContent() {
   const { slug }     = useParams();
   const searchParams = useSearchParams();
   const isEmbed      = searchParams.get("embed") === "1"; // no header/footer when embedded
@@ -162,5 +162,13 @@ export default function PublicFormPage() {
       </main>
       {!isEmbed && <Footer />}
     </>
+  );
+}
+
+export default function PublicFormPage() {
+  return (
+    <Suspense fallback={null}>
+      <PublicFormContent />
+    </Suspense>
   );
 }

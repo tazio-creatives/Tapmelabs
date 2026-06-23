@@ -1,6 +1,6 @@
 "use client";
 import { useState, useEffect } from "react";
-import { useSearchParams, useRouter } from "next/navigation";
+import { useSearchParams, useRouter, Suspense } from "next/navigation";
 import Link from "next/link";
 import Header from "@/components/landing/Header";
 import Footer from "@/components/landing/Footer";
@@ -28,7 +28,7 @@ function Field({ label, error, children }) {
 }
 
 /* ─── page ───────────────────────────────────────────────────── */
-export default function CustomerSetupPage() {
+function CustomerSetupContent() {
   const searchParams = useSearchParams();
   const router       = useRouter();
   const token        = searchParams.get("token") || "";
@@ -248,5 +248,13 @@ export default function CustomerSetupPage() {
       </main>
       <Footer />
     </>
+  );
+}
+
+export default function CustomerSetupPage() {
+  return (
+    <Suspense fallback={null}>
+      <CustomerSetupContent />
+    </Suspense>
   );
 }

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, Suspense } from "react";
 import { useSearchParams } from "next/navigation";
 import Link from "next/link";
 import Header from "@/components/landing/Header";
@@ -148,7 +148,7 @@ function ProductCard({ product, index }) {
 
 // ── Page ──────────────────────────────────────────────────────────────────────
 
-export default function ProductsPage() {
+function ProductsContent() {
   const searchParams = useSearchParams();
   const [products, setProducts] = useState([]);
   const [loading, setLoading]   = useState(true);
@@ -311,5 +311,13 @@ export default function ProductsPage() {
 
       <Footer />
     </>
+  );
+}
+
+export default function ProductsPage() {
+  return (
+    <Suspense fallback={null}>
+      <ProductsContent />
+    </Suspense>
   );
 }

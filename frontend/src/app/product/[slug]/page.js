@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, Suspense } from "react";
 import { useParams, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import Header from "@/components/landing/Header";
@@ -167,7 +167,7 @@ function ProductFetchError({ message, onRetry }) {
 
 // ── Page ──────────────────────────────────────────────────────────────────────
 
-export default function ProductPage() {
+function ProductPageContent() {
   const { slug }       = useParams();
   const searchParams   = useSearchParams();
   const [product, setProduct]     = useState(null);
@@ -222,5 +222,13 @@ export default function ProductPage() {
       <ProductDetail product={product} />
       <Footer />
     </>
+  );
+}
+
+export default function ProductPage() {
+  return (
+    <Suspense fallback={null}>
+      <ProductPageContent />
+    </Suspense>
   );
 }
