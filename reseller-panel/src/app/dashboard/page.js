@@ -5,15 +5,28 @@ import ResellerLayout from "@/components/ResellerLayout";
 import commissionService from "@/services/commissionService";
 import orderService from "@/services/orderService";
 
-function StatCard({ label, value, sub, color = "#111827" }) {
+const STATUS_COLORS = {
+  paid:      { bg: "#DCFCE7", color: "#16A34A" },
+  pending:   { bg: "#FEF9C3", color: "#D97706" },
+  cancelled: { bg: "#FEE2E2", color: "#DC2626" },
+};
+
+function StatCard({ label, value, sub, accent }) {
   return (
-    <div className="bg-white rounded-xl border border-[#E2E8F0] p-5">
-      <p className="text-[12px] text-[#6B7280] mb-1">{label}</p>
-      <p className="text-[24px] font-bold" style={{ color }}>{value}</p>
-      {sub && <p className="text-[11px] text-[#9CA3AF] mt-0.5">{sub}</p>}
+    <div style={{ background: "#fff", border: "1px solid #E2E8F0", borderRadius: 12, padding: "16px 18px" }}>
+      <p style={{ fontSize: 11, color: "#9CA3AF", fontWeight: 500, margin: 0, textTransform: "uppercase", letterSpacing: "0.04em" }}>{label}</p>
+      <p style={{ fontSize: 22, fontWeight: 700, color: accent || "#111827", margin: "6px 0 0" }}>{value}</p>
+      {sub && <p style={{ fontSize: 11, color: "#9CA3AF", margin: "3px 0 0" }}>{sub}</p>}
     </div>
   );
 }
+
+const QUICK = [
+  { href: "/orders/new", label: "+ New Order",    bg: "#28DC4F", color: "#000" },
+  { href: "/orders",     label: "Order History",  bg: "#EFF6FF", color: "#1D4ED8" },
+  { href: "/commission", label: "Commission",     bg: "#F5F3FF", color: "#7C3AED" },
+  { href: "/profile",    label: "My Profile",     bg: "#F0FDF4", color: "#16A34A" },
+];
 
 export default function DashboardPage() {
   const [stats, setStats]   = useState(null);
@@ -34,41 +47,43 @@ export default function DashboardPage() {
 
   return (
     <ResellerLayout>
-      <div className="max-w-5xl mx-auto space-y-6">
+      <div style={{ maxWidth: 900, margin: "0 auto", display: "flex", flexDirection: "column", gap: 20 }}>
+
         <div>
-          <h2 className="text-[18px] font-bold text-[#111827]">Dashboard</h2>
-          <p className="text-[13px] text-[#6B7280]">Overview of your reseller activity</p>
+          <h2 style={{ fontSize: 18, fontWeight: 700, color: "#111827", margin: 0 }}>Dashboard</h2>
+          <p style={{ fontSize: 13, color: "#6B7280", margin: "3px 0 0" }}>Overview of your reseller activity</p>
         </div>
 
         {loading ? (
-          <div className="text-[13px] text-[#6B7280]">Loading…</div>
+          <div style={{ fontSize: 13, color: "#9CA3AF" }}>Loading…</div>
         ) : (
           <>
-            {/* Stats grid */}
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-              <StatCard label="Total Orders"     value={stats?.total_orders   ?? 0} />
-              <StatCard label="Paid Orders"      value={stats?.paid_orders    ?? 0} color="#16a34a" />
-              <StatCard label="Pending Orders"   value={stats?.pending_orders ?? 0} color="#D97706" />
-              <StatCard label="Commission Rate"  value={`${stats?.commission_rate ?? 0}%`} color="#7C3AED" />
+            {/* Row 1 — order counts */}
+            <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 12 }}>
+              <StatCard label="Total Orders"   value={stats?.total_orders   ?? 0} />
+              <StatCard label="Paid"           value={stats?.paid_orders    ?? 0} accent="#16A34A" />
+              <StatCard label="Pending"        value={stats?.pending_orders ?? 0} accent="#D97706" />
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              <StatCard label="Commission Balance" value={fmt(stats?.commission_balance)} color="#28DC4F" sub="Available to use or withdraw" />
-              <StatCard label="Total Earned"       value={fmt(stats?.total_earned)}        color="#111827" />
-              <StatCard label="Total Withdrawn"    value={fmt(stats?.total_withdrawn)}     color="#6B7280" />
+            {/* Row 2 — commission */}
+            <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 12 }}>
+              <StatCard label="Balance"       value={fmt(stats?.commission_balance)} accent="#28DC4F" sub="Available to use or withdraw" />
+              <StatCard label="Total Earned"  value={fmt(stats?.total_earned)} />
+              <StatCard label="Commission Rate" value={`${stats?.commission_rate ?? 0}%`} accent="#7C3AED" />
             </div>
 
             {/* Quick links */}
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-              {[
-                { href: "/orders/new",   label: "Create Order",    bg: "#28DC4F", tc: "#000" },
-                { href: "/orders",       label: "Order History",   bg: "#EFF6FF", tc: "#1D4ED8" },
-                { href: "/commission",   label: "Commission",      bg: "#F5F3FF", tc: "#7C3AED" },
-                { href: "/profile",      label: "My Profile",      bg: "#F0FDF4", tc: "#16A34A" },
-              ].map((q) => (
+            <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 10 }}>
+              {QUICK.map((q) => (
                 <Link key={q.href} href={q.href}
-                  className="flex items-center justify-center h-12 rounded-xl text-[13px] font-semibold transition-opacity hover:opacity-80"
-                  style={{ background: q.bg, color: q.tc }}
+                  style={{
+                    display: "flex", alignItems: "center", justifyContent: "center",
+                    height: 44, borderRadius: 10, fontSize: 13, fontWeight: 600,
+                    textDecoration: "none", background: q.bg, color: q.color,
+                    transition: "opacity 0.15s",
+                  }}
+                  onMouseEnter={(e) => e.currentTarget.style.opacity = "0.8"}
+                  onMouseLeave={(e) => e.currentTarget.style.opacity = "1"}
                 >
                   {q.label}
                 </Link>
@@ -76,26 +91,37 @@ export default function DashboardPage() {
             </div>
 
             {/* Recent orders */}
-            <div className="bg-white rounded-xl border border-[#E2E8F0]">
-              <div className="flex items-center justify-between px-5 py-4 border-b border-[#F1F5F9]">
-                <h3 className="text-[13px] font-semibold text-[#111827]">Recent Orders</h3>
-                <Link href="/orders" className="text-[12px] text-[#28DC4F] font-medium">View all</Link>
+            <div style={{ background: "#fff", border: "1px solid #E2E8F0", borderRadius: 12, overflow: "hidden" }}>
+              <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "14px 18px", borderBottom: "1px solid #F1F5F9" }}>
+                <p style={{ fontSize: 13, fontWeight: 600, color: "#111827", margin: 0 }}>Recent Orders</p>
+                <Link href="/orders" style={{ fontSize: 12, color: "#28DC4F", fontWeight: 500, textDecoration: "none" }}>View all</Link>
               </div>
-              <div className="divide-y divide-[#F8FAFC]">
-                {orders.length === 0 ? (
-                  <p className="px-5 py-8 text-[13px] text-[#9CA3AF] text-center">No orders yet. <Link href="/orders/new" className="text-[#28DC4F] font-medium">Create your first order →</Link></p>
-                ) : orders.map((o) => (
-                  <Link key={o.id} href={`/orders/${o.id}`} className="flex items-center justify-between px-5 py-3 hover:bg-[#F8FAFC] transition-colors">
-                    <div>
-                      <p className="text-[13px] font-medium text-[#111827]">{o.customer_name || "—"}</p>
-                      <p className="text-[11px] text-[#6B7280]">₹{Number(o.order_total).toLocaleString("en-IN")}</p>
-                    </div>
-                    <span className={`text-[11px] font-semibold px-2.5 py-0.5 rounded-full ${o.status === "paid" ? "bg-green-100 text-green-700" : o.status === "pending" ? "bg-yellow-100 text-yellow-700" : "bg-red-100 text-red-700"}`}>
-                      {o.status}
-                    </span>
-                  </Link>
-                ))}
-              </div>
+              {orders.length === 0 ? (
+                <div style={{ padding: "32px 18px", textAlign: "center" }}>
+                  <p style={{ fontSize: 13, color: "#9CA3AF", margin: 0 }}>No orders yet.</p>
+                  <Link href="/orders/new" style={{ fontSize: 13, color: "#28DC4F", fontWeight: 500, textDecoration: "none" }}>Create your first order →</Link>
+                </div>
+              ) : (
+                <div>
+                  {orders.map((o) => (
+                    <Link key={o.id} href={`/orders/${o.id}`}
+                      style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "12px 18px", borderBottom: "1px solid #F8FAFC", textDecoration: "none", transition: "background 0.1s" }}
+                      onMouseEnter={(e) => e.currentTarget.style.background = "#F8FAFC"}
+                      onMouseLeave={(e) => e.currentTarget.style.background = "transparent"}
+                    >
+                      <div>
+                        <p style={{ fontSize: 13, fontWeight: 500, color: "#111827", margin: 0 }}>{o.customer_name || "—"}</p>
+                        <p style={{ fontSize: 11, color: "#6B7280", margin: "2px 0 0" }}>₹{Number(o.order_total).toLocaleString("en-IN")}</p>
+                      </div>
+                      <span style={{
+                        fontSize: 11, fontWeight: 600, padding: "3px 10px", borderRadius: 20,
+                        ...(STATUS_COLORS[o.status] || { bg: "#F1F5F9", color: "#64748B" }),
+                        background: (STATUS_COLORS[o.status] || { bg: "#F1F5F9" }).bg,
+                      }}>{o.status}</span>
+                    </Link>
+                  ))}
+                </div>
+              )}
             </div>
           </>
         )}

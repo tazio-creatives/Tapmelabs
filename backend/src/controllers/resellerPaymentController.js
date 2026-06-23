@@ -1,6 +1,9 @@
 const crypto  = require("crypto");
-const { ResellerOrder, Order, Reseller, CommissionLedger } = require("../models");
+const { ResellerOrder, Order, Product, Reseller, CommissionLedger } = require("../models");
 const razorpay = require("../config/razorpay");
+const { sendResellerCustomerSetupEmail } = require("../utils/mailer");
+
+const FRONTEND_URL = process.env.FRONTEND_URL || "http://localhost:3000";
 
 // POST /api/reseller/payment/create-order
 // Creates a Razorpay order for the remaining razorpay_amount on a reseller order
@@ -89,6 +92,24 @@ async function verify(req, res) {
     // Mark reseller order + underlying order as paid
     await ro.update({ status: "paid", razorpay_payment_id });
     await Order.update({ payment_status: "paid" }, { where: { id: ro.order_id } });
+
+    // Send profile setup email to customer
+    if (ro.customer_email) {
+      try {
+        const token   = crypto.randomBytes(32).toString("hex");
+        const expires = new Date(Date.now() + 48 * 60 * 60 * 1000);
+        await ro.update({ customer_setup_token: token, customer_setup_token_expires_at: expires });
+        const order = await Order.findByPk(ro.order_id, { include: [{ model: Product, as: "product" }] });
+        const setupUrl = `${FRONTEND_URL}/reseller/customer-setup?token=${token}`;
+        await sendResellerCustomerSetupEmail(ro.customer_email, {
+          customerName: ro.customer_name || "Customer",
+          productName:  order?.product?.name || "NFC Business Card",
+          setupUrl,
+        });
+      } catch (e) {
+        console.error("Setup email failed:", e.message);
+      }
+    }
 
     res.json({ message: "Payment verified", reseller_order: ro });
   } catch (err) {

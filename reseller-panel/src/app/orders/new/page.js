@@ -1,204 +1,135 @@
 "use client";
 import { useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
 import ResellerLayout from "@/components/ResellerLayout";
-import orderService from "@/services/orderService";
-import commissionService from "@/services/commissionService";
 import api from "@/services/api";
 
-function loadRazorpay() {
-  return new Promise((resolve) => {
-    if (window.Razorpay) { resolve(true); return; }
-    const s = document.createElement("script");
-    s.src = "https://checkout.razorpay.com/v1/checkout.js";
-    s.onload = () => resolve(true);
-    s.onerror = () => resolve(false);
-    document.body.appendChild(s);
-  });
-}
+const FRONTEND_URL = process.env.NEXT_PUBLIC_FRONTEND_URL || "http://localhost:3000";
 
 export default function NewOrderPage() {
-  const router = useRouter();
-  const [products, setProducts]   = useState([]);
-  const [stats, setStats]         = useState(null);
-  const [form, setForm]           = useState({
-    product_id: "", customer_name: "", customer_phone: "", customer_email: "",
-    use_commission_amount: 0,
-    shipping_address: { name: "", address: "", city: "", state: "", pincode: "", phone: "" },
-  });
-  const [selected, setSelected]   = useState(null);
-  const [error, setError]         = useState("");
-  const [loading, setLoading]     = useState(false);
+  const [products, setProducts]         = useState([]);
+  const [loading, setLoading]           = useState(true);
+  const [search, setSearch]             = useState("");
+  const [resellerToken, setResellerToken] = useState("");
 
   useEffect(() => {
-    Promise.all([
-      api.get("/products?status=active"),
-      commissionService.dashboardStats(),
-    ]).then(([p, s]) => {
-      setProducts(p.data.products || p.data || []);
-      setStats(s.data);
-    });
+    api.get("/products?status=active")
+      .then((r) => setProducts(r.data?.data?.products || r.data?.products || []))
+      .finally(() => setLoading(false));
+    setResellerToken(localStorage.getItem("resellerToken") || "");
   }, []);
 
-  useEffect(() => {
-    if (form.product_id) {
-      setSelected(products.find((p) => p.id === form.product_id) || null);
-    }
-  }, [form.product_id, products]);
-
-  const price           = Number(selected?.sale_price || selected?.price || 0);
-  const balance         = Number(stats?.commission_balance || 0);
-  const useComm         = Math.min(Math.max(0, Number(form.use_commission_amount)), balance, price);
-  const razorpayAmount  = Math.max(0, price - useComm);
-  const commissionEarn  = stats ? (price * Number(stats.commission_rate) / 100) : 0;
-
-  async function handleSubmit(e) {
-    e.preventDefault();
-    setError("");
-    setLoading(true);
-    try {
-      // 1. Create reseller order
-      const { data } = await orderService.create({
-        ...form,
-        use_commission_amount: useComm,
-        card_customization: {},
-      });
-      const ro = data.reseller_order;
-
-      // 2. If fully paid via commission — go to orders
-      if (razorpayAmount === 0) {
-        router.push(`/orders/${ro.id}?success=1`);
-        return;
-      }
-
-      // 3. Open Razorpay for remaining amount
-      await loadRazorpay();
-      const { data: rzp } = await orderService.createPayment(ro.id);
-
-      let paymentDone = false;
-      let rzpInst;
-
-      const options = {
-        key:      rzp.key_id,
-        amount:   rzp.amount,
-        currency: rzp.currency,
-        order_id: rzp.razorpay_order_id,
-        name:     "TAPME Labs",
-        description: "NFC Card Order",
-        theme: { color: "#28DC4F" },
-        handler: async (response) => {
-          try {
-            await orderService.verifyPayment({
-              reseller_order_id:   ro.id,
-              razorpay_order_id:   response.razorpay_order_id,
-              razorpay_payment_id: response.razorpay_payment_id,
-              razorpay_signature:  response.razorpay_signature,
-            });
-            paymentDone = true;
-            rzpInst.close();
-            router.push(`/orders/${ro.id}?success=1`);
-          } catch {
-            setError("Payment verification failed. Contact support.");
-            rzpInst.close();
-          }
-        },
-        modal: {
-          ondismiss: () => {
-            if (!paymentDone) setError("Payment cancelled.");
-          },
-        },
-      };
-
-      rzpInst = new window.Razorpay(options);
-      rzpInst.open();
-    } catch (err) {
-      setError(err.response?.data?.message || "Failed to create order");
-    } finally {
-      setLoading(false);
-    }
-  }
-
-  const inp = "w-full border border-[#D1D5DB] rounded-lg px-3 py-2.5 text-[13px] outline-none focus:border-[#28DC4F]";
+  const filtered = products.filter((p) =>
+    p.name?.toLowerCase().includes(search.toLowerCase())
+  );
 
   return (
     <ResellerLayout>
-      <div className="max-w-2xl mx-auto space-y-5">
+      <div style={{ maxWidth: 900, margin: "0 auto", display: "flex", flexDirection: "column", gap: 20 }}>
+
+        {/* Header */}
         <div>
-          <h2 className="text-[18px] font-bold text-[#111827]">New Order</h2>
-          <p className="text-[13px] text-[#6B7280]">Create a card order for your customer</p>
+          <h2 style={{ fontSize: 18, fontWeight: 700, color: "#111827", margin: 0 }}>Select Product</h2>
+          <p style={{ fontSize: 13, color: "#6B7280", margin: "3px 0 0" }}>Choose a product to create an order</p>
         </div>
 
-        {error && <div className="p-3 rounded-lg bg-red-50 border border-red-200 text-[13px] text-red-600">{error}</div>}
+        {/* Search */}
+        <div style={{ position: "relative", maxWidth: 360 }}>
+          <svg style={{ position: "absolute", left: 12, top: "50%", transform: "translateY(-50%)", color: "#9CA3AF" }} width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+            <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
+          </svg>
+          <input
+            placeholder="Search products…"
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            style={{
+              width: "100%", padding: "9px 12px 9px 36px", fontSize: 13,
+              border: "1px solid #E2E8F0", borderRadius: 8, outline: "none",
+              background: "#fff", color: "#111827", boxSizing: "border-box",
+            }}
+            onFocus={(e) => e.target.style.borderColor = "#28DC4F"}
+            onBlur={(e)  => e.target.style.borderColor = "#E2E8F0"}
+          />
+        </div>
 
-        <form onSubmit={handleSubmit} className="space-y-5">
-          {/* Product */}
-          <div className="bg-white rounded-xl border border-[#E2E8F0] p-5 space-y-4">
-            <h3 className="text-[14px] font-semibold text-[#111827]">1. Product</h3>
-            <select required value={form.product_id} onChange={(e) => setForm({ ...form, product_id: e.target.value })} className={inp}>
-              <option value="">Select product…</option>
-              {products.map((p) => (
-                <option key={p.id} value={p.id}>{p.name} — ₹{Number(p.sale_price || p.price).toLocaleString("en-IN")}</option>
-              ))}
-            </select>
-            {selected && (
-              <div className="p-3 rounded-lg bg-[#F0FDF4] border border-[#BBF7D0] text-[13px]">
-                <p className="font-semibold text-[#16a34a]">₹{Number(selected.sale_price || selected.price).toLocaleString("en-IN")}</p>
-                <p className="text-[#6B7280] mt-0.5">You earn ₹{commissionEarn.toFixed(2)} ({stats?.commission_rate}% commission)</p>
-              </div>
-            )}
-          </div>
-
-          {/* Customer info */}
-          <div className="bg-white rounded-xl border border-[#E2E8F0] p-5 space-y-3">
-            <h3 className="text-[14px] font-semibold text-[#111827]">2. Customer Info</h3>
-            <input className={inp} placeholder="Customer name" value={form.customer_name} onChange={(e) => setForm({ ...form, customer_name: e.target.value })} />
-            <input className={inp} placeholder="Customer phone" value={form.customer_phone} onChange={(e) => setForm({ ...form, customer_phone: e.target.value })} />
-            <input className={inp} type="email" placeholder="Customer email (optional)" value={form.customer_email} onChange={(e) => setForm({ ...form, customer_email: e.target.value })} />
-          </div>
-
-          {/* Shipping */}
-          <div className="bg-white rounded-xl border border-[#E2E8F0] p-5 space-y-3">
-            <h3 className="text-[14px] font-semibold text-[#111827]">3. Shipping Address</h3>
-            {["name","address","city","state","pincode","phone"].map((f) => (
-              <input key={f} className={inp} placeholder={f.charAt(0).toUpperCase() + f.slice(1)}
-                value={form.shipping_address[f]}
-                onChange={(e) => setForm({ ...form, shipping_address: { ...form.shipping_address, [f]: e.target.value } })}
-              />
-            ))}
-          </div>
-
-          {/* Payment */}
-          {selected && (
-            <div className="bg-white rounded-xl border border-[#E2E8F0] p-5 space-y-3">
-              <h3 className="text-[14px] font-semibold text-[#111827]">4. Payment</h3>
-              <div className="flex items-center justify-between text-[13px] text-[#6B7280]">
-                <span>Commission balance</span>
-                <span className="font-semibold text-[#16a34a]">₹{balance.toFixed(2)}</span>
-              </div>
-              <div>
-                <label className="block text-[12px] font-medium text-[#374151] mb-1">Use commission (₹)</label>
-                <input type="number" min={0} max={Math.min(balance, price)} step="0.01"
-                  className={inp} value={form.use_commission_amount}
-                  onChange={(e) => setForm({ ...form, use_commission_amount: e.target.value })}
-                />
-              </div>
-              <div className="pt-2 border-t border-[#F1F5F9] space-y-1 text-[13px]">
-                <div className="flex justify-between"><span className="text-[#6B7280]">Order total</span><span>₹{price.toFixed(2)}</span></div>
-                {useComm > 0 && <div className="flex justify-between"><span className="text-[#6B7280]">Commission applied</span><span className="text-[#16a34a]">− ₹{useComm.toFixed(2)}</span></div>}
-                <div className="flex justify-between font-semibold text-[15px]">
-                  <span>Pay via Razorpay</span>
-                  <span>₹{razorpayAmount.toFixed(2)}</span>
+        {/* Grid */}
+        {loading ? (
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(220px, 1fr))", gap: 16 }}>
+            {[1,2,3,4].map((i) => (
+              <div key={i} style={{ background: "#fff", border: "1px solid #E2E8F0", borderRadius: 12, overflow: "hidden" }}>
+                <div style={{ height: 160, background: "#F1F5F9" }} />
+                <div style={{ padding: 14 }}>
+                  <div style={{ height: 14, background: "#F1F5F9", borderRadius: 4, marginBottom: 8 }} />
+                  <div style={{ height: 12, background: "#F1F5F9", borderRadius: 4, width: "60%" }} />
                 </div>
               </div>
-            </div>
-          )}
+            ))}
+          </div>
+        ) : filtered.length === 0 ? (
+          <div style={{ padding: "48px 0", textAlign: "center" }}>
+            <p style={{ fontSize: 13, color: "#9CA3AF" }}>No products found.</p>
+          </div>
+        ) : (
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(220px, 1fr))", gap: 16 }}>
+            {filtered.map((p) => {
+              const image = Array.isArray(p.images) ? p.images[0] : null;
+              const price = Number(p.sale_price || p.price || 0);
+              const original = p.sale_price ? Number(p.price) : null;
+              const inStock = p.status !== "out_of_stock";
 
-          <button type="submit" disabled={loading || !form.product_id}
-            className="w-full bg-[#28DC4F] text-black font-semibold text-[14px] py-3 rounded-xl hover:bg-[#22c946] transition-colors disabled:opacity-60"
-          >
-            {loading ? "Processing…" : razorpayAmount === 0 ? "Place Order (Commission)" : `Pay ₹${razorpayAmount.toFixed(2)} & Place Order`}
-          </button>
-        </form>
+              const handleCustomize = () => {
+                if (!inStock || !p.slug) return;
+                const url = `${FRONTEND_URL}/product/${p.slug}?reseller=1&rt=${encodeURIComponent(resellerToken)}`;
+                window.open(url, "_blank");
+              };
+
+              return (
+                <div
+                  key={p.id}
+                  onClick={handleCustomize}
+                  style={{
+                    background: "#fff", border: "1px solid #E2E8F0", borderRadius: 12,
+                    overflow: "hidden", cursor: inStock ? "pointer" : "not-allowed",
+                    transition: "box-shadow 0.15s, transform 0.15s",
+                    opacity: inStock ? 1 : 0.6,
+                  }}
+                  onMouseEnter={(e) => { if (inStock) { e.currentTarget.style.boxShadow = "0 4px 16px rgba(0,0,0,0.08)"; e.currentTarget.style.transform = "translateY(-2px)"; }}}
+                  onMouseLeave={(e) => { e.currentTarget.style.boxShadow = "none"; e.currentTarget.style.transform = "none"; }}
+                >
+                  {/* Image */}
+                  <div style={{ height: 160, background: "#F8FAFC", display: "flex", alignItems: "center", justifyContent: "center", position: "relative" }}>
+                    {image ? (
+                      <img src={image} alt={p.name} style={{ width: 180, height: 120, objectFit: "contain" }} />
+                    ) : (
+                      <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="#D1D5DB" strokeWidth="1.5"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+                    )}
+                    {!inStock && (
+                      <span style={{ position: "absolute", bottom: 8, left: 8, fontSize: 11, fontWeight: 600, background: "#FEE2E2", color: "#DC2626", padding: "2px 8px", borderRadius: 20 }}>
+                        Out of Stock
+                      </span>
+                    )}
+                  </div>
+
+                  {/* Info */}
+                  <div style={{ padding: "14px 16px" }}>
+                    <p style={{ fontSize: 13, fontWeight: 600, color: "#111827", margin: 0, lineHeight: 1.4 }}>{p.name}</p>
+                    {p.short_description && (
+                      <p style={{ fontSize: 11, color: "#9CA3AF", margin: "4px 0 0", overflow: "hidden", display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical" }}>
+                        {p.short_description}
+                      </p>
+                    )}
+                    <div style={{ display: "flex", alignItems: "center", gap: 6, marginTop: 10 }}>
+                      <span style={{ fontSize: 16, fontWeight: 700, color: "#28DC4F" }}>₹{price.toLocaleString("en-IN")}</span>
+                      {original && <span style={{ fontSize: 12, color: "#9CA3AF", textDecoration: "line-through" }}>₹{original.toLocaleString("en-IN")}</span>}
+                    </div>
+                    <div style={{ marginTop: 10, background: inStock ? "#28DC4F" : "#E5E7EB", borderRadius: 8, padding: "8px 0", textAlign: "center", fontSize: 13, fontWeight: 600, color: inStock ? "#000" : "#9CA3AF" }}>
+                      {inStock ? "Customize Your Card" : "Out of Stock"}
+                    </div>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        )}
       </div>
     </ResellerLayout>
   );

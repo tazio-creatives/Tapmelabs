@@ -66,7 +66,10 @@ const resellerOrderRoutes       = require("./src/routes/resellerOrderRoutes");
 const resellerPaymentRoutes     = require("./src/routes/resellerPaymentRoutes");
 const resellerCommissionRoutes  = require("./src/routes/resellerCommissionRoutes");
 const resellerProfileRoutes     = require("./src/routes/resellerProfileRoutes");
+const resellerCustomerRoutes    = require("./src/routes/resellerCustomerRoutes");
 const adminResellerRoutes       = require("./src/routes/adminResellerRoutes");
+const formRoutes                = require("./src/routes/formRoutes");
+const leadRoutes                = require("./src/routes/leadRoutes");
 
 // ── Static files ──────────────────────────────────────────────────────────────
 app.use("/uploads", (req, res, next) => {
@@ -96,6 +99,18 @@ app.use("/api/reseller/orders",     resellerOrderRoutes);
 app.use("/api/reseller/payment",    resellerPaymentRoutes);
 app.use("/api/reseller/commission", resellerCommissionRoutes);
 app.use("/api/reseller/profile",    resellerProfileRoutes);
+app.use("/api/reseller/customer",   resellerCustomerRoutes);
+app.use("/api/forms",               formRoutes);
+app.use("/api/leads",               leadRoutes);
+
+// Manual trigger for testing (dev only)
+if (process.env.NODE_ENV === "development") {
+  app.post("/api/admin/trigger-scoring", async (req, res) => {
+    const { runScoringJob } = require("./src/jobs/scoringCron");
+    res.json({ message: "Scoring job triggered" });
+    runScoringJob(); // run async, don't wait
+  });
+}
 
 // ── 404 handler ───────────────────────────────────────────────────────────────
 app.use((req, res) => {
@@ -141,6 +156,10 @@ async function start() {
     console.log(`\n🚀  TAPME Backend running on http://localhost:${PORT}`);
     console.log(`    ENV:             ${NODE_ENV}`);
     console.log(`    Allowed origins: ${ALLOWED_ORIGINS.join(", ")}\n`);
+
+    // Start lead scoring cron job
+    const { startScoringCron } = require("./src/jobs/scoringCron");
+    startScoringCron();
   });
 }
 

@@ -55,9 +55,12 @@ async function sendOtpEmail(to, otp) {
   });
 }
 
-async function sendPaymentSuccessEmail(to, { customerName, orderId, orderNumber, amount, productName, shippingAddress }) {
+async function sendPaymentSuccessEmail(to, { customerName, orderId, orderNumber, amount, productName, shippingAddress, proPlan }) {
   const displayId   = orderNumber || `TML-${String(orderId).padStart(6, "0")}`;
-  const amountStr   = `₹${Number(amount).toLocaleString("en-IN")}`;
+  const totalAmount = Number(amount);
+  const PRO_PRICE   = 999;
+  const cardPrice   = proPlan ? totalAmount - PRO_PRICE : totalAmount;
+  const amountStr   = `₹${totalAmount.toLocaleString("en-IN")}`;
   const addr        = shippingAddress || {};
   const addressLine = [addr.address, addr.city, addr.state, addr.pincode].filter(Boolean).join(", ");
 
@@ -97,9 +100,29 @@ async function sendPaymentSuccessEmail(to, { customerName, orderId, orderNumber,
               <td style="padding:6px 0;color:#9CA3AF">Product</td>
               <td style="padding:6px 0;color:#111827;text-align:right">${productName}</td>
             </tr>` : ""}
+            <!-- Price breakdown -->
             <tr>
-              <td style="padding:6px 0;color:#9CA3AF">Amount Paid</td>
-              <td style="padding:6px 0;color:#28DC4F;font-weight:700;text-align:right">${amountStr}</td>
+              <td colspan="2" style="padding:8px 0 4px"><hr style="border:none;border-top:1px solid #EBEBEB;margin:0"/></td>
+            </tr>
+            <tr>
+              <td style="padding:4px 0;color:#9CA3AF;font-size:13px">NFC Business Card</td>
+              <td style="padding:4px 0;color:#111827;font-size:13px;text-align:right">₹${cardPrice.toLocaleString("en-IN")}</td>
+            </tr>
+            ${proPlan ? `
+            <tr>
+              <td style="padding:4px 0;color:#9CA3AF;font-size:13px">⚡ Pro Plan (1 year)</td>
+              <td style="padding:4px 0;color:#16a34a;font-size:13px;font-weight:600;text-align:right">+₹${PRO_PRICE.toLocaleString("en-IN")}</td>
+            </tr>` : ""}
+            <tr>
+              <td style="padding:4px 0;color:#9CA3AF;font-size:13px">Shipping</td>
+              <td style="padding:4px 0;color:#16a34a;font-size:13px;font-weight:600;text-align:right">FREE</td>
+            </tr>
+            <tr>
+              <td colspan="2" style="padding:8px 0 4px"><hr style="border:none;border-top:1px solid #EBEBEB;margin:0"/></td>
+            </tr>
+            <tr>
+              <td style="padding:4px 0;color:#111827;font-weight:700;font-size:14px">Total Paid</td>
+              <td style="padding:4px 0;color:#28DC4F;font-weight:700;font-size:16px;text-align:right">${amountStr}</td>
             </tr>
             <tr>
               <td style="padding:6px 0;color:#9CA3AF">Status</td>
@@ -163,4 +186,65 @@ async function sendPasswordResetEmail(to, { name, resetUrl }) {
   });
 }
 
-module.exports = { sendOtpEmail, sendPaymentSuccessEmail, sendPasswordResetEmail };
+async function sendResellerCustomerSetupEmail(to, { customerName, productName, setupUrl }) {
+  await transporter.sendMail({
+    from:    process.env.EMAIL_FROM,
+    to,
+    subject: "Your NFC Card is on its way! Set up your digital profile – TapMe Labs",
+    text: `Hi ${customerName},\n\nGreat news! Your ${productName || "NFC Business Card"} has been ordered.\n\nSet up your digital profile so your card is ready to go when it arrives:\n${setupUrl}\n\nThis link expires in 48 hours.\n\nTapMe Labs Team`,
+    html: `
+      <div style="font-family:sans-serif;max-width:560px;margin:0 auto;padding:32px 24px;background:#fff;border-radius:16px;border:1px solid #F0F0F0">
+
+        <div style="margin-bottom:28px">${LOGO_HEADER}</div>
+
+        <div style="text-align:center;margin-bottom:28px">
+          <table cellpadding="0" cellspacing="0" border="0" style="border-collapse:collapse;margin:0 auto 16px">
+            <tr>
+              <td style="width:64px;height:64px;border-radius:50%;background:#28DC4F;text-align:center;vertical-align:middle;font-family:Arial,sans-serif;font-size:28px;color:#fff;line-height:64px">&#128230;</td>
+            </tr>
+          </table>
+          <h1 style="margin:0 0 6px;font-size:24px;font-weight:700;color:#111827">Your card is on its way!</h1>
+          <p style="margin:0;font-size:14px;color:#6D6D6D">Hi ${customerName}, your <strong>${productName || "NFC Business Card"}</strong> has been ordered for you.</p>
+        </div>
+
+        <div style="background:#F9FAFB;border-radius:12px;padding:20px;margin-bottom:24px">
+          <p style="margin:0 0 8px;font-size:14px;font-weight:600;color:#111827">What happens next?</p>
+          <table style="width:100%;border-collapse:collapse;font-size:14px">
+            <tr>
+              <td style="padding:8px 0;color:#6D6D6D;vertical-align:top;width:24px">1.</td>
+              <td style="padding:8px 0;color:#6D6D6D">Click the button below to set up your digital profile</td>
+            </tr>
+            <tr>
+              <td style="padding:8px 0;color:#6D6D6D;vertical-align:top">2.</td>
+              <td style="padding:8px 0;color:#6D6D6D">Choose a password to secure your account</td>
+            </tr>
+            <tr>
+              <td style="padding:8px 0;color:#6D6D6D;vertical-align:top">3.</td>
+              <td style="padding:8px 0;color:#6D6D6D">Your card will be linked and ready when it arrives</td>
+            </tr>
+          </table>
+        </div>
+
+        <div style="text-align:center;margin-bottom:28px">
+          <a href="${setupUrl}" style="display:inline-block;background:#28DC4F;color:#000;font-weight:700;font-size:15px;padding:14px 36px;border-radius:99px;text-decoration:none">
+            Set Up My Profile
+          </a>
+          <p style="margin:12px 0 0;font-size:11px;color:#9CA3AF">This link expires in 48 hours</p>
+        </div>
+
+        <div style="background:#FFFBEB;border:1px solid #FDE68A;border-radius:10px;padding:14px 18px;margin-bottom:24px">
+          <p style="margin:0;font-size:12px;color:#92400E">
+            <strong>Can't click the button?</strong> Copy and paste this link into your browser:<br/>
+            <span style="color:#6B7280;word-break:break-all">${setupUrl}</span>
+          </p>
+        </div>
+
+        <p style="margin:0;font-size:12px;color:#9CA3AF;text-align:center">
+          Questions? Email us at <a href="mailto:support@tapmelabs.com" style="color:#28DC4F">support@tapmelabs.com</a>
+        </p>
+      </div>
+    `,
+  });
+}
+
+module.exports = { sendOtpEmail, sendPaymentSuccessEmail, sendPasswordResetEmail, sendResellerCustomerSetupEmail };

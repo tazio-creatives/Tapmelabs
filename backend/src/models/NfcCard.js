@@ -26,6 +26,14 @@ const NfcCard = sequelize.define(
       type: DataTypes.ENUM("unassigned", "active", "locked"),
       defaultValue: "unassigned",
     },
+    default_action: {
+      type: DataTypes.ENUM("profile", "form"),
+      defaultValue: "profile",
+    },
+    form_id: {
+      type: DataTypes.UUID,
+      allowNull: true,
+    },
   },
   {
     tableName: "nfc_cards",

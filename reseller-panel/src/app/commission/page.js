@@ -40,9 +40,9 @@ export default function CommissionPage() {
     setLedgerLoading(true);
     commissionService.ledger({ page, limit: 20 })
       .then((r) => {
-        setLedger(r.data.entries);
-        setTotal(r.data.total);
-        setPages(r.data.pages);
+        setLedger(r.data.ledger || []);
+        setTotal(r.data.total || 0);
+        setPages(r.data.pages || 1);
       })
       .finally(() => setLedgerLoading(false));
   }, [page]);
@@ -68,7 +68,7 @@ export default function CommissionPage() {
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
             <StatCard label="Available Balance" value={fmt(summary.commission_balance)} color="#28DC4F" sub="Ready to use or withdraw" />
             <StatCard label="Total Earned"      value={fmt(summary.total_earned)}        color="#111827" />
-            <StatCard label="Total Used"        value={fmt(summary.total_used)}          color="#1D4ED8" />
+            <StatCard label="Commission Rate"   value={`${summary.commission_rate || 0}%`} color="#1D4ED8" />
             <StatCard label="Total Withdrawn"   value={fmt(summary.total_withdrawn)}     color="#7C3AED" />
           </div>
         )}
@@ -109,7 +109,7 @@ export default function CommissionPage() {
                     </td>
                     <td className="px-5 py-3 hidden md:table-cell text-[#6B7280]">{fmt(entry.balance_after)}</td>
                     <td className="px-5 py-3 hidden md:table-cell text-[#9CA3AF] text-[12px] max-w-[200px] truncate">{entry.note || "—"}</td>
-                    <td className="px-5 py-3 text-[#9CA3AF]">{new Date(entry.created_at).toLocaleDateString("en-IN")}</td>
+                    <td className="px-5 py-3 text-[#9CA3AF]">{new Date(entry.createdAt || entry.created_at).toLocaleDateString("en-IN")}</td>
                   </tr>
                 ))}
               </tbody>

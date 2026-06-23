@@ -5,31 +5,39 @@ import Link from "next/link";
 import ResellerLayout from "@/components/ResellerLayout";
 import orderService from "@/services/orderService";
 
-const STATUS_COLORS = {
-  paid:      "bg-green-100 text-green-700",
-  pending:   "bg-yellow-100 text-yellow-700",
-  cancelled: "bg-red-100 text-red-600",
-  refunded:  "bg-gray-100 text-gray-600",
+const STATUS = {
+  paid:      { bg: "#DCFCE7", color: "#16A34A" },
+  pending:   { bg: "#FEF9C3", color: "#D97706" },
+  cancelled: { bg: "#FEE2E2", color: "#DC2626" },
+  refunded:  { bg: "#F1F5F9", color: "#64748B" },
 };
 
 function Row({ label, value }) {
   return (
-    <div className="flex items-center justify-between py-2.5 border-b border-[#F8FAFC] last:border-0">
-      <span className="text-[12px] text-[#6B7280]">{label}</span>
-      <span className="text-[13px] font-medium text-[#111827]">{value ?? "—"}</span>
+    <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "10px 0", borderBottom: "1px solid #F8FAFC" }}>
+      <span style={{ fontSize: 12, color: "#6B7280" }}>{label}</span>
+      <span style={{ fontSize: 13, fontWeight: 500, color: "#111827" }}>{value ?? "—"}</span>
+    </div>
+  );
+}
+
+function Card({ title, children }) {
+  return (
+    <div style={{ background: "#fff", border: "1px solid #E2E8F0", borderRadius: 12, padding: "18px 20px" }}>
+      <p style={{ fontSize: 13, fontWeight: 600, color: "#111827", margin: "0 0 4px" }}>{title}</p>
+      {children}
     </div>
   );
 }
 
 export default function OrderDetailPage() {
-  const { id }       = useParams();
-  const searchParams = useSearchParams();
-  const success      = searchParams.get("success");
-
-  const [order, setOrder]   = useState(null);
-  const [loading, setLoading] = useState(true);
+  const { id }        = useParams();
+  const searchParams  = useSearchParams();
+  const success       = searchParams.get("success");
+  const [order, setOrder]         = useState(null);
+  const [loading, setLoading]     = useState(true);
   const [cancelling, setCancelling] = useState(false);
-  const [error, setError]   = useState("");
+  const [error, setError]         = useState("");
 
   useEffect(() => {
     orderService.detail(id)
@@ -51,70 +59,70 @@ export default function OrderDetailPage() {
     }
   }
 
-  if (loading) return <ResellerLayout><div className="text-[13px] text-[#6B7280]">Loading…</div></ResellerLayout>;
-  if (error)   return <ResellerLayout><div className="text-[13px] text-red-600">{error}</div></ResellerLayout>;
+  if (loading) return <ResellerLayout><p style={{ fontSize: 13, color: "#9CA3AF" }}>Loading…</p></ResellerLayout>;
+  if (error)   return <ResellerLayout><p style={{ fontSize: 13, color: "#DC2626" }}>{error}</p></ResellerLayout>;
 
   const o = order;
+  const s = STATUS[o.status] || { bg: "#F1F5F9", color: "#64748B" };
+
   return (
     <ResellerLayout>
-      <div className="max-w-2xl mx-auto space-y-5">
+      <div style={{ maxWidth: 620, margin: "0 auto", display: "flex", flexDirection: "column", gap: 16 }}>
+
         {success && (
-          <div className="p-4 rounded-xl bg-green-50 border border-green-200 text-[13px] text-green-700 font-medium">
+          <div style={{ background: "#F0FDF4", border: "1px solid #BBF7D0", borderRadius: 10, padding: "12px 16px", fontSize: 13, color: "#16A34A", fontWeight: 500 }}>
             ✓ Order placed successfully! Commission will be credited once confirmed.
           </div>
         )}
 
-        <div className="flex items-center justify-between">
+        {/* Title row */}
+        <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: 12 }}>
           <div>
-            <h2 className="text-[18px] font-bold text-[#111827]">Order Detail</h2>
-            <p className="text-[12px] text-[#9CA3AF] font-mono">{o.id}</p>
+            <h2 style={{ fontSize: 18, fontWeight: 700, color: "#111827", margin: 0 }}>Order Detail</h2>
+            <p style={{ fontSize: 11, color: "#9CA3AF", margin: "4px 0 0", fontFamily: "monospace" }}>{o.id}</p>
           </div>
-          <span className={`text-[12px] font-semibold px-3 py-1 rounded-full ${STATUS_COLORS[o.status] || ""}`}>
+          <span style={{ fontSize: 12, fontWeight: 600, padding: "4px 12px", borderRadius: 20, background: s.bg, color: s.color, whiteSpace: "nowrap" }}>
             {o.status}
           </span>
         </div>
 
         {/* Customer */}
-        <div className="bg-white rounded-xl border border-[#E2E8F0] p-5">
-          <h3 className="text-[13px] font-semibold text-[#111827] mb-3">Customer</h3>
+        <Card title="Customer">
           <Row label="Name"  value={o.customer_name} />
           <Row label="Phone" value={o.customer_phone} />
           <Row label="Email" value={o.customer_email} />
-        </div>
+        </Card>
 
         {/* Payment */}
-        <div className="bg-white rounded-xl border border-[#E2E8F0] p-5">
-          <h3 className="text-[13px] font-semibold text-[#111827] mb-3">Payment</h3>
-          <Row label="Order Total"         value={`₹${Number(o.order_total).toLocaleString("en-IN")}`} />
-          <Row label="Commission Applied"  value={`₹${Number(o.commission_applied).toLocaleString("en-IN")}`} />
-          <Row label="Paid via Razorpay"   value={`₹${Number(o.razorpay_amount).toLocaleString("en-IN")}`} />
-          <Row label="Payment Method"      value={o.payment_method} />
+        <Card title="Payment">
+          <Row label="Order Total"        value={`₹${Number(o.order_total).toLocaleString("en-IN")}`} />
+          <Row label="Commission Applied" value={`₹${Number(o.commission_applied).toLocaleString("en-IN")}`} />
+          <Row label="Paid via Razorpay"  value={`₹${Number(o.razorpay_amount).toLocaleString("en-IN")}`} />
+          <Row label="Payment Method"     value={o.payment_method} />
           {o.razorpay_payment_id && <Row label="Razorpay ID" value={o.razorpay_payment_id} />}
-        </div>
+        </Card>
 
         {/* Commission */}
-        <div className="bg-white rounded-xl border border-[#E2E8F0] p-5">
-          <h3 className="text-[13px] font-semibold text-[#111827] mb-3">Commission</h3>
+        <Card title="Commission">
           <Row label="Rate"             value={`${Number(o.commission_rate)}%`} />
           <Row label="Commission Earned" value={`₹${Number(o.commission_amount).toLocaleString("en-IN")}`} />
-        </div>
+        </Card>
 
         {/* Dates */}
-        <div className="bg-white rounded-xl border border-[#E2E8F0] p-5">
-          <h3 className="text-[13px] font-semibold text-[#111827] mb-3">Dates</h3>
-          <Row label="Created" value={new Date(o.created_at).toLocaleString("en-IN")} />
-          <Row label="Updated" value={new Date(o.updated_at).toLocaleString("en-IN")} />
-        </div>
+        <Card title="Dates">
+          <Row label="Created" value={new Date(o.createdAt || o.created_at).toLocaleString("en-IN")} />
+          <Row label="Updated" value={new Date(o.updatedAt || o.updated_at).toLocaleString("en-IN")} />
+        </Card>
 
         {/* Actions */}
-        <div className="flex gap-3">
-          <Link href="/orders" className="flex-1 text-center border border-[#E2E8F0] text-[13px] font-medium py-2.5 rounded-xl hover:bg-[#F8FAFC] transition-colors">
+        <div style={{ display: "flex", gap: 10 }}>
+          <Link href="/orders"
+            style={{ flex: 1, textAlign: "center", border: "1px solid #E2E8F0", fontSize: 13, fontWeight: 500, padding: "11px 0", borderRadius: 10, color: "#374151", textDecoration: "none", background: "#fff" }}>
             ← Back to Orders
           </Link>
           {o.status === "pending" && (
             <button onClick={handleCancel} disabled={cancelling}
-              className="flex-1 border border-red-200 text-red-600 text-[13px] font-medium py-2.5 rounded-xl hover:bg-red-50 transition-colors disabled:opacity-60"
-            >
+              style={{ flex: 1, border: "1px solid #FECACA", fontSize: 13, fontWeight: 500, padding: "11px 0", borderRadius: 10, color: "#DC2626", background: "#fff", cursor: cancelling ? "not-allowed" : "pointer", opacity: cancelling ? 0.6 : 1 }}>
               {cancelling ? "Cancelling…" : "Cancel Order"}
             </button>
           )}

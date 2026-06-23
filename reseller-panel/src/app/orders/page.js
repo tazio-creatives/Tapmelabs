@@ -4,12 +4,14 @@ import Link from "next/link";
 import ResellerLayout from "@/components/ResellerLayout";
 import orderService from "@/services/orderService";
 
-const STATUS_COLORS = {
-  paid:      "bg-green-100 text-green-700",
-  pending:   "bg-yellow-100 text-yellow-700",
-  cancelled: "bg-red-100 text-red-600",
-  refunded:  "bg-gray-100 text-gray-600",
+const STATUS = {
+  paid:      { bg: "#DCFCE7", color: "#16A34A" },
+  pending:   { bg: "#FEF9C3", color: "#D97706" },
+  cancelled: { bg: "#FEE2E2", color: "#DC2626" },
+  refunded:  { bg: "#F1F5F9", color: "#64748B" },
 };
+
+const FILTERS = ["", "pending", "paid", "cancelled"];
 
 export default function OrdersPage() {
   const [orders, setOrders]   = useState([]);
@@ -32,83 +34,97 @@ export default function OrdersPage() {
 
   return (
     <ResellerLayout>
-      <div className="max-w-4xl mx-auto space-y-4">
-        <div className="flex items-center justify-between">
+      <div style={{ maxWidth: 900, margin: "0 auto", display: "flex", flexDirection: "column", gap: 18 }}>
+
+        {/* Header */}
+        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
           <div>
-            <h2 className="text-[18px] font-bold text-[#111827]">Orders</h2>
-            <p className="text-[13px] text-[#6B7280]">{total} total orders</p>
+            <h2 style={{ fontSize: 18, fontWeight: 700, color: "#111827", margin: 0 }}>Orders</h2>
+            <p style={{ fontSize: 13, color: "#6B7280", margin: "3px 0 0" }}>{total} total orders</p>
           </div>
-          <Link href="/orders/new" className="bg-[#28DC4F] text-black text-[13px] font-semibold px-4 py-2 rounded-lg">
+          <Link href="/orders/new"
+            style={{ background: "#28DC4F", color: "#000", fontSize: 13, fontWeight: 600, padding: "9px 16px", borderRadius: 8, textDecoration: "none" }}>
             + New Order
           </Link>
         </div>
 
-        {/* Filters */}
-        <div className="flex gap-2 flex-wrap">
-          {["", "pending", "paid", "cancelled"].map((s) => (
-            <button key={s} onClick={() => { setStatus(s); setPage(1); }}
-              className={`px-3 py-1.5 rounded-full text-[12px] font-medium border transition-colors ${status === s ? "bg-[#111827] text-white border-[#111827]" : "bg-white text-[#6B7280] border-[#E2E8F0] hover:border-[#111827]"}`}
-            >
-              {s === "" ? "All" : s.charAt(0).toUpperCase() + s.slice(1)}
+        {/* Filter tabs */}
+        <div style={{ display: "flex", gap: 6 }}>
+          {FILTERS.map((f) => (
+            <button key={f} onClick={() => { setStatus(f); setPage(1); }}
+              style={{
+                padding: "6px 14px", borderRadius: 20, fontSize: 12, fontWeight: 500,
+                border: "1px solid",  cursor: "pointer", transition: "all 0.12s",
+                background: status === f ? "#111827" : "#fff",
+                color:      status === f ? "#fff"    : "#6B7280",
+                borderColor: status === f ? "#111827" : "#E2E8F0",
+              }}>
+              {f === "" ? "All" : f.charAt(0).toUpperCase() + f.slice(1)}
             </button>
           ))}
         </div>
 
-        <div className="bg-white rounded-xl border border-[#E2E8F0] overflow-hidden">
+        {/* Table card */}
+        <div style={{ background: "#fff", border: "1px solid #E2E8F0", borderRadius: 12, overflow: "hidden" }}>
           {loading ? (
-            <div className="py-12 text-center text-[13px] text-[#6B7280]">Loading…</div>
+            <div style={{ padding: "48px 0", textAlign: "center", fontSize: 13, color: "#9CA3AF" }}>Loading…</div>
           ) : orders.length === 0 ? (
-            <div className="py-12 text-center">
-              <p className="text-[13px] text-[#9CA3AF]">No orders found.</p>
-              <Link href="/orders/new" className="mt-2 inline-block text-[13px] text-[#28DC4F] font-medium">Create your first order →</Link>
+            <div style={{ padding: "48px 0", textAlign: "center" }}>
+              <p style={{ fontSize: 13, color: "#9CA3AF", margin: "0 0 8px" }}>No orders found.</p>
+              <Link href="/orders/new" style={{ fontSize: 13, color: "#28DC4F", fontWeight: 500, textDecoration: "none" }}>Create your first order →</Link>
             </div>
           ) : (
-            <table className="w-full text-[13px]">
-              <thead>
-                <tr className="border-b border-[#F1F5F9] text-[11px] text-[#6B7280] uppercase tracking-wide">
-                  <th className="text-left px-5 py-3">Customer</th>
-                  <th className="text-left px-5 py-3 hidden md:table-cell">Amount</th>
-                  <th className="text-left px-5 py-3 hidden md:table-cell">Commission</th>
-                  <th className="text-left px-5 py-3">Status</th>
-                  <th className="text-left px-5 py-3 hidden md:table-cell">Date</th>
-                  <th className="px-5 py-3" />
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-[#F8FAFC]">
-                {orders.map((o) => (
-                  <tr key={o.id} className="hover:bg-[#F8FAFC] transition-colors">
-                    <td className="px-5 py-3">
-                      <p className="font-medium text-[#111827]">{o.customer_name || "—"}</p>
-                      <p className="text-[11px] text-[#9CA3AF]">{o.customer_phone || ""}</p>
-                    </td>
-                    <td className="px-5 py-3 hidden md:table-cell text-[#111827]">₹{Number(o.order_total).toLocaleString("en-IN")}</td>
-                    <td className="px-5 py-3 hidden md:table-cell text-[#16a34a] font-medium">₹{Number(o.commission_amount).toLocaleString("en-IN")}</td>
-                    <td className="px-5 py-3">
-                      <span className={`text-[11px] font-semibold px-2.5 py-0.5 rounded-full ${STATUS_COLORS[o.status] || ""}`}>
-                        {o.status}
-                      </span>
-                    </td>
-                    <td className="px-5 py-3 hidden md:table-cell text-[#9CA3AF]">
-                      {new Date(o.created_at).toLocaleDateString("en-IN")}
-                    </td>
-                    <td className="px-5 py-3 text-right">
-                      <Link href={`/orders/${o.id}`} className="text-[12px] text-[#28DC4F] font-medium">View →</Link>
-                    </td>
+            <div style={{ overflowX: "auto" }}>
+              <table style={{ width: "100%", borderCollapse: "collapse", fontSize: 13 }}>
+                <thead>
+                  <tr style={{ borderBottom: "1px solid #F1F5F9" }}>
+                    {["Customer", "Amount", "Commission", "Status", "Date", ""].map((h) => (
+                      <th key={h} style={{ padding: "10px 18px", textAlign: "left", fontSize: 11, color: "#9CA3AF", fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.04em", whiteSpace: "nowrap" }}>{h}</th>
+                    ))}
                   </tr>
-                ))}
-              </tbody>
-            </table>
+                </thead>
+                <tbody>
+                  {orders.map((o) => (
+                    <tr key={o.id} style={{ borderBottom: "1px solid #F8FAFC", transition: "background 0.1s" }}
+                      onMouseEnter={(e) => e.currentTarget.style.background = "#F8FAFC"}
+                      onMouseLeave={(e) => e.currentTarget.style.background = "transparent"}>
+                      <td style={{ padding: "12px 18px" }}>
+                        <p style={{ fontWeight: 500, color: "#111827", margin: 0 }}>{o.customer_name || "—"}</p>
+                        <p style={{ fontSize: 11, color: "#9CA3AF", margin: "2px 0 0" }}>{o.customer_phone || ""}</p>
+                      </td>
+                      <td style={{ padding: "12px 18px", color: "#374151" }}>₹{Number(o.order_total).toLocaleString("en-IN")}</td>
+                      <td style={{ padding: "12px 18px", color: "#16A34A", fontWeight: 500 }}>₹{Number(o.commission_amount).toLocaleString("en-IN")}</td>
+                      <td style={{ padding: "12px 18px" }}>
+                        <span style={{ fontSize: 11, fontWeight: 600, padding: "3px 10px", borderRadius: 20, ...(STATUS[o.status] || { background: "#F1F5F9", color: "#64748B" }), background: (STATUS[o.status] || {}).bg }}>
+                          {o.status}
+                        </span>
+                      </td>
+                      <td style={{ padding: "12px 18px", color: "#9CA3AF", whiteSpace: "nowrap" }}>
+                        {new Date(o.createdAt || o.created_at).toLocaleDateString("en-IN", { day: "numeric", month: "short", year: "numeric" })}
+                      </td>
+                      <td style={{ padding: "12px 18px", textAlign: "right" }}>
+                        <Link href={`/orders/${o.id}`} style={{ fontSize: 12, color: "#28DC4F", fontWeight: 500, textDecoration: "none" }}>View →</Link>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
           )}
         </div>
 
         {/* Pagination */}
         {pages > 1 && (
-          <div className="flex items-center justify-center gap-2">
+          <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 8 }}>
             <button disabled={page === 1} onClick={() => setPage(p => p - 1)}
-              className="px-3 py-1.5 text-[12px] border border-[#E2E8F0] rounded-lg disabled:opacity-40">← Prev</button>
-            <span className="text-[12px] text-[#6B7280]">{page} / {pages}</span>
+              style={{ padding: "6px 14px", fontSize: 12, border: "1px solid #E2E8F0", borderRadius: 8, background: "#fff", cursor: page === 1 ? "not-allowed" : "pointer", opacity: page === 1 ? 0.4 : 1 }}>
+              ← Prev
+            </button>
+            <span style={{ fontSize: 12, color: "#6B7280" }}>{page} / {pages}</span>
             <button disabled={page === pages} onClick={() => setPage(p => p + 1)}
-              className="px-3 py-1.5 text-[12px] border border-[#E2E8F0] rounded-lg disabled:opacity-40">Next →</button>
+              style={{ padding: "6px 14px", fontSize: 12, border: "1px solid #E2E8F0", borderRadius: 8, background: "#fff", cursor: page === pages ? "not-allowed" : "pointer", opacity: page === pages ? 0.4 : 1 }}>
+              Next →
+            </button>
           </div>
         )}
       </div>

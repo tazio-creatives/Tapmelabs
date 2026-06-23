@@ -1,9 +1,10 @@
 const express = require("express");
 const router  = express.Router();
 const ctrl    = require("../controllers/adminResellerController");
-const adminAuth = require("../middleware/adminAuth");
+const { protect } = require("../middlewares/authMiddleware");
+const { requireAdmin } = require("../middlewares/adminMiddleware");
 
-router.use(adminAuth);
+router.use(protect, requireAdmin);
 
 router.get("/",                         ctrl.list);
 router.get("/payouts",                  ctrl.listPayouts);

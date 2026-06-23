@@ -21,7 +21,7 @@ function signRefresh(reseller) {
 // POST /api/reseller/auth/register
 async function register(req, res) {
   try {
-    const { full_name, email, phone, password } = req.body;
+    const { full_name, email, phone, password, commission_rate } = req.body;
     if (!full_name || !email || !password) {
       return res.status(400).json({ message: "full_name, email and password are required" });
     }
@@ -30,7 +30,10 @@ async function register(req, res) {
     if (exists) return res.status(409).json({ message: "Email already registered" });
 
     const hashed = await bcrypt.hash(password, 10);
-    const reseller = await Reseller.create({ full_name, email, phone, password: hashed });
+    const reseller = await Reseller.create({
+      full_name, email, phone, password: hashed,
+      ...(commission_rate !== undefined && { commission_rate: Number(commission_rate) }),
+    });
 
     const accessToken  = signAccess(reseller);
     const refreshToken = signRefresh(reseller);

@@ -639,7 +639,8 @@ function OrderDetailsSection({ order }) {
 
 /* ─── right column ────────────────────────────────────────────────────── */
 
-function ActionsSection({ profileUrl, onViewProfile, onDownloadQR, onShare, onCopy, copied, qrColor, qrStyle }) {
+function ActionsSection({ profileUrl, cardTapUrl, onViewProfile, onDownloadQR, onShare, onCopy, copied, qrColor, qrStyle }) {
+  const qrData = cardTapUrl || profileUrl; // QR points to card tap URL first
   const actionBtns = [
     {
       label:   "Download QR Code",
@@ -678,10 +679,10 @@ function ActionsSection({ profileUrl, onViewProfile, onDownloadQR, onShare, onCo
           className="mx-auto mb-5 flex items-center justify-center rounded-[10px] p-4 shadow-[0_2px_12px_rgba(0,0,0,0.06)]"
           style={{ width: "fit-content", backgroundColor: isLightColor(qrColor || "#18181B") ? "#1a1a1a" : "#ffffff" }}
         >
-          <StyledQRDisplay profileUrl={profileUrl} qrColor={qrColor} qrStyle={qrStyle} size={180} />
+          <StyledQRDisplay profileUrl={qrData} qrColor={qrColor} qrStyle={qrStyle} size={180} />
         </div>
         <p className="text-center text-[13px] leading-[1.6] text-[#6B7280]">
-          Scan this QR code for instantly view and save your digital profile.
+          {cardTapUrl ? "Scan to open your card link (form or profile based on your setting)." : "Scan this QR code to view your digital profile."}
         </p>
       </div>
 
@@ -732,6 +733,14 @@ export default function MyCardsPage() {
   const [copied,               setCopied]               = useState(false);
   const [loading,              setLoading]              = useState(true);
   const [apiError,             setApiError]             = useState("");
+  const [cardAction,           setCardAction]           = useState("profile");
+  const [cardUid,              setCardUid]              = useState(null);
+  const [forms,                setForms]                = useState([]);
+  const [selectedFormId,       setSelectedFormId]       = useState(null);
+  const [savingAction,         setSavingAction]         = useState(false);
+  const [actionSaved,          setActionSaved]          = useState(false);
+  const [copiedCard,           setCopiedCard]           = useState(false);
+  const [copiedProfile,        setCopiedProfile]        = useState(false);
 
   useEffect(() => {
     if (typeof window === "undefined") return;
@@ -786,6 +795,19 @@ export default function MyCardsPage() {
           } else {
             setDesignMethod(cust.design_method || "customize_online");
             setCustomization(cust);
+
+            // Load Google Font if a custom font was selected
+            if (cust.fontFamily && cust.fontFamily !== "sans-serif") {
+              const fontName = cust.fontFamily.replace(/'/g, "").split(",")[0].trim();
+              const fontId   = `gfont-dashboard-${fontName.toLowerCase().replace(/\s+/g, "-")}`;
+              if (fontName && !document.getElementById(fontId)) {
+                const link = document.createElement("link");
+                link.id   = fontId;
+                link.rel  = "stylesheet";
+                link.href = `https://fonts.googleapis.com/css2?family=${encodeURIComponent(fontName)}:wght@400;600&display=swap`;
+                document.head.appendChild(link);
+              }
+            }
           }
           return; // skip localStorage fallback
         }
@@ -804,6 +826,18 @@ export default function MyCardsPage() {
           if (singleItem.customization) {
             setCustomization(singleItem.customization);
             setProductImages({ front: singleItem.front_image || null, back: singleItem.back_image || null });
+            // Load font
+            const ff = singleItem.customization.fontFamily;
+            if (ff && ff !== "sans-serif") {
+              const fn = ff.replace(/'/g, "").split(",")[0].trim();
+              const fid = `gfont-dashboard-${fn.toLowerCase().replace(/\s+/g, "-")}`;
+              if (fn && !document.getElementById(fid)) {
+                const l = document.createElement("link");
+                l.id = fid; l.rel = "stylesheet";
+                l.href = `https://fonts.googleapis.com/css2?family=${encodeURIComponent(fn)}:wght@400;600&display=swap`;
+                document.head.appendChild(l);
+              }
+            }
           }
         } else {
           const cart = JSON.parse(localStorage.getItem("cartItems") || "[]");
@@ -812,22 +846,46 @@ export default function MyCardsPage() {
         }
       } catch { /* storage unavailable */ }
     }).finally(() => setLoading(false));
+
+    // Load NFC card action setting and forms
+    import("@/services/api").then(({ default: api }) => {
+      api.get("/nfc-cards/mine").then(r => {
+        if (r.data.card) {
+          setCardAction(r.data.card.default_action || "profile");
+          setSelectedFormId(r.data.card.form_id || null);
+          setCardUid(r.data.card.card_uid || null);
+        }
+      }).catch(() => {});
+      api.get("/forms").then(r => setForms(r.data.forms || [])).catch(() => {});
+    });
   }, [router]);
 
-  const profileUrl = profile?.slug
-    ? `${typeof window !== "undefined" ? window.location.origin : ""}/u/${profile.slug}`
-    : null;
+  const origin     = typeof window !== "undefined" ? window.location.origin : "";
+  const profileUrl = profile?.slug ? `${origin}/u/${profile.slug}` : null;
+  const cardTapUrl = cardUid ? `${origin}/c/${cardUid}` : null;
+
+  function copyCardUrl() {
+    if (!cardTapUrl) return;
+    navigator.clipboard.writeText(cardTapUrl);
+    setCopiedCard(true); setTimeout(() => setCopiedCard(false), 2000);
+  }
+  function copyProfileUrl() {
+    if (!profileUrl) return;
+    navigator.clipboard.writeText(profileUrl);
+    setCopiedProfile(true); setTimeout(() => setCopiedProfile(false), 2000);
+  }
 
   function handleViewProfile() {
     if (profileUrl) window.open(profileUrl, "_blank");
   }
 
   async function handleDownloadQR() {
-    if (!profileUrl) return;
+    const qrData = cardTapUrl || profileUrl;
+    if (!qrData) return;
     const { default: QRCodeStyling } = await import("qr-code-styling");
     const qrColor = customization?.qrFgColor || "#18181B";
     const qr = new QRCodeStyling({
-      width: 400, height: 400, type: "svg", data: profileUrl,
+      width: 400, height: 400, type: "svg", data: qrData,
       margin: 10, backgroundOptions: { color: "#ffffff" },
       ...getQrStyleOptions(customization?.qrStyle || "minimal", qrColor),
     });
@@ -835,11 +893,11 @@ export default function MyCardsPage() {
   }
 
   function handleShare() {
-    if (!profileUrl) return;
+    const shareUrl = cardTapUrl || profileUrl;
+    if (!shareUrl) return;
     if (typeof navigator !== "undefined" && navigator.share) {
-      navigator.share({ title: "My TapMe Profile", url: profileUrl }).catch(() => {});
+      navigator.share({ title: "My TapMe Card", url: shareUrl }).catch(() => {});
     } else {
-      /* Fallback: copy to clipboard if Web Share API is not available */
       handleCopy();
     }
   }
@@ -860,6 +918,25 @@ export default function MyCardsPage() {
 
   function handleLock() {
     /* TODO: Show confirmation dialog, then PATCH /api/cards/:id/lock once NFC card API is implemented */
+  }
+
+  async function saveCardAction() {
+    setSavingAction(true);
+    try {
+      const { default: api } = await import("@/services/api");
+      await api.patch("/nfc-cards/mine/action", {
+        default_action: cardAction,
+        form_id: cardAction === "form" ? selectedFormId : null,
+      });
+      setActionSaved(true);
+      setTimeout(() => setActionSaved(false), 2500);
+    } catch (e) {
+      const msg = e?.response?.data?.message || "Failed to save";
+      setApiError(msg);
+      setTimeout(() => setApiError(""), 3000);
+    } finally {
+      setSavingAction(false);
+    }
   }
 
   if (loading) {
@@ -916,11 +993,125 @@ export default function MyCardsPage() {
                 uploadedBackDesign={uploadedBackDesign}
               />
               <OrderDetailsSection order={latestOrder} />
+
+              {/* Card Links */}
+              <div className="rounded-2xl border border-[#EBEBEB] bg-white p-5">
+                <h3 className="text-[15px] font-bold text-[#111827] mb-4">Your Card Links</h3>
+
+                {/* Card Tap URL */}
+                <div className="mb-4">
+                  <div className="flex items-center gap-2 mb-1.5">
+                    <span className="flex h-5 w-5 items-center justify-center rounded-full text-[10px] font-bold text-white" style={{ background: "#28DC4F" }}>1</span>
+                    <p className="text-[12px] font-semibold text-[#111827]">NFC Card Tap URL</p>
+                  </div>
+                  <p className="text-[11px] text-[#9CA3AF] mb-2 ml-7">This URL is programmed on your physical card chip. Redirects based on your toggle setting.</p>
+                  {cardTapUrl ? (
+                    <div className="flex items-center gap-2 rounded-xl bg-[#F9FAFB] border border-[#E5E7EB] px-3 py-2.5">
+                      <span className="text-[11px] text-[#374151] truncate flex-1 font-mono">{cardTapUrl}</span>
+                      <div className="flex gap-1.5 shrink-0">
+                        <button onClick={copyCardUrl}
+                          className="rounded-lg px-2.5 py-1 text-[11px] font-semibold transition-colors"
+                          style={{ background: copiedCard ? "#28DC4F" : "#111827", color: "#fff" }}>
+                          {copiedCard ? "✓ Copied" : "Copy"}
+                        </button>
+                        <button onClick={() => window.open(cardTapUrl, "_blank")}
+                          className="rounded-lg border border-[#E5E7EB] px-2.5 py-1 text-[11px] font-medium text-[#374151] hover:bg-white">
+                          Open →
+                        </button>
+                      </div>
+                    </div>
+                  ) : (
+                    <p className="ml-7 text-[11px] text-[#9CA3AF]">Card not assigned yet</p>
+                  )}
+                  {cardTapUrl && (
+                    <p className="mt-1.5 ml-7 text-[11px]" style={{ color: cardAction === "form" ? "#16A34A" : "#2563EB" }}>
+                      Currently redirects to: <strong>{cardAction === "form" ? "Lead Form ✅" : "Digital Profile ✅"}</strong>
+                    </p>
+                  )}
+                </div>
+
+                {/* Profile URL */}
+                <div>
+                  <div className="flex items-center gap-2 mb-1.5">
+                    <span className="flex h-5 w-5 items-center justify-center rounded-full text-[10px] font-bold text-white" style={{ background: "#2563EB" }}>2</span>
+                    <p className="text-[12px] font-semibold text-[#111827]">Digital Profile URL</p>
+                  </div>
+                  <p className="text-[11px] text-[#9CA3AF] mb-2 ml-7">Direct link to your profile. Always shows your digital profile — not affected by toggle.</p>
+                  {profileUrl ? (
+                    <div className="flex items-center gap-2 rounded-xl bg-[#F9FAFB] border border-[#E5E7EB] px-3 py-2.5">
+                      <span className="text-[11px] text-[#374151] truncate flex-1 font-mono">{profileUrl}</span>
+                      <div className="flex gap-1.5 shrink-0">
+                        <button onClick={copyProfileUrl}
+                          className="rounded-lg px-2.5 py-1 text-[11px] font-semibold transition-colors"
+                          style={{ background: copiedProfile ? "#28DC4F" : "#111827", color: "#fff" }}>
+                          {copiedProfile ? "✓ Copied" : "Copy"}
+                        </button>
+                        <button onClick={() => window.open(profileUrl, "_blank")}
+                          className="rounded-lg border border-[#E5E7EB] px-2.5 py-1 text-[11px] font-medium text-[#374151] hover:bg-white">
+                          Open →
+                        </button>
+                      </div>
+                    </div>
+                  ) : (
+                    <p className="ml-7 text-[11px] text-[#9CA3AF]">Complete your profile to get this link</p>
+                  )}
+                </div>
+              </div>
+
+              {/* Card Tap Mode */}
+              <div className="rounded-2xl border border-[#EBEBEB] bg-white p-5">
+                <h3 className="text-[15px] font-bold text-[#111827] mb-1">When Someone Taps Your Card</h3>
+                <p className="text-[12px] text-[#9CA3AF] mb-4">Choose what opens when someone scans your NFC card</p>
+
+                <div className="flex flex-col gap-2 mb-4">
+                  {[
+                    { value: "profile", label: "Digital Profile", desc: "Show your contact info and social links" },
+                    { value: "form",    label: "Lead Form",       desc: "Collect their name, email and message" },
+                  ].map(opt => (
+                    <button key={opt.value} type="button" onClick={() => setCardAction(opt.value)}
+                      className="flex items-start gap-3 rounded-xl border p-4 text-left transition-all"
+                      style={{ borderColor: cardAction === opt.value ? "#28DC4F" : "#EBEBEB", background: cardAction === opt.value ? "#F0FFF4" : "#fff" }}>
+                      <div className="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full border-2 transition-colors"
+                        style={{ borderColor: cardAction === opt.value ? "#28DC4F" : "#D1D5DB" }}>
+                        {cardAction === opt.value && <div className="h-2.5 w-2.5 rounded-full bg-[#28DC4F]" />}
+                      </div>
+                      <div>
+                        <p className="text-[13px] font-semibold text-[#111827]">{opt.label}</p>
+                        <p className="text-[11px] text-[#9CA3AF]">{opt.desc}</p>
+                      </div>
+                    </button>
+                  ))}
+                </div>
+
+                {cardAction === "form" && (
+                  <div className="mb-4">
+                    <label className="text-[12px] font-medium text-[#374151] block mb-1.5">Select Form</label>
+                    {forms.length === 0 ? (
+                      <p className="text-[12px] text-[#9CA3AF]">
+                        No forms yet. <a href="/dashboard/forms" className="text-[#28DC4F] font-medium">Create one →</a>
+                      </p>
+                    ) : (
+                      <select value={selectedFormId || ""} onChange={e => setSelectedFormId(e.target.value)}
+                        className="w-full rounded-xl border border-[#EBEBEB] bg-[#F9FAFB] px-3 py-2.5 text-[13px] text-[#111827] outline-none focus:border-[#28DC4F]">
+                        <option value="">Select a form…</option>
+                        {forms.map(f => <option key={f.id} value={f.id}>{f.title}</option>)}
+                      </select>
+                    )}
+                  </div>
+                )}
+
+                <button onClick={saveCardAction} disabled={savingAction || (cardAction === "form" && !selectedFormId)}
+                  className="w-full rounded-xl py-3 text-[13px] font-semibold disabled:opacity-50 transition-colors"
+                  style={{ background: actionSaved ? "#16A34A" : "#28DC4F", color: actionSaved ? "#fff" : "#000" }}>
+                  {savingAction ? "Saving…" : actionSaved ? "✓ Saved!" : "Save Setting"}
+                </button>
+              </div>
             </div>
 
             {/* ── RIGHT column ── */}
             <ActionsSection
               profileUrl={profileUrl}
+              cardTapUrl={cardTapUrl}
               onViewProfile={handleViewProfile}
               onDownloadQR={handleDownloadQR}
               onShare={handleShare}

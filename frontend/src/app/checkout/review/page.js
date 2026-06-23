@@ -99,6 +99,9 @@ export default function CheckoutReviewPage() {
   const [submitting,   setSubmitting]   = useState(false);
   const [apiError,     setApiError]     = useState("");
   const [hydrated,     setHydrated]     = useState(false);
+  const [addPro,       setAddPro]       = useState(false);
+
+  const PRO_PRICE = 999;
 
   useEffect(() => {
     if (!authService.isLoggedIn()) {
@@ -121,7 +124,7 @@ export default function CheckoutReviewPage() {
 
   const subtotal = Number(checkoutItem?.rawSalePrice ?? checkoutItem?.rawPrice ?? 0);
   const shipping = 0;
-  const total    = subtotal + shipping;
+  const total    = subtotal + shipping + (addPro ? PRO_PRICE : 0);
 
   // No item or address → redirect back to fix
   const missingItem    = hydrated && !checkoutItem;
@@ -159,6 +162,7 @@ export default function CheckoutReviewPage() {
         total_amount: total,
         shipping_address,
         card_customization,
+        pro_plan:     addPro,
       });
 
       localStorage.setItem("currentOrder", JSON.stringify(result.data?.order ?? result));
@@ -276,6 +280,78 @@ export default function CheckoutReviewPage() {
                 )}
               </div>
 
+              {/* ── Pro Plan Add-on ── */}
+              <div className="rounded-2xl overflow-hidden shadow-sm" style={{ border: addPro ? "2px solid #28DC4F" : "2px solid #E5E7EB" }}>
+                {/* Header banner */}
+                <div style={{ background: addPro ? "#28DC4F" : "#18181B", padding: "14px 20px" }}
+                  className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <span style={{ fontSize: 16 }}>⚡</span>
+                    <p className="text-[13px] font-bold text-white">Upgrade to Pro</p>
+                    <span className="rounded-full px-2 py-0.5 text-[10px] font-bold"
+                      style={{ background: addPro ? "rgba(0,0,0,0.15)" : "#28DC4F", color: addPro ? "#000" : "#000" }}>
+                      OPTIONAL
+                    </span>
+                  </div>
+                  <p className="text-[15px] font-black text-white">₹999<span className="text-[11px] font-normal opacity-80">/year</span></p>
+                </div>
+
+                {/* Body */}
+                <div className="bg-white p-5">
+                  <p className="mb-4 text-[13px] font-semibold text-[#111827]">
+                    Turn your NFC card into a lead machine
+                  </p>
+
+                  <div className="grid grid-cols-2 gap-3 mb-4">
+                    {[
+                      { icon: "🔥", title: "AI Lead Scoring", desc: "Hot / Warm / Cold priority" },
+                      { icon: "📧", title: "Email Follow-up", desc: "One-click AI reply" },
+                      { icon: "💬", title: "WhatsApp",        desc: "Pre-filled message" },
+                      { icon: "📊", title: "Weekly Report",   desc: "AI insights & trends" },
+                      { icon: "🎯", title: "Intent Detection", desc: "Know their purpose" },
+                      { icon: "🔔", title: "Lead Alerts",     desc: "Email notifications" },
+                    ].map(f => (
+                      <div key={f.title} className="flex items-start gap-2 rounded-xl p-2.5"
+                        style={{ background: addPro ? "#F0FFF4" : "#F9FAFB" }}>
+                        <span style={{ fontSize: 15, lineHeight: 1 }}>{f.icon}</span>
+                        <div>
+                          <p className="text-[11px] font-semibold text-[#111827]">{f.title}</p>
+                          <p className="text-[10px] text-[#9CA3AF]">{f.desc}</p>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+
+                  {/* Toggle button */}
+                  <button
+                    type="button"
+                    onClick={() => setAddPro(v => !v)}
+                    className="flex w-full items-center justify-between rounded-xl px-4 py-3 transition-all"
+                    style={{
+                      background: addPro ? "#28DC4F" : "#F3F4F6",
+                      border: `1.5px solid ${addPro ? "#28DC4F" : "#E5E7EB"}`,
+                    }}
+                  >
+                    <div className="flex items-center gap-2">
+                      <div className="flex h-5 w-5 items-center justify-center rounded"
+                        style={{ background: addPro ? "rgba(0,0,0,0.15)" : "#fff", border: addPro ? "none" : "2px solid #D1D5DB" }}>
+                        {addPro && (
+                          <svg width="11" height="11" viewBox="0 0 14 14" fill="none">
+                            <path d="M2.5 7L5.5 10L11.5 4" stroke="black" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"/>
+                          </svg>
+                        )}
+                      </div>
+                      <span className="text-[13px] font-semibold" style={{ color: addPro ? "#000" : "#374151" }}>
+                        {addPro ? "Pro Plan added ✓" : "Add Pro Plan to my order"}
+                      </span>
+                    </div>
+                    <span className="text-[12px] font-bold" style={{ color: addPro ? "#000" : "#28DC4F" }}>
+                      {addPro ? "−₹999/yr" : "+₹999/yr"}
+                    </span>
+                  </button>
+                </div>
+              </div>
+
               {/* Delivery Address */}
               {address && (
                 <div className="rounded-2xl border border-[#F0F0F0] bg-white p-5 shadow-sm">
@@ -306,7 +382,8 @@ export default function CheckoutReviewPage() {
             </div>
 
             {/* ── RIGHT: Price Summary + CTA ── */}
-            <div className="w-full lg:w-[380px] lg:shrink-0">
+            <div className="w-full lg:w-[380px] lg:shrink-0 flex flex-col gap-4">
+
               <div className="rounded-2xl border border-[#F0F0F0] bg-white p-5 shadow-sm">
                 <h2 className="mb-5 text-[16px] font-bold text-[#111827]">Price Details</h2>
 
@@ -321,6 +398,12 @@ export default function CheckoutReviewPage() {
                       ? <span className="text-[14px] font-semibold text-[#28DC4F]">FREE</span>
                       : <span className="text-[14px] font-medium text-[#111827]">₹{shipping}</span>}
                   </div>
+                  {addPro && (
+                    <div className="flex items-center justify-between">
+                      <span className="text-[14px] text-[#6D6D6D]">Pro Plan (1 year)</span>
+                      <span className="text-[14px] font-medium text-[#28DC4F]">+{formatINR(PRO_PRICE)}</span>
+                    </div>
+                  )}
                 </div>
 
                 <div className="my-5 h-px bg-[#F4F4F4]" />

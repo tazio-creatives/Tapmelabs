@@ -246,6 +246,7 @@ const BACK_DESIGN_OPTIONS = [
 
 const QR_COLORS = [
   { id: "black",    label: "Black",       color: "#18181B" },
+  { id: "white",    label: "White",       color: "#FFFFFF" },
   { id: "navy",     label: "Navy Blue",   color: "#1B2B4B" },
   { id: "forest",   label: "Forest",      color: "#0D2B1B" },
   { id: "burgundy", label: "Burgundy",    color: "#3D0C11" },
@@ -459,41 +460,48 @@ function StarRating({ rating }) {
 /* ─── logo upload zone ───────────────────────────────────────── */
 
 function UploadZone({ file, onChange }) {
-  const [dragOver, setDragOver] = useState(false);
-  const ref = useRef(null);
+  const inputRef = useRef(null);
+
+  function handleClick() {
+    // Modern File System Access API — opens picker in foreground on macOS
+    if (typeof window !== "undefined" && window.showOpenFilePicker) {
+      window.showOpenFilePicker({
+        multiple: false,
+        types: [{ description: "Images", accept: { "image/png": [".png"], "image/svg+xml": [".svg"] } }],
+      })
+        .then(([handle]) => handle.getFile())
+        .then((f) => onChange(f))
+        .catch(() => {}); // user cancelled
+    } else {
+      inputRef.current?.click();
+    }
+  }
 
   return (
-    <div className="flex flex-col gap-1.5">
-      <label className="text-[13px] font-medium text-[#374151]">Upload Logo</label>
-      <div
-        onDragOver={(e) => { e.preventDefault(); setDragOver(true); }}
-        onDragLeave={() => setDragOver(false)}
-        onDrop={(e) => {
-          e.preventDefault();
-          setDragOver(false);
-          const f = e.dataTransfer.files[0];
-          if (f) onChange(f);
-        }}
-        onClick={() => ref.current?.click()}
-        className="flex cursor-pointer flex-col items-center justify-center gap-1.5 rounded-xl py-5 transition-colors"
+    <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
+      <span style={{ fontSize: 13, fontWeight: 500, color: "#374151" }}>Upload Logo</span>
+      <input
+        ref={inputRef}
+        type="file"
+        accept="image/png,image/svg+xml,.png,.svg"
+        style={{ display: "none" }}
+        onChange={(e) => { const f = e.target.files?.[0]; if (f) onChange(f); e.target.value = ""; }}
+      />
+      <button
+        type="button"
+        onClick={handleClick}
         style={{
-          background: dragOver ? "#F0FFF4" : "#F9FAFB",
-          border: `1.5px dashed ${dragOver ? "#28DC4F" : "#D1D5DB"}`,
+          display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center",
+          gap: 6, borderRadius: 12, padding: "20px 16px", cursor: "pointer", width: "100%",
+          background: "#F9FAFB", border: "1.5px dashed #D1D5DB", fontFamily: "inherit",
         }}
       >
-        <div className="text-[#9CA3AF]"><UploadIcon /></div>
-        <p className="text-[13px] font-medium text-[#374151]">
+        <div style={{ color: "#9CA3AF" }}><UploadIcon /></div>
+        <p style={{ fontSize: 13, fontWeight: 500, color: "#374151", margin: 0 }}>
           {file ? file.name : "Upload Logo"}
         </p>
-        <p className="text-[11px] text-[#9CA3AF]">PNG or SVG</p>
-        <input
-          ref={ref}
-          type="file"
-          accept=".png,.svg"
-          className="hidden"
-          onChange={(e) => onChange(e.target.files?.[0] ?? null)}
-        />
-      </div>
+        <p style={{ fontSize: 11, color: "#9CA3AF", margin: 0 }}>PNG or SVG</p>
+      </button>
     </div>
   );
 }
@@ -502,7 +510,6 @@ function UploadZone({ file, onChange }) {
 
 function DesignUploadZone({ label, file, onChange, preview, required = false, error }) {
   const [dragOver, setDragOver] = useState(false);
-  const ref = useRef(null);
   const isImage = file && (
     file.type?.startsWith("image/") ||
     /\.(png|jpg|jpeg|svg)$/i.test(file.name ?? "")
@@ -583,6 +590,15 @@ function DesignUploadZone({ label, file, onChange, preview, required = false, er
           : <span className="ml-1 text-[11px] text-[#9CA3AF]">(optional)</span>}
       </div>
       <div
+        onClick={() => {
+          const input = document.createElement("input");
+          input.type   = "file";
+          input.accept = "image/jpeg,image/png,application/pdf,image/svg+xml,.jpg,.jpeg,.png,.pdf,.svg";
+          input.style.cssText = "position:fixed;top:-999px;left:-999px;opacity:0;";
+          document.body.appendChild(input);
+          input.onchange = (e) => { onChange(e.target.files?.[0] ?? null); document.body.removeChild(input); };
+          input.click();
+        }}
         onDragOver={(e) => { e.preventDefault(); setDragOver(true); }}
         onDragLeave={() => setDragOver(false)}
         onDrop={(e) => {
@@ -591,26 +607,18 @@ function DesignUploadZone({ label, file, onChange, preview, required = false, er
           const f = e.dataTransfer.files[0];
           if (f) onChange(f);
         }}
-        onClick={() => ref.current?.click()}
-        className="flex cursor-pointer flex-col items-center justify-center gap-2 rounded-xl py-7 transition-colors"
         style={{
+          display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center",
+          gap: 8, borderRadius: 12, padding: "28px 16px", cursor: "pointer",
           background: dragOver ? "#F0FFF4" : "#F9FAFB",
           border: `1.5px dashed ${error ? "#EF4444" : dragOver ? "#28DC4F" : "#D1D5DB"}`,
+          transition: "border-color 0.15s, background 0.15s",
+          userSelect: "none",
         }}
       >
-        <div className="text-[#9CA3AF]"><UploadIcon /></div>
-        <p className="text-[13px] font-medium text-[#374151]">Click or drag to upload</p>
-        <p className="text-[11px] text-[#9CA3AF]">JPG, PNG, PDF, SVG · Max 20 MB</p>
-        <input
-          ref={ref}
-          type="file"
-          accept=".jpg,.jpeg,.png,.pdf,.svg,image/jpeg,image/png,application/pdf,image/svg+xml"
-          className="hidden"
-          onChange={(e) => {
-            onChange(e.target.files?.[0] ?? null);
-            e.target.value = "";
-          }}
-        />
+        <div style={{ color: "#9CA3AF" }}><UploadIcon /></div>
+        <p style={{ fontSize: 13, fontWeight: 500, color: "#374151", margin: 0 }}>Click or drag to upload</p>
+        <p style={{ fontSize: 11, color: "#9CA3AF", margin: 0 }}>JPG, PNG, PDF, SVG · Max 20 MB</p>
       </div>
       {error && <p className="text-[12px] text-[#EF4444]">{error}</p>}
     </div>
@@ -641,6 +649,15 @@ function ExpandableDescription({ text, className = "" }) {
       </button>
     </div>
   );
+}
+
+/* ─── light colour detection ─────────────────────────────────── */
+function isLightColor(hex) {
+  if (!hex?.startsWith("#")) return false;
+  const r = parseInt(hex.slice(1, 3), 16);
+  const g = parseInt(hex.slice(3, 5), 16);
+  const b = parseInt(hex.slice(5, 7), 16);
+  return (r * 299 + g * 587 + b * 114) / 1000 > 200;
 }
 
 /* ─── custom colour swatch ───────────────────────────────────── */
@@ -881,6 +898,14 @@ export default function ProductDetail({ product }) {
     try {
       localStorage.setItem("checkoutItem", JSON.stringify(checkoutItem));
     } catch { }
+
+    // Reseller mode — bypass customer checkout
+    const resellerToken = sessionStorage.getItem("resellerToken");
+    const resellerMode  = sessionStorage.getItem("resellerMode");
+    if (resellerToken && resellerMode === "1") {
+      router.push("/checkout/reseller");
+      return;
+    }
 
     const token = localStorage.getItem("customerToken");
     if (token) {
@@ -1474,6 +1499,7 @@ export default function ProductDetail({ product }) {
                           />
                           {FONT_COLORS.map((fc) => {
                             const selected = fontColor.toLowerCase() === fc.color.toLowerCase();
+                            const light = isLightColor(fc.color);
                             return (
                               <button
                                 key={fc.id}
@@ -1485,8 +1511,10 @@ export default function ProductDetail({ product }) {
                                   width: 36, height: 36,
                                   background: fc.color,
                                   boxShadow: selected
-                                    ? `0 0 0 2.5px white, 0 0 0 4.5px ${fc.color}`
-                                    : "0 0 0 1px rgba(0,0,0,0.12)",
+                                    ? `0 0 0 2.5px white, 0 0 0 4.5px ${light ? "#9CA3AF" : fc.color}`
+                                    : "none",
+                                  outline: light ? "1.5px dashed #C4C9D4" : "1px solid rgba(0,0,0,0.12)",
+                                  outlineOffset: light && selected ? "3px" : "0px",
                                 }}
                               />
                             );
@@ -1567,6 +1595,7 @@ export default function ProductDetail({ product }) {
                                 />
                                 {QR_COLORS.map((c) => {
                                   const selected = frontQrColor.toLowerCase() === c.color.toLowerCase();
+                                  const light = isLightColor(c.color);
                                   return (
                                     <button
                                       key={c.id}
@@ -1578,8 +1607,10 @@ export default function ProductDetail({ product }) {
                                         width: 28, height: 28,
                                         background: c.color,
                                         boxShadow: selected
-                                          ? `0 0 0 2px white, 0 0 0 4px ${c.color}`
-                                          : "0 0 0 1px rgba(0,0,0,0.1)",
+                                          ? `0 0 0 2px white, 0 0 0 4px ${light ? "#9CA3AF" : c.color}`
+                                          : "none",
+                                        outline: light ? "1.5px dashed #C4C9D4" : "1px solid rgba(0,0,0,0.1)",
+                                        outlineOffset: light && selected ? "3px" : "0px",
                                       }}
                                     />
                                   );
@@ -1654,141 +1685,116 @@ export default function ProductDetail({ product }) {
                       </div>
                     </div>
 
-                    <div className="h-px bg-[#F0F0F0]" />
-
-                    <div className="flex flex-col gap-3">
-                      <SectionLabel>Back Content</SectionLabel>
-                      <div className="flex flex-col gap-1 overflow-hidden rounded-xl bg-[#F9FAFB]" style={{ border: "1px solid #F0F0F0" }}>
-                        {[
-                          { value: "logo", label: "Logo" },
-                          { value: "qr",   label: "QR Code" },
-                        ].map(({ value, label }) => (
-                          <button
-                            key={value}
-                            onClick={() => setBackContent(value)}
-                            className="flex items-center gap-3 px-4 py-3 transition-colors"
-                            style={{ background: backContent === value ? "#fff" : "transparent" }}
-                          >
-                            <div
-                              className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full border-2 transition-colors"
-                              style={{ borderColor: backContent === value ? "#28DC4F" : "#D1D5DB" }}
-                            >
-                              {backContent === value && <div className="h-2.5 w-2.5 rounded-full bg-[#28DC4F]" />}
-                            </div>
-                            <span className="text-[14px] text-[#374151]">{label}</span>
-                          </button>
-                        ))}
-                      </div>
-
-                      {backContent === "qr" && (
-                        <div className="flex flex-col gap-3">
-                          {/* Colour + Position side by side */}
-                          <div className="flex gap-3 items-start">
-                            <div className="flex flex-col gap-2 flex-1">
-                              <p className="text-[12px] font-medium text-[#374151]">QR Colour</p>
-                              <div className="flex gap-2 flex-wrap">
-                                <CustomColorSwatch
-                                  value={qrFgColor}
-                                  onChange={setQrFgColor}
-                                  presets={QR_COLORS.map((c) => c.color)}
-                                />
-                                {QR_COLORS.map((c) => {
-                                  const selected = qrFgColor.toLowerCase() === c.color.toLowerCase();
-                                  return (
-                                    <button
-                                      key={c.id}
-                                      title={c.label}
-                                      onClick={() => setQrFgColor(c.color)}
-                                      className="shrink-0 rounded-full transition-all"
-                                      style={{
-                                        width: 28, height: 28,
-                                        background: c.color,
-                                        boxShadow: selected
-                                          ? `0 0 0 2px white, 0 0 0 4px ${c.color}`
-                                          : "0 0 0 1px rgba(0,0,0,0.1)",
-                                      }}
-                                    />
-                                  );
-                                })}
-                              </div>
-                            </div>
-                            <div className="flex flex-col items-center gap-1.5 shrink-0">
-                              <p className="text-[11px] font-medium text-[#9CA3AF]">Position</p>
-                              <LogoPlacementPicker value={backLogoPlacement} onChange={setBackLogoPlacement} />
-                            </div>
-                          </div>
-
-                          {/* QR Style */}
-                          <div className="flex flex-col gap-2">
-                            <p className="text-[12px] font-medium text-[#374151]">QR Style</p>
-                            <div className="grid grid-cols-5 gap-1.5">
-                              {QR_STYLES.map((s) => {
-                                const active = qrStyle === s.id;
+                    {/* QR options */}
+                    {backContent === "qr" && (
+                      <div className="flex flex-col gap-3">
+                        <div className="flex gap-3 items-start">
+                          <div className="flex flex-col gap-2 flex-1">
+                            <p className="text-[12px] font-medium text-[#374151]">QR Colour</p>
+                            <div className="flex gap-2 flex-wrap">
+                              <CustomColorSwatch
+                                value={qrFgColor}
+                                onChange={setQrFgColor}
+                                presets={QR_COLORS.map((c) => c.color)}
+                              />
+                              {QR_COLORS.map((c) => {
+                                const selected = qrFgColor.toLowerCase() === c.color.toLowerCase();
+                                const light = isLightColor(c.color);
                                 return (
                                   <button
-                                    key={s.id}
-                                    type="button"
-                                    onClick={() => setQrStyle(s.id)}
-                                    className="flex flex-col items-center gap-1.5 rounded-xl py-2 transition-all"
-                                    style={{ background: active ? "#18181B" : "#F9FAFB", border: active ? "1.5px solid #28DC4F" : "1.5px solid #F0F0F0" }}
-                                  >
-                                    <div className="flex items-center justify-center rounded-md bg-white p-1.5" style={{ width: 36, height: 36 }}>
-                                      <QrSvg color="#18181B" qrStyle={s.id} />
-                                    </div>
-                                    <span className="text-[10px] font-semibold" style={{ color: active ? "#28DC4F" : "#6B7280" }}>{s.label}</span>
-                                  </button>
+                                    key={c.id}
+                                    title={c.label}
+                                    onClick={() => setQrFgColor(c.color)}
+                                    className="shrink-0 rounded-full transition-all"
+                                    style={{
+                                      width: 28, height: 28,
+                                      background: c.color,
+                                      boxShadow: selected
+                                        ? `0 0 0 2px white, 0 0 0 4px ${light ? "#9CA3AF" : c.color}`
+                                        : "none",
+                                      outline: light ? "1.5px dashed #C4C9D4" : "1px solid rgba(0,0,0,0.1)",
+                                      outlineOffset: light && selected ? "3px" : "0px",
+                                    }}
+                                  />
                                 );
                               })}
                             </div>
                           </div>
-
-                          {/* QR Size */}
-                          <div className="flex items-center gap-3">
-                            <span className="shrink-0 text-[12px] font-medium text-[#374151]">QR Size</span>
-                            <input
-                              type="range" min={20} max={80} value={backLogoSize}
-                              onChange={(e) => setBackLogoSize(Number(e.target.value))}
-                              className="flex-1 accent-[#28DC4F]"
-                            />
-                            <span className="w-8 text-right text-[12px] text-[#9CA3AF]">{backLogoSize}</span>
+                          <div className="flex flex-col items-center gap-1.5 shrink-0">
+                            <p className="text-[11px] font-medium text-[#9CA3AF]">Position</p>
+                            <LogoPlacementPicker value={backLogoPlacement} onChange={setBackLogoPlacement} />
                           </div>
                         </div>
-                      )}
 
-                      {backContent === "logo" && (
-                        <>
-                          <UploadZone file={backLogoFile} onChange={setBackLogoFile} />
-                          {backLogoDataUrl && (
-                            <div className="flex flex-col gap-3">
-                              <div className="flex items-center gap-3">
-                                {/* eslint-disable-next-line @next/next/no-img-element */}
-                                <img
-                                  src={backLogoDataUrl}
-                                  alt="Logo preview"
-                                  className="rounded-lg border border-[#F0F0F0]"
-                                  style={{ height: "44px", maxWidth: "72px", objectFit: "contain" }}
-                                />
+                        <div className="flex flex-col gap-2">
+                          <p className="text-[12px] font-medium text-[#374151]">QR Style</p>
+                          <div className="grid grid-cols-5 gap-1.5">
+                            {QR_STYLES.map((s) => {
+                              const active = qrStyle === s.id;
+                              return (
                                 <button
-                                  onClick={() => setBackLogoFile(null)}
-                                  className="rounded-lg border border-[#F0F0F0] px-3 py-1.5 text-[12px] font-medium text-[#EF4444]"
+                                  key={s.id}
+                                  type="button"
+                                  onClick={() => setQrStyle(s.id)}
+                                  className="flex flex-col items-center gap-1.5 rounded-xl py-2 transition-all"
+                                  style={{ background: active ? "#18181B" : "#F9FAFB", border: active ? "1.5px solid #28DC4F" : "1.5px solid #F0F0F0" }}
                                 >
-                                  Remove
+                                  <div className="flex items-center justify-center rounded-md bg-white p-1.5" style={{ width: 36, height: 36 }}>
+                                    <QrSvg color="#18181B" qrStyle={s.id} />
+                                  </div>
+                                  <span className="text-[10px] font-semibold" style={{ color: active ? "#28DC4F" : "#6B7280" }}>{s.label}</span>
                                 </button>
-                              </div>
-                              <div className="flex items-center gap-3">
-                                <span className="shrink-0 text-[13px] font-medium text-[#374151]">Logo Size</span>
-                                <input
-                                  type="range" min={20} max={80} value={backLogoSize}
-                                  onChange={(e) => setBackLogoSize(Number(e.target.value))}
-                                  className="flex-1 accent-[#28DC4F]"
-                                />
-                                <span className="w-8 text-right text-[12px] text-[#9CA3AF]">{backLogoSize}</span>
-                              </div>
+                              );
+                            })}
+                          </div>
+                        </div>
+
+                        <div className="flex items-center gap-3">
+                          <span className="shrink-0 text-[12px] font-medium text-[#374151]">QR Size</span>
+                          <input
+                            type="range" min={20} max={80} value={backLogoSize}
+                            onChange={(e) => setBackLogoSize(Number(e.target.value))}
+                            className="flex-1 accent-[#28DC4F]"
+                          />
+                          <span className="w-8 text-right text-[12px] text-[#9CA3AF]">{backLogoSize}</span>
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Logo upload */}
+                    {backContent === "logo" && (
+                      <>
+                        <UploadZone file={backLogoFile} onChange={setBackLogoFile} />
+                        {backLogoDataUrl && (
+                          <div className="flex flex-col gap-3">
+                            <div className="flex items-center gap-3">
+                              {/* eslint-disable-next-line @next/next/no-img-element */}
+                              <img
+                                src={backLogoDataUrl}
+                                alt="Logo preview"
+                                className="rounded-lg border border-[#F0F0F0]"
+                                style={{ height: "44px", maxWidth: "72px", objectFit: "contain" }}
+                              />
+                              <button
+                                onClick={() => setBackLogoFile(null)}
+                                className="rounded-lg border border-[#F0F0F0] px-3 py-1.5 text-[12px] font-medium text-[#EF4444]"
+                              >
+                                Remove
+                              </button>
                             </div>
-                          )}
-                        </>
-                      )}
-                    </div>
+                            <div className="flex items-center gap-3">
+                              <span className="shrink-0 text-[13px] font-medium text-[#374151]">Logo Size</span>
+                              <input
+                                type="range" min={20} max={80} value={backLogoSize}
+                                onChange={(e) => setBackLogoSize(Number(e.target.value))}
+                                className="flex-1 accent-[#28DC4F]"
+                              />
+                              <span className="w-8 text-right text-[12px] text-[#9CA3AF]">{backLogoSize}</span>
+                            </div>
+                          </div>
+                        )}
+                      </>
+                    )}
                   </div>
                 )}
               </div>

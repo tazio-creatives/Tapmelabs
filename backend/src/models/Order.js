@@ -16,7 +16,7 @@ const Order = sequelize.define(
     },
     user_id: {
       type: DataTypes.UUID,
-      allowNull: false,
+      allowNull: true,
     },
     product_id: {
       type: DataTypes.UUID,
@@ -57,6 +57,10 @@ const Order = sequelize.define(
       type: DataTypes.JSON,
       allowNull: true,
       defaultValue: null,
+    },
+    pro_plan: {
+      type: DataTypes.BOOLEAN,
+      defaultValue: false,
     },
   },
   {

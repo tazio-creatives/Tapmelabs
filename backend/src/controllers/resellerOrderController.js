@@ -1,5 +1,26 @@
+const crypto = require("crypto");
 const { ResellerOrder, Order, Product, Reseller, CommissionLedger } = require("../models");
 const { Op } = require("sequelize");
+const { sendResellerCustomerSetupEmail } = require("../utils/mailer");
+
+const FRONTEND_URL = process.env.FRONTEND_URL || "http://localhost:3000";
+
+async function issueSetupToken(ro, product) {
+  if (!ro.customer_email) return;
+  const token   = crypto.randomBytes(32).toString("hex");
+  const expires = new Date(Date.now() + 48 * 60 * 60 * 1000);
+  await ro.update({ customer_setup_token: token, customer_setup_token_expires_at: expires });
+  const setupUrl = `${FRONTEND_URL}/reseller/customer-setup?token=${token}`;
+  try {
+    await sendResellerCustomerSetupEmail(ro.customer_email, {
+      customerName: ro.customer_name || "Customer",
+      productName:  product?.name || "NFC Business Card",
+      setupUrl,
+    });
+  } catch (e) {
+    console.error("Setup email failed:", e.message);
+  }
+}
 
 // GET /api/reseller/orders
 async function list(req, res) {
@@ -77,16 +98,19 @@ async function create(req, res) {
     if (applyCommission >= price)     paymentMethod = "commission";
     else if (applyCommission > 0)     paymentMethod = "mixed";
 
-    // Create underlying order
+    // Generate unique order number
+    const orderNumber = `RES-${Date.now()}-${Math.floor(Math.random() * 1000)}`;
+
+    // Create underlying order — user_id is null for reseller orders
     const order = await Order.create({
+      order_number:     orderNumber,
       user_id:          null,
       product_id,
-      amount:           price,
+      total_amount:     price,
       payment_status:   razorpayAmount === 0 ? "paid" : "pending",
       order_status:     "processing",
       card_customization: card_customization || {},
       shipping_address:   shipping_address || {},
-      source:           "reseller",
     });
 
     const ro = await ResellerOrder.create({
@@ -123,6 +147,8 @@ async function create(req, res) {
         balance_after: newBalance,
         note: `Commission earned on order #${order.id.slice(0, 8)}`,
       });
+      // Send profile setup email for commission-only orders (no Razorpay step)
+      await issueSetupToken(ro, product);
     }
 
     res.status(201).json({ reseller_order: ro, order });

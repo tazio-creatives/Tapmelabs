@@ -3,6 +3,7 @@ const razorpay = require("../config/razorpay");
 const Order    = require("../models/Order");
 const User     = require("../models/User");
 const Product  = require("../models/Product");
+const { Subscription, NfcCard } = require("../models");
 const { sendPaymentSuccessEmail } = require("../utils/mailer");
 
 // ── POST /api/payments/create-razorpay-order ──────────────────────────────────
@@ -94,6 +95,42 @@ async function verifyRazorpayPayment(req, res, next) {
       payment_id:     razorpay_payment_id,
     });
 
+    // Activate Pro subscription if order included pro_plan
+    if (order.pro_plan && order.user_id) {
+      try {
+        const existing = await Subscription.findOne({ where: { user_id: order.user_id, status: "active" } });
+        if (!existing) {
+          const expiresAt = new Date();
+          expiresAt.setFullYear(expiresAt.getFullYear() + 1);
+          await Subscription.create({
+            user_id:    order.user_id,
+            plan:       "pro",
+            status:     "active",
+            starts_at:  new Date(),
+            expires_at: expiresAt,
+          });
+        }
+      } catch (e) { console.error("Pro activation failed:", e.message); }
+    }
+
+    // Auto-assign NFC card on payment success (if not already assigned)
+    if (order.user_id) {
+      try {
+        const existingCard = await NfcCard.findOne({ where: { user_id: order.user_id } });
+        if (!existingCard) {
+          // Generate a system UID — admin will update with real chip UID when shipping
+          const systemUid = `TML-${order.order_number}-${Date.now().toString(36).toUpperCase()}`;
+          await NfcCard.create({
+            user_id:        order.user_id,
+            card_uid:       systemUid,
+            status:         "active",
+            default_action: "profile",
+          });
+          console.log(`[payment] NFC card auto-created for user ${order.user_id}: ${systemUid}`);
+        }
+      } catch (e) { console.error("NFC card auto-create failed:", e.message); }
+    }
+
     // Send confirmation email — fire-and-forget so a mail failure never blocks the response
     try {
       const [user, product] = await Promise.all([
@@ -108,6 +145,7 @@ async function verifyRazorpayPayment(req, res, next) {
           amount:          order.total_amount,
           productName:     product?.name ?? null,
           shippingAddress: order.shipping_address,
+          proPlan:         !!order.pro_plan,
         }).catch(() => {});
       }
     } catch {}

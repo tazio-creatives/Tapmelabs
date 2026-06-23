@@ -232,6 +232,61 @@ function ChangePasswordSection() {
   );
 }
 
+/* ─── notification settings ─────────────────────────────────────────────── */
+
+function NotificationSettings() {
+  const OPTS = [
+    { key: "batch",  label: "Every batch",  desc: "Email me every time new leads are scored (up to hourly)" },
+    { key: "daily",  label: "Daily digest", desc: "One summary email per day with all scored leads" },
+    { key: "hot",    label: "Hot leads only", desc: "Only notify me when a 🔥 HOT lead is scored" },
+    { key: "off",    label: "Off",          desc: "No lead scoring emails" },
+  ];
+  const [pref,    setPref]    = useState("daily");
+  const [saved,   setSaved]   = useState(false);
+
+  function save() {
+    if (typeof window !== "undefined") {
+      localStorage.setItem("leadNotifPref", pref);
+    }
+    setSaved(true);
+    setTimeout(() => setSaved(false), 2000);
+  }
+
+  // Load preference
+  useState(() => {
+    if (typeof window !== "undefined") {
+      setPref(localStorage.getItem("leadNotifPref") || "daily");
+    }
+  });
+
+  return (
+    <SectionCard title="Lead Notifications">
+      <p className="mb-4 text-[13px] text-[#6B7280]">Choose when to receive email alerts for new leads.</p>
+      <div className="flex flex-col gap-2 mb-5">
+        {OPTS.map(opt => (
+          <button key={opt.key} type="button" onClick={() => setPref(opt.key)}
+            className="flex items-start gap-3 rounded-xl border p-4 text-left transition-all"
+            style={{ borderColor: pref === opt.key ? "#28DC4F" : "#EBEBEB", background: pref === opt.key ? "#F0FFF4" : "#fff" }}>
+            <div className="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full border-2 transition-colors"
+              style={{ borderColor: pref === opt.key ? "#28DC4F" : "#D1D5DB" }}>
+              {pref === opt.key && <div className="h-2.5 w-2.5 rounded-full bg-[#28DC4F]" />}
+            </div>
+            <div>
+              <p className="text-[13px] font-semibold text-[#111827]">{opt.label}</p>
+              <p className="text-[12px] text-[#9CA3AF]">{opt.desc}</p>
+            </div>
+          </button>
+        ))}
+      </div>
+      <button onClick={save}
+        className="rounded-xl px-6 py-2.5 text-[13px] font-semibold text-black"
+        style={{ background: saved ? "#16A34A" : "#28DC4F", color: saved ? "#fff" : "#000" }}>
+        {saved ? "✓ Saved" : "Save Preference"}
+      </button>
+    </SectionCard>
+  );
+}
+
 /* ─── danger zone ────────────────────────────────────────────────────────── */
 
 function DangerZone() {
@@ -301,6 +356,7 @@ export default function SettingsPage() {
           <div className="flex flex-col gap-5 max-w-[760px]">
             <AccountInfoSection user={user} onSaved={(u) => setUser((prev) => ({ ...prev, ...u }))} />
             <ChangePasswordSection />
+            <NotificationSettings />
             <DangerZone />
           </div>
         </main>

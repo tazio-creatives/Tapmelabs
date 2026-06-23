@@ -108,7 +108,7 @@ function RealQrCode({ color = "#18181B", qrStyle = "minimal", data = "https://ta
   useEffect(() => {
     if (!containerRef.current) return;
     let cancelled = false;
-    const qrBg = bgColor !== undefined ? bgColor : (isLightHex(color) ? "#1a1a1a" : "#ffffff");
+    const qrBg = bgColor === "transparent" ? "transparent" : (bgColor !== undefined ? bgColor : (isLightHex(color) ? "#1a1a1a" : "#ffffff"));
     import("qr-code-styling").then(({ default: QRCodeStyling }) => {
       if (cancelled || !containerRef.current) return;
       const qr = new QRCodeStyling({
@@ -305,8 +305,8 @@ function BackCardPreview({ bg, backContent, backLogoDataUrl, backLogoPlacement, 
       <div style={{ position: "absolute", inset: 0, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: "3%" }}>
         {backContent === "qr" ? (
           <>
-            <div style={{ width: "28%", aspectRatio: "1", background: isLightHex(qr) ? "#1a1a1a" : "#ffffff", borderRadius: "6px", padding: "4%", boxSizing: "border-box", display: "flex", alignItems: "center", justifyContent: "center" }}>
-              <RealQrCode color={qr} qrStyle={qrStyle || "minimal"} data={profileUrl || "https://tapmelabs.com"} />
+            <div style={{ width: "28%", aspectRatio: "1", background: "transparent", borderRadius: "6px", padding: "4%", boxSizing: "border-box", display: "flex", alignItems: "center", justifyContent: "center" }}>
+              <RealQrCode color={qr} qrStyle={qrStyle || "minimal"} data={profileUrl || "https://tapmelabs.com"} bgColor="transparent" />
             </div>
             <span style={{ fontSize: "clamp(5px,2.2cqw,11px)", fontWeight: 500, letterSpacing: "0.18em", color: "rgba(255,255,255,0.5)" }}>SCAN TO CONNECT</span>
           </>
@@ -402,6 +402,7 @@ export default function OrderDetailPage() {
 
   const [order,       setOrder]       = useState(null);
   const [profile,     setProfile]     = useState(null);
+  const [nfcCard,     setNfcCard]     = useState(null);
   const [loading,     setLoading]     = useState(true);
   const [error,       setError]       = useState("");
   const [cardFace,    setCardFace]    = useState("front");
@@ -427,9 +428,18 @@ export default function OrderDetailPage() {
     setError("");
     try {
       const res = await orderService.getOrderById(id);
-      setOrder(res.data?.order ?? null);
+      const ord = res.data?.order ?? null;
+      setOrder(ord);
       setProfile(res.data?.profile ?? null);
-      setNotes(res.data?.order?.admin_notes ?? "");
+      setNotes(ord?.admin_notes ?? "");
+      // Fetch NFC card for this user
+      if (ord?.user_id) {
+        try {
+          const api = (await import("@/services/api")).default;
+          const cardRes = await api.get(`/nfc-cards/user/${ord.user_id}`);
+          setNfcCard(cardRes.data?.card ?? null);
+        } catch { setNfcCard(null); }
+      }
     } catch (err) {
       setError(err.response?.data?.message || "Failed to load order.");
     } finally {
@@ -537,6 +547,7 @@ export default function OrderDetailPage() {
   // ── Derived values ──────────────────────────────────────────────────────────
 
   const profileUrl  = profile?.slug ? `${PROFILE_BASE}/u/${profile.slug}` : null;
+  const cardTapUrl  = nfcCard?.card_uid ? `${PROFILE_BASE}/c/${nfcCard.card_uid}` : null;
   const cust        = order?.card_customization ?? {};
   const skinSvgContent = cust.svgBackground?.backgroundType === "svg" ? (cust.svgBackground.customizedSvgContent || null) : null;
   const cardBg      = cust.svgBackground?.backgroundType === "plain"
@@ -892,33 +903,78 @@ export default function OrderDetailPage() {
               </div>
             </div>
 
-            {/* NFC Card URL */}
-            <SectionCard title="NFC Card URL">
-              {profileUrl ? (
+            {/* NFC Card URLs */}
+            <SectionCard title="NFC Card Links">
+              {(cardTapUrl || profileUrl) ? (
                 <div className="flex flex-col gap-3">
-                  <div className="flex items-center gap-2">
-                    <div className="flex-1 rounded-lg px-3 py-2 text-[11px] font-mono text-slate-600 overflow-hidden"
-                      style={{ background: "#F8FAFC", border: "1px solid #E2E8F0", whiteSpace: "nowrap", textOverflow: "ellipsis" }}>
-                      {profileUrl}
+
+                  {/* URL 1 — Smart Card Tap URL */}
+                  {cardTapUrl && (
+                    <div className="rounded-xl p-3 flex flex-col gap-2" style={{ background: "#F0FFF4", border: "1px solid #BBF7D0" }}>
+                      <div className="flex items-center justify-between">
+                        <div>
+                          <p className="text-[11px] font-bold text-green-800">URL 1 — Smart Card URL</p>
+                          <p className="text-[10px] text-green-600 mt-0.5">Switches between Form & Profile based on customer setting</p>
+                        </div>
+                        <span className="rounded-full px-2 py-0.5 text-[10px] font-bold bg-green-700 text-white">
+                          {nfcCard?.default_action === "form" ? "→ Form" : "→ Profile"}
+                        </span>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <div className="flex-1 rounded-lg px-3 py-2 text-[11px] font-mono text-green-900 overflow-hidden bg-white"
+                          style={{ border: "1px solid #BBF7D0", whiteSpace: "nowrap", textOverflow: "ellipsis" }}>
+                          {cardTapUrl}
+                        </div>
+                        <button onClick={() => navigator.clipboard.writeText(cardTapUrl)}
+                          className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-green-700 text-white hover:bg-green-800 transition-colors">
+                          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+                        </button>
+                      </div>
                     </div>
-                    <button onClick={handleCopyUrl}
-                      className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg transition-colors hover:bg-slate-100"
-                      style={{ border: "1px solid #E2E8F0" }} title="Copy URL">
-                      {copied
-                        ? <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#28DC4F" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
-                        : <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#64748B" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
-                      }
-                    </button>
+                  )}
+
+                  {/* URL 2 — Direct Profile URL */}
+                  {profileUrl && (
+                    <div className="rounded-xl p-3 flex flex-col gap-2" style={{ background: "#F8FAFC", border: "1px solid #E2E8F0" }}>
+                      <div>
+                        <p className="text-[11px] font-bold text-slate-700">URL 2 — Direct Profile URL</p>
+                        <p className="text-[10px] text-slate-400 mt-0.5">Always opens the digital profile — not affected by any toggle</p>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <div className="flex-1 rounded-lg px-3 py-2 text-[11px] font-mono text-slate-600 overflow-hidden bg-white"
+                          style={{ border: "1px solid #E2E8F0", whiteSpace: "nowrap", textOverflow: "ellipsis" }}>
+                          {profileUrl}
+                        </div>
+                        <button onClick={handleCopyUrl}
+                          className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg transition-colors hover:bg-slate-200"
+                          style={{ background: "#E2E8F0" }}>
+                          {copied
+                            ? <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#28DC4F" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+                            : <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#64748B" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+                          }
+                        </button>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Write to chip note */}
+                  <div className="rounded-lg px-3 py-2.5" style={{ background: "#FFFBEB", border: "1px solid #FDE68A" }}>
+                    <p className="text-[11px] font-semibold text-amber-700 mb-0.5">✍️ Which URL to write on the chip?</p>
+                    <p className="text-[10px] text-amber-600 leading-relaxed">
+                      Write <strong>URL 1</strong> if the customer wants to switch between form and profile anytime.<br/>
+                      Write <strong>URL 2</strong> if the card should always open the digital profile only.
+                    </p>
                   </div>
 
+                  {/* QR Code — always points to card tap URL */}
                   <div className="flex flex-col items-center gap-2 rounded-xl bg-white p-4" style={{ border: "1px solid #E2E8F0" }}>
                     <div ref={qrRef} className="bg-white p-2 rounded-lg" style={{ width: 136, height: 136 }}>
-                      <RealQrCode color={cust.qrFgColor || "#18181B"} qrStyle={cust.qrStyle || "minimal"} data={profileUrl} width={120} height={120} />
+                      <RealQrCode color="#18181B" qrStyle="minimal" data={cardTapUrl || profileUrl} width={120} height={120} />
                     </div>
-                    <p className="text-[10px] text-slate-400">Scan to verify profile</p>
-                    <button
-                      onClick={handleDownloadQR}
-                      disabled={qrDownloading}
+                    <p className="text-[10px] text-slate-400">
+                      {cardTapUrl ? "QR → Smart Card URL (URL 1)" : "QR → Profile URL"}
+                    </p>
+                    <button onClick={handleDownloadQR} disabled={qrDownloading}
                       className="flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-[11px] font-semibold transition-opacity hover:opacity-80 disabled:opacity-50"
                       style={{ background: "#F1F5F9", color: "#374151", border: "1px solid #E2E8F0" }}>
                       <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -926,13 +982,6 @@ export default function OrderDetailPage() {
                       </svg>
                       {qrDownloading ? "Saving…" : "Download QR"}
                     </button>
-                  </div>
-
-                  <div className="rounded-lg bg-green-50 px-3 py-2.5" style={{ border: "1px solid #BBFFD6" }}>
-                    <p className="text-[11px] font-semibold text-green-700 mb-1">Write to NFC Chip</p>
-                    <p className="text-[10px] text-green-600 leading-relaxed">
-                      Use NFC Tools or TagWriter app. Select &quot;Write&quot; → &quot;URL&quot; and paste the URL above before shipping the card.
-                    </p>
                   </div>
                 </div>
               ) : (

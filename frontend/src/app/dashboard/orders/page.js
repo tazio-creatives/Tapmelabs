@@ -143,9 +143,11 @@ function OrderDetailPanel({ order, onClose }) {
   const status = order.order_status || order.status || order.payment_status || "pending";
   const productName = order.product?.name || order.product_name || order.items?.[0]?.product_name || "NFC Card";
   const productImage = order.product?.images?.[0] || order.product_image || order.items?.[0]?.product_image || null;
-  const total = order.total_amount ?? order.amount ?? order.total ?? 0;
-  const shipping = order.shipping_cost ?? (total >= 799 ? 0 : 99);
-  const subtotal = total - shipping;
+  const total    = Number(order.total_amount ?? order.amount ?? order.total ?? 0);
+  const proPlan  = !!order.pro_plan;
+  const PRO_PRICE = 999;
+  const shipping  = order.shipping_cost ?? 0;
+  const cardPrice = proPlan ? total - PRO_PRICE : total;
 
   const STEPS = [
     { key: "pending",    label: "Order Placed"  },
@@ -249,15 +251,22 @@ function OrderDetailPanel({ order, onClose }) {
           <div className="rounded-[12px] border border-[#F0F0F0] px-5 py-4">
             <p className="mb-3 text-[14px] font-semibold text-[#111827]">Price Summary</p>
             <div className="flex flex-col gap-2">
-              {[
-                { label: "Subtotal",  value: formatINR(subtotal > 0 ? subtotal : total) },
-                { label: "Shipping",  value: shipping === 0 ? "Free" : formatINR(shipping) },
-              ].map(({ label, value }) => (
-                <div key={label} className="flex items-center justify-between">
-                  <span className="text-[13px] text-[#6B7280]">{label}</span>
-                  <span className="text-[13px] text-[#111827]">{value}</span>
+              <div className="flex items-center justify-between">
+                <span className="text-[13px] text-[#6B7280]">NFC Business Card</span>
+                <span className="text-[13px] text-[#111827]">{formatINR(cardPrice)}</span>
+              </div>
+              {proPlan && (
+                <div className="flex items-center justify-between">
+                  <span className="text-[13px] text-[#6B7280] flex items-center gap-1">
+                    <span className="text-[11px]">⚡</span> Pro Plan (1 year)
+                  </span>
+                  <span className="text-[13px] font-medium text-[#16A34A]">+{formatINR(PRO_PRICE)}</span>
                 </div>
-              ))}
+              )}
+              <div className="flex items-center justify-between">
+                <span className="text-[13px] text-[#6B7280]">Shipping</span>
+                <span className="text-[13px] font-medium text-[#16A34A]">Free</span>
+              </div>
               <div className="my-1 h-px bg-[#F0F0F0]" />
               <div className="flex items-center justify-between">
                 <span className="text-[14px] font-semibold text-[#111827]">Total</span>

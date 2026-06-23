@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
 import Link from "next/link";
@@ -13,6 +13,9 @@ export default function Header() {
   const [isLoggedIn,       setIsLoggedIn]       = useState(false);
   const [hasPaidOrder,     setHasPaidOrder]     = useState(false);
   const [showPaymentModal, setShowPaymentModal] = useState(false);
+  const [showUserMenu,     setShowUserMenu]     = useState(false);
+  const [userName,         setUserName]         = useState("");
+  const menuRef = useRef(null);
 
   useEffect(() => {
     async function syncAuth() {
@@ -65,8 +68,23 @@ export default function Header() {
     }
 
     syncAuth();
+    // Load user name from localStorage
+    try {
+      const u = JSON.parse(localStorage.getItem("customerUser") || "{}");
+      setUserName(u.full_name || u.name || "");
+    } catch {}
+
     globalThis.window?.addEventListener("tapme:authchange", syncAuth);
     return () => globalThis.window?.removeEventListener("tapme:authchange", syncAuth);
+  }, []);
+
+  // Close dropdown when clicking outside
+  useEffect(() => {
+    function handleOutside(e) {
+      if (menuRef.current && !menuRef.current.contains(e.target)) setShowUserMenu(false);
+    }
+    document.addEventListener("mousedown", handleOutside);
+    return () => document.removeEventListener("mousedown", handleOutside);
   }, []);
 
   function handleProfileClick(e) {
@@ -76,8 +94,21 @@ export default function Header() {
     setShowPaymentModal(true);
   }
 
+  function logout() {
+    localStorage.removeItem("customerToken");
+    localStorage.removeItem("customerUser");
+    sessionStorage.removeItem("tapme:hasPaidOrder");
+    sessionStorage.removeItem("tapme:hasProfile");
+    setIsLoggedIn(false);
+    setHasPaidOrder(false);
+    setShowUserMenu(false);
+    setUserName("");
+    window.dispatchEvent(new Event("tapme:authchange"));
+    router.push("/");
+  }
+
+  const initials = userName ? userName.split(" ").map(w => w[0]).join("").toUpperCase().slice(0, 2) : "U";
   const navLabel = !isLoggedIn ? "Profile Login" : hasPaidOrder ? "Dashboard" : "Complete Profile";
-  const navHref  = !isLoggedIn ? "/login"        : hasPaidOrder ? "/dashboard" : "#";
 
   return (
   <>
@@ -105,49 +136,124 @@ export default function Header() {
             />
           </Link>
 
-          {/* Right Menu + Cart */}
+          {/* Right Menu */}
           <div className="hidden items-center justify-end gap-[30px] md:flex">
             <nav className="flex items-center gap-[30px] px-2 py-[7px]">
-              <a
-                href="/#home"
-                className="text-[15px] font-medium leading-[22.4px] tracking-[-0.64px] text-[#6D6D6D] transition-colors hover:text-black"
-              >
-                Home
-              </a>
+              <a href="/#home" className="text-[15px] font-medium leading-[22.4px] tracking-[-0.64px] text-[#6D6D6D] transition-colors hover:text-black">Home</a>
+              <a href="/#products" className="text-[14.6px] font-medium leading-[22.4px] tracking-[-0.64px] text-[#6D6D6D] transition-colors hover:text-black">Products</a>
+              <a href="/#contact" className="text-[14.8px] font-medium leading-[22.4px] tracking-[-0.64px] text-[#6D6D6D] transition-colors hover:text-black">Contact Us</a>
 
-              <a
-                href="/#products"
-                className="text-[14.6px] font-medium leading-[22.4px] tracking-[-0.64px] text-[#6D6D6D] transition-colors hover:text-black"
-              >
-                Products
-              </a>
+              {/* Auth nav item */}
+              {!isLoggedIn ? (
+                <a href="/login" className="text-[14.8px] font-medium leading-[22.4px] tracking-[-0.64px] text-[#6D6D6D] transition-colors hover:text-black">
+                  Profile Login
+                </a>
+              ) : (
+                <div ref={menuRef} style={{ position: "relative" }}>
+                  <button
+                    onClick={() => setShowUserMenu(v => !v)}
+                    style={{ display: "flex", alignItems: "center", gap: 8, background: "none", border: "none", cursor: "pointer", padding: "4px 0" }}
+                  >
+                    {/* Avatar */}
+                    <div style={{ width: 32, height: 32, borderRadius: "50%", background: "#28DC4F", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 12, fontWeight: 700, color: "#000" }}>
+                      {initials}
+                    </div>
+                    <span style={{ fontSize: 14, fontWeight: 500, color: "#111827" }}>{navLabel}</span>
+                    <svg width="12" height="12" viewBox="0 0 12 12" fill="none" style={{ transition: "transform 0.2s", transform: showUserMenu ? "rotate(180deg)" : "rotate(0deg)" }}>
+                      <path d="M2 4l4 4 4-4" stroke="#6D6D6D" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+                    </svg>
+                  </button>
 
-              <a
-                href="/#contact"
-                className="text-[14.8px] font-medium leading-[22.4px] tracking-[-0.64px] text-[#6D6D6D] transition-colors hover:text-black"
-              >
-                Contact Us
-              </a>
-
-              <a
-                href={navHref}
-                onClick={handleProfileClick}
-                className="text-[14.8px] font-medium leading-[22.4px] tracking-[-0.64px] text-[#6D6D6D] transition-colors hover:text-black"
-              >
-                {navLabel}
-              </a>
+                  {/* Dropdown */}
+                  {showUserMenu && (
+                    <div style={{
+                      position: "absolute", top: "calc(100% + 10px)", right: 0, minWidth: 180,
+                      background: "#fff", borderRadius: 12, border: "1px solid #F0F0F0",
+                      boxShadow: "0 8px 24px rgba(0,0,0,0.10)", zIndex: 100, overflow: "hidden",
+                    }}>
+                      {userName && (
+                        <div style={{ padding: "12px 16px", borderBottom: "1px solid #F5F5F5" }}>
+                          <p style={{ fontSize: 13, fontWeight: 600, color: "#111827", margin: 0 }}>{userName}</p>
+                        </div>
+                      )}
+                      <button
+                        onClick={() => { setShowUserMenu(false); handleProfileClick({ preventDefault: () => {} }); }}
+                        style={{ display: "block", width: "100%", textAlign: "left", padding: "11px 16px", fontSize: 13, color: "#374151", background: "none", border: "none", cursor: "pointer" }}
+                        onMouseEnter={e => e.currentTarget.style.background = "#F9FAFB"}
+                        onMouseLeave={e => e.currentTarget.style.background = "none"}
+                      >
+                        {hasPaidOrder ? "My Dashboard" : "Complete Profile"}
+                      </button>
+                      {hasPaidOrder && (
+                        <button
+                          onClick={() => { setShowUserMenu(false); router.push("/dashboard/orders"); }}
+                          style={{ display: "block", width: "100%", textAlign: "left", padding: "11px 16px", fontSize: 13, color: "#374151", background: "none", border: "none", cursor: "pointer" }}
+                          onMouseEnter={e => e.currentTarget.style.background = "#F9FAFB"}
+                          onMouseLeave={e => e.currentTarget.style.background = "none"}
+                        >
+                          My Orders
+                        </button>
+                      )}
+                      <div style={{ height: 1, background: "#F5F5F5", margin: "4px 0" }} />
+                      <button
+                        onClick={logout}
+                        style={{ display: "block", width: "100%", textAlign: "left", padding: "11px 16px", fontSize: 13, color: "#EF4444", background: "none", border: "none", cursor: "pointer" }}
+                        onMouseEnter={e => e.currentTarget.style.background = "#FEF2F2"}
+                        onMouseLeave={e => e.currentTarget.style.background = "none"}
+                      >
+                        Logout
+                      </button>
+                    </div>
+                  )}
+                </div>
+              )}
             </nav>
-
           </div>
 
-          {/* Mobile Login button */}
-          <a
-            href={navHref}
-            onClick={handleProfileClick}
-            className="flex h-[36px] shrink-0 items-center justify-center rounded-full border border-[#E5E7EB] px-4 text-[13px] font-medium text-[#111827] md:hidden"
-          >
-            {navLabel}
-          </a>
+          {/* Mobile — auth button */}
+          {!isLoggedIn ? (
+            <a
+              href="/login"
+              className="flex h-[36px] shrink-0 items-center justify-center rounded-full border border-[#E5E7EB] px-4 text-[13px] font-medium text-[#111827] md:hidden"
+            >
+              Profile Login
+            </a>
+          ) : (
+            <div className="md:hidden" style={{ position: "relative" }}>
+              <button
+                onClick={() => setShowUserMenu(v => !v)}
+                style={{ display: "flex", alignItems: "center", gap: 6, background: "none", border: "1px solid #E5E7EB", borderRadius: 99, padding: "4px 12px 4px 6px", cursor: "pointer" }}
+              >
+                <div style={{ width: 26, height: 26, borderRadius: "50%", background: "#28DC4F", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 11, fontWeight: 700, color: "#000" }}>
+                  {initials}
+                </div>
+                <span style={{ fontSize: 13, fontWeight: 500, color: "#111827" }}>{navLabel}</span>
+              </button>
+              {showUserMenu && (
+                <div style={{
+                  position: "absolute", top: "calc(100% + 8px)", right: 0, minWidth: 160,
+                  background: "#fff", borderRadius: 12, border: "1px solid #F0F0F0",
+                  boxShadow: "0 8px 24px rgba(0,0,0,0.12)", zIndex: 100, overflow: "hidden",
+                }}>
+                  <button onClick={() => { setShowUserMenu(false); handleProfileClick({ preventDefault: () => {} }); }}
+                    style={{ display: "block", width: "100%", textAlign: "left", padding: "11px 16px", fontSize: 13, color: "#374151", background: "none", border: "none", cursor: "pointer" }}>
+                    {hasPaidOrder ? "My Dashboard" : "Complete Profile"}
+                  </button>
+                  {hasPaidOrder && (
+                    <button onClick={() => { setShowUserMenu(false); router.push("/dashboard/orders"); }}
+                      style={{ display: "block", width: "100%", textAlign: "left", padding: "11px 16px", fontSize: 13, color: "#374151", background: "none", border: "none", cursor: "pointer" }}>
+                      My Orders
+                    </button>
+                  )}
+                  <div style={{ height: 1, background: "#F5F5F5" }} />
+                  <button onClick={logout}
+                    style={{ display: "block", width: "100%", textAlign: "left", padding: "11px 16px", fontSize: 13, color: "#EF4444", background: "none", border: "none", cursor: "pointer" }}>
+                    Logout
+                  </button>
+                </div>
+              )}
+            </div>
+          )}
         </div>
       </div>
     </header>

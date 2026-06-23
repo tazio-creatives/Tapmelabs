@@ -11,6 +11,9 @@ const Reseller = require("./Reseller");
 const ResellerOrder = require("./ResellerOrder");
 const CommissionLedger = require("./CommissionLedger");
 const PayoutRequest = require("./PayoutRequest");
+const Form = require("./Form");
+const Lead = require("./Lead");
+const Subscription = require("./Subscription");
 
 // User associations
 User.hasMany(Order, { foreignKey: "user_id", as: "orders" });
@@ -49,6 +52,22 @@ CommissionLedger.belongsTo(ResellerOrder, { foreignKey: "reseller_order_id", as:
 
 PayoutRequest.belongsTo(Reseller, { foreignKey: "reseller_id", as: "reseller" });
 
+// Form & Lead associations
+User.hasMany(Form,         { foreignKey: "user_id", as: "forms" });
+User.hasMany(Lead,         { foreignKey: "user_id", as: "leads" });
+User.hasOne(Subscription,  { foreignKey: "user_id", as: "subscription" });
+
+Form.belongsTo(User, { foreignKey: "user_id", as: "user" });
+Form.hasMany(Lead,   { foreignKey: "form_id", as: "leads" });
+
+Lead.belongsTo(Form, { foreignKey: "form_id", as: "form" });
+Lead.belongsTo(User, { foreignKey: "user_id", as: "user" });
+
+Subscription.belongsTo(User, { foreignKey: "user_id", as: "user" });
+
+// NfcCard form association
+NfcCard.belongsTo(Form, { foreignKey: "form_id", as: "form" });
+
 module.exports = {
   sequelize,
   User,
@@ -62,4 +81,7 @@ module.exports = {
   ResellerOrder,
   CommissionLedger,
   PayoutRequest,
+  Form,
+  Lead,
+  Subscription,
 };

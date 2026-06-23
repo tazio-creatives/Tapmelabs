@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { useSearchParams } from "next/navigation";
 import Link from "next/link";
 import Header from "@/components/landing/Header";
 import Footer from "@/components/landing/Footer";
@@ -148,11 +149,22 @@ function ProductCard({ product, index }) {
 // ── Page ──────────────────────────────────────────────────────────────────────
 
 export default function ProductsPage() {
+  const searchParams = useSearchParams();
   const [products, setProducts] = useState([]);
   const [loading, setLoading]   = useState(true);
   const [error, setError]       = useState("");
   const [search, setSearch]     = useState("");
   const [debouncedSearch, setDebouncedSearch] = useState("");
+
+  // Detect reseller mode from URL and persist to sessionStorage
+  useEffect(() => {
+    const rt = searchParams.get("rt");
+    const isReseller = searchParams.get("reseller");
+    if (rt && isReseller === "1") {
+      sessionStorage.setItem("resellerToken", rt);
+      sessionStorage.setItem("resellerMode", "1");
+    }
+  }, [searchParams]);
 
   // Debounce the search input 400 ms before sending to backend
   useEffect(() => {

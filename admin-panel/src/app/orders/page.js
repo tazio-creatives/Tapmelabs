@@ -181,8 +181,12 @@ export default function OrdersPage() {
                     <td className="max-w-[160px] truncate px-5 py-3.5 text-[13px] text-slate-600">
                       {o.product?.name ?? "—"}
                     </td>
-                    <td className="px-5 py-3.5 text-[13px] font-semibold text-slate-800">
-                      ₹{Number(o.total_amount).toLocaleString()}
+                    <td className="px-5 py-3.5">
+                      <p className="text-[13px] font-semibold text-slate-800">₹{Number(o.total_amount).toLocaleString()}</p>
+                      {o.pro_plan && (
+                        <span className="mt-0.5 inline-block rounded-full px-2 py-0.5 text-[10px] font-bold"
+                          style={{ background: "#DCFCE7", color: "#16A34A" }}>⚡ Pro</span>
+                      )}
                     </td>
                     <td className="px-5 py-3.5">
                       <StatusBadge map={PAYMENT_STATUS} value={o.payment_status} />
@@ -241,6 +245,42 @@ export default function OrdersPage() {
                       <p className="text-[13px] text-slate-800 text-right">{v}</p>
                     </div>
                   ))}
+                  {/* Pro Plan row */}
+                  <div className="flex justify-between gap-4">
+                    <p className="text-[12px] font-medium text-slate-400 shrink-0">Pro Plan</p>
+                    {selected.pro_plan
+                      ? <span className="rounded-full px-2.5 py-0.5 text-[11px] font-bold" style={{ background: "#DCFCE7", color: "#16A34A" }}>⚡ Included</span>
+                      : <span className="text-[13px] text-slate-400">Not included</span>
+                    }
+                  </div>
+
+                  {/* NFC Card URLs */}
+                  {selected.nfc_card && (
+                    <div className="rounded-xl border border-[#F0F0F0] bg-[#FAFAFA] p-3 flex flex-col gap-2">
+                      <p className="text-[11px] font-bold text-slate-500 uppercase tracking-wide">NFC Card Links</p>
+                      <div>
+                        <p className="text-[10px] text-slate-400 mb-0.5">Card Tap URL</p>
+                        <div className="flex items-center gap-2">
+                          <p className="text-[11px] font-mono text-slate-700 truncate flex-1">
+                            {`${process.env.NEXT_PUBLIC_FRONTEND_URL || "http://localhost:3000"}/c/${selected.nfc_card.card_uid}`}
+                          </p>
+                          <button
+                            onClick={() => navigator.clipboard.writeText(`${process.env.NEXT_PUBLIC_FRONTEND_URL || "http://localhost:3000"}/c/${selected.nfc_card.card_uid}`)}
+                            className="shrink-0 rounded px-2 py-0.5 text-[10px] font-semibold text-white"
+                            style={{ background: "#111827" }}>
+                            Copy
+                          </button>
+                        </div>
+                        <p className="mt-1 text-[10px]" style={{ color: selected.nfc_card.default_action === "form" ? "#16A34A" : "#2563EB" }}>
+                          → {selected.nfc_card.default_action === "form" ? "Leads to Form" : "Leads to Profile"}
+                        </p>
+                      </div>
+                      <div>
+                        <p className="text-[10px] text-slate-400 mb-0.5">Card UID</p>
+                        <p className="text-[11px] font-mono text-slate-600">{selected.nfc_card.card_uid}</p>
+                      </div>
+                    </div>
+                  )}
 
                   {selected.shipping_address && (
                     <div>

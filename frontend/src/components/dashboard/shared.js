@@ -35,6 +35,8 @@ export function Icon({ k, size = 18, color = "currentColor", strokeWidth = 1.5 }
     user:         <svg {...p}><circle cx="10" cy="7" r="4"/><path d="M2 18c0-3.3 3.6-6 8-6s8 2.7 8 6"/></svg>,
     share:        <svg {...p}><circle cx="15" cy="4" r="2"/><circle cx="5" cy="10" r="2"/><circle cx="15" cy="16" r="2"/><path d="M7 9l6-3.5M7 11l6 3.5"/></svg>,
     trend_up:     <svg width={size} height={size} viewBox="0 0 20 20" fill="none" stroke={color} strokeWidth={strokeWidth} strokeLinecap="round" strokeLinejoin="round"><path d="M3 13l5-5 4 3 5-6"/><path d="M14 5h4v4"/></svg>,
+    form:         <svg {...p}><rect x="3" y="2" width="14" height="16" rx="2"/><path d="M7 7h6M7 10h6M7 13h4"/></svg>,
+    leads:        <svg {...p}><circle cx="8" cy="7" r="3"/><path d="M2 17c0-2.8 2.7-5 6-5"/><path d="M14 11l2 2 4-4"/></svg>,
   };
   return icons[k] ?? null;
 }
@@ -46,6 +48,8 @@ export const NAV_ITEMS = [
   { key: "Themes",    href: "/dashboard/themes",   iconKey: "palette"  },
   { key: "My Cards",  href: "/dashboard/my-cards", iconKey: "card"     },
   { key: "Orders",    href: "/dashboard/orders",   iconKey: "box"      },
+  { key: "My Forms",  href: "/dashboard/forms",    iconKey: "form"     },
+  { key: "Leads",     href: "/dashboard/leads",    iconKey: "leads"    },
   { key: "Settings",  href: "/dashboard/settings", iconKey: "settings" },
 ];
 

@@ -366,4 +366,98 @@ async function resetPassword(req, res, next) {
   }
 }
 
-module.exports = { register, login, me, updateMe, verifyOtp, resendOtp, changePassword, forgotPassword, resetPassword };
+// ── GET /api/auth/reseller-setup?token= ──────────────────────────────────────
+// Validate a customer setup token issued after a reseller order payment
+
+async function validateSetupToken(req, res) {
+  try {
+    const { token } = req.query;
+    if (!token) return res.status(400).json({ success: false, message: "Token required" });
+
+    const { ResellerOrder } = require("../models");
+    const ro = await ResellerOrder.findOne({
+      where: {
+        customer_setup_token:             token,
+        customer_setup_token_expires_at:  { [Op.gt]: new Date() },
+        status: "paid",
+      },
+    });
+
+    if (!ro) return res.status(400).json({ success: false, message: "Invalid or expired setup link" });
+
+    // Check if account already exists for this email
+    const existing = ro.customer_email ? await User.findOne({ where: { email: ro.customer_email } }) : null;
+
+    return res.json({
+      success: true,
+      data: {
+        customer_name:  ro.customer_name,
+        customer_email: ro.customer_email,
+        customer_phone: ro.customer_phone,
+        already_exists: !!existing,
+      },
+    });
+  } catch (err) {
+    res.status(500).json({ success: false, message: err.message });
+  }
+}
+
+// ── POST /api/auth/reseller-setup ─────────────────────────────────────────────
+// Create a customer account from a reseller order setup token
+
+async function completeSetup(req, res) {
+  try {
+    const { token, password } = req.body;
+    if (!token || !password) return res.status(400).json({ success: false, message: "token and password are required" });
+    if (password.length < 6) return res.status(400).json({ success: false, message: "Password must be at least 6 characters" });
+
+    const { ResellerOrder } = require("../models");
+    const ro = await ResellerOrder.findOne({
+      where: {
+        customer_setup_token:             token,
+        customer_setup_token_expires_at:  { [Op.gt]: new Date() },
+        status: "paid",
+      },
+    });
+
+    if (!ro) return res.status(400).json({ success: false, message: "Invalid or expired setup link" });
+
+    let user = ro.customer_email ? await User.findOne({ where: { email: ro.customer_email } }) : null;
+
+    if (!user) {
+      const hashed = await bcrypt.hash(password, 12);
+      user = await User.create({
+        full_name:         ro.customer_name || "Customer",
+        email:             ro.customer_email,
+        phone:             ro.customer_phone || null,
+        password:          hashed,
+        is_email_verified: true,  // trusted — email came from reseller order
+        status:            "active",
+      });
+    } else {
+      // Account exists — just update the password
+      user.password = await bcrypt.hash(password, 12);
+      await user.save();
+    }
+
+    // Invalidate the token
+    await ro.update({ customer_setup_token: null, customer_setup_token_expires_at: null });
+
+    // Link the underlying order to this customer so their paid order appears in their account
+    const { Order } = require("../models");
+    if (ro.order_id) {
+      await Order.update({ user_id: user.id }, { where: { id: ro.order_id } });
+    }
+
+    const jwtToken = signToken(user.id);
+    return res.json({
+      success: true,
+      message: "Account ready! You can now log in.",
+      data: { token: jwtToken, user: userPublicFields(user) },
+    });
+  } catch (err) {
+    res.status(500).json({ success: false, message: err.message });
+  }
+}
+
+module.exports = { register, login, me, updateMe, verifyOtp, resendOtp, changePassword, forgotPassword, resetPassword, validateSetupToken, completeSetup };

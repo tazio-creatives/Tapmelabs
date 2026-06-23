@@ -63,6 +63,14 @@ const ResellerOrder = sequelize.define(
       type: DataTypes.STRING(100),
       allowNull: true,
     },
+    customer_setup_token: {
+      type: DataTypes.STRING(64),
+      allowNull: true,
+    },
+    customer_setup_token_expires_at: {
+      type: DataTypes.DATE,
+      allowNull: true,
+    },
     status: {
       type: DataTypes.ENUM("pending", "paid", "cancelled", "refunded"),
       defaultValue: "pending",

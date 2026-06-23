@@ -2,20 +2,36 @@
 import { useEffect, useState } from "react";
 import { useRouter, usePathname } from "next/navigation";
 import Link from "next/link";
+import Image from "next/image";
 import authService from "@/services/authService";
 
 const NAV = [
-  { href: "/dashboard",         label: "Dashboard",   icon: "▦" },
-  { href: "/orders",            label: "Orders",      icon: "📋" },
-  { href: "/orders/new",        label: "New Order",   icon: "+" },
-  { href: "/commission",        label: "Commission",  icon: "₹" },
-  { href: "/profile",           label: "Profile",     icon: "👤" },
+  {
+    href: "/dashboard", label: "Dashboard",
+    icon: <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>,
+  },
+  {
+    href: "/orders", label: "Orders",
+    icon: <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 0 1-8 0"/></svg>,
+  },
+  {
+    href: "/orders/new", label: "New Order",
+    icon: <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="16"/><line x1="8" y1="12" x2="16" y2="12"/></svg>,
+  },
+  {
+    href: "/commission", label: "Commission",
+    icon: <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>,
+  },
+  {
+    href: "/profile", label: "Profile",
+    icon: <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>,
+  },
 ];
 
 export default function ResellerLayout({ children }) {
   const router   = useRouter();
   const pathname = usePathname();
-  const [reseller, setReseller] = useState(null);
+  const [reseller, setReseller]     = useState(null);
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
   useEffect(() => {
@@ -33,75 +49,123 @@ export default function ResellerLayout({ children }) {
     router.replace("/login");
   }
 
+  function isActive(href) {
+    if (href === "/dashboard") return pathname === "/dashboard";
+    if (href === "/orders") return pathname === "/orders" || (pathname.startsWith("/orders/") && pathname !== "/orders/new");
+    return pathname.startsWith(href);
+  }
+
+  const initials = reseller?.full_name?.charAt(0)?.toUpperCase() || "R";
+
   return (
-    <div className="flex min-h-screen bg-[#F8FAFC]">
+    <div style={{ display: "flex", minHeight: "100vh", background: "#F8FAFC" }}>
+
       {/* Sidebar */}
-      <aside className={`fixed inset-y-0 left-0 z-40 w-60 bg-white border-r border-[#E2E8F0] flex flex-col transition-transform duration-200 ${sidebarOpen ? "translate-x-0" : "-translate-x-full"} md:translate-x-0`}>
+      <aside style={{
+        position: "fixed", top: 0, left: 0, bottom: 0, zIndex: 40,
+        width: 240, background: "#fff", borderRight: "1px solid #E2E8F0",
+        display: "flex", flexDirection: "column",
+        transform: sidebarOpen ? "translateX(0)" : undefined,
+      }}
+        className={`${sidebarOpen ? "translate-x-0" : "-translate-x-full"} md:translate-x-0 transition-transform duration-200`}
+      >
         {/* Brand */}
-        <div className="flex items-center gap-2 px-5 py-5 border-b border-[#F1F5F9]">
-          <div className="w-8 h-8 rounded-lg bg-[#28DC4F] flex items-center justify-center text-white font-black text-lg">T</div>
+        <div style={{ padding: "18px 20px 16px", borderBottom: "1px solid #F1F5F9", display: "flex", alignItems: "center", gap: 10 }}>
+          <Image src="/images/logo.svg" alt="TapMe Labs" width={32} height={32} />
           <div>
-            <p className="text-[13px] font-bold text-[#111827] leading-tight">TapMe Labs</p>
-            <p className="text-[10px] text-[#6B7280]">Reseller Panel</p>
+            <Image src="/images/logo-text.svg" alt="TapMe Labs" width={88} height={8} />
+            <p style={{ fontSize: 10, color: "#9CA3AF", marginTop: 3, letterSpacing: "0.03em" }}>Reseller Panel</p>
           </div>
         </div>
 
         {/* Nav */}
-        <nav className="flex-1 px-3 py-4 space-y-0.5">
+        <nav style={{ flex: 1, padding: "12px 10px", display: "flex", flexDirection: "column", gap: 2 }}>
           {NAV.map((n) => {
-            const active = pathname === n.href || (n.href !== "/dashboard" && pathname.startsWith(n.href));
+            const active = isActive(n.href);
             return (
-              <Link
-                key={n.href}
-                href={n.href}
-                onClick={() => setSidebarOpen(false)}
-                className={`flex items-center gap-3 px-3 py-2.5 rounded-lg text-[13px] font-medium transition-colors ${active ? "bg-[#28DC4F]/10 text-[#16a34a]" : "text-[#6B7280] hover:bg-[#F8FAFC] hover:text-[#111827]"}`}
+              <Link key={n.href} href={n.href} onClick={() => setSidebarOpen(false)}
+                style={{
+                  display: "flex", alignItems: "center", gap: 10,
+                  padding: "9px 12px", borderRadius: 8, fontSize: 13, fontWeight: 500,
+                  textDecoration: "none", transition: "background 0.12s, color 0.12s",
+                  background: active ? "rgba(40,220,79,0.1)" : "transparent",
+                  color: active ? "#16a34a" : "#6B7280",
+                }}
+                onMouseEnter={(e) => { if (!active) { e.currentTarget.style.background = "#F8FAFC"; e.currentTarget.style.color = "#111827"; }}}
+                onMouseLeave={(e) => { if (!active) { e.currentTarget.style.background = "transparent"; e.currentTarget.style.color = "#6B7280"; }}}
               >
-                <span className="text-base w-5 text-center">{n.icon}</span>
+                <span style={{ flexShrink: 0, display: "flex" }}>{n.icon}</span>
                 {n.label}
               </Link>
             );
           })}
         </nav>
 
-        {/* Reseller info + logout */}
-        <div className="px-4 py-4 border-t border-[#F1F5F9]">
+        {/* User info */}
+        <div style={{ padding: "12px 14px", borderTop: "1px solid #F1F5F9" }}>
           {reseller && (
-            <div className="mb-3">
-              <p className="text-[12px] font-semibold text-[#111827] truncate">{reseller.full_name}</p>
-              <p className="text-[11px] text-[#6B7280] truncate">{reseller.email}</p>
-              <p className="text-[11px] text-[#28DC4F] font-semibold mt-1">Balance: ₹{Number(reseller.commission_balance).toFixed(2)}</p>
+            <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 10 }}>
+              <div style={{
+                width: 34, height: 34, borderRadius: "50%", background: "#28DC4F",
+                display: "flex", alignItems: "center", justifyContent: "center",
+                fontSize: 14, fontWeight: 700, color: "#000", flexShrink: 0,
+              }}>{initials}</div>
+              <div style={{ minWidth: 0 }}>
+                <p style={{ fontSize: 12, fontWeight: 600, color: "#111827", margin: 0, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{reseller.full_name}</p>
+                <p style={{ fontSize: 11, color: "#9CA3AF", margin: 0, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{reseller.email}</p>
+                <p style={{ fontSize: 11, color: "#28DC4F", fontWeight: 600, margin: "2px 0 0" }}>₹{Number(reseller.commission_balance || 0).toFixed(2)} balance</p>
+              </div>
             </div>
           )}
-          <button
-            onClick={handleLogout}
-            className="w-full text-left text-[12px] text-[#EF4444] font-medium px-3 py-2 rounded-lg hover:bg-red-50 transition-colors"
+          <button onClick={handleLogout}
+            style={{
+              width: "100%", textAlign: "left", fontSize: 12, color: "#EF4444",
+              fontWeight: 500, padding: "8px 10px", borderRadius: 8, border: "none",
+              background: "transparent", cursor: "pointer", transition: "background 0.12s",
+            }}
+            onMouseEnter={(e) => e.currentTarget.style.background = "#FEF2F2"}
+            onMouseLeave={(e) => e.currentTarget.style.background = "transparent"}
           >
-            Logout
+            ← Logout
           </button>
         </div>
       </aside>
 
       {/* Mobile overlay */}
       {sidebarOpen && (
-        <div className="fixed inset-0 z-30 bg-black/30 md:hidden" onClick={() => setSidebarOpen(false)} />
+        <div style={{ position: "fixed", inset: 0, zIndex: 30, background: "rgba(0,0,0,0.3)" }}
+          className="md:hidden" onClick={() => setSidebarOpen(false)} />
       )}
 
       {/* Main */}
-      <div className="flex-1 md:ml-60 flex flex-col min-h-screen">
+      <div style={{ flex: 1, display: "flex", flexDirection: "column", minHeight: "100vh" }} className="md:ml-[240px]">
         {/* Top bar */}
-        <header className="sticky top-0 z-20 bg-white border-b border-[#E2E8F0] flex items-center justify-between px-5 py-3">
-          <button className="md:hidden text-[#6B7280]" onClick={() => setSidebarOpen(true)}>☰</button>
-          <h1 className="text-[14px] font-semibold text-[#111827]">
-            {NAV.find((n) => pathname === n.href || (n.href !== "/dashboard" && pathname.startsWith(n.href)))?.label || "Dashboard"}
-          </h1>
-          <Link href="/orders/new" className="hidden md:flex items-center gap-1.5 bg-[#28DC4F] text-black text-[12px] font-semibold px-3 py-1.5 rounded-lg">
+        <header style={{
+          position: "sticky", top: 0, zIndex: 20, background: "#fff",
+          borderBottom: "1px solid #E2E8F0", display: "flex",
+          alignItems: "center", justifyContent: "space-between",
+          padding: "0 20px", height: 56,
+        }}>
+          <button className="md:hidden" onClick={() => setSidebarOpen(true)}
+            style={{ background: "none", border: "none", cursor: "pointer", color: "#6B7280", display: "flex", padding: 4 }}>
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+          </button>
+          <p style={{ fontSize: 14, fontWeight: 600, color: "#111827", margin: 0 }}>
+            {NAV.find((n) => isActive(n.href))?.label || "Dashboard"}
+          </p>
+          <Link href="/orders/new"
+            style={{
+              display: "flex", alignItems: "center", gap: 6,
+              background: "#28DC4F", color: "#000", fontSize: 12,
+              fontWeight: 600, padding: "7px 14px", borderRadius: 8,
+              textDecoration: "none",
+            }}>
             + New Order
           </Link>
         </header>
 
-        {/* Page content */}
-        <main className="flex-1 p-5">
+        {/* Content */}
+        <main style={{ flex: 1, padding: 20 }}>
           {children}
         </main>
       </div>

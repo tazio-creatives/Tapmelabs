@@ -1,6 +1,23 @@
-const { Order, User, Product } = require("../models");
+const { Order, User, Product, Subscription, NfcCard, Form } = require("../models");
 const { Op } = require("sequelize");
 const Profile = require("../models/Profile");
+
+// ── Activate Pro subscription for a user ─────────────────────────────────────
+async function activateProSubscription(userId) {
+  const existing = await Subscription.findOne({ where: { user_id: userId, status: "active" } });
+  if (existing) return existing; // already Pro
+
+  const expiresAt = new Date();
+  expiresAt.setFullYear(expiresAt.getFullYear() + 1); // 1 year
+
+  return Subscription.create({
+    user_id:    userId,
+    plan:       "pro",
+    status:     "active",
+    starts_at:  new Date(),
+    expires_at: expiresAt,
+  });
+}
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 
@@ -17,7 +34,7 @@ async function generateOrderNumber() {
 
 async function createOrder(req, res, next) {
   try {
-    const { product_id, total_amount, shipping_address, card_customization } = req.body;
+    const { product_id, total_amount, shipping_address, card_customization, pro_plan } = req.body;
 
     if (!product_id || total_amount === undefined) {
       return res.status(400).json({
@@ -58,15 +75,19 @@ async function createOrder(req, res, next) {
     // Example: const paymentSession = await razorpay.orders.create({ amount, currency });
     // Store paymentSession.id in order for verification later.
 
+    // Frontend already includes Pro price in total_amount — use as-is
+    const finalTotal = Number(total_amount);
+
     const order = await Order.create({
       order_number,
       user_id: req.user.id,
       product_id,
-      total_amount,
+      total_amount: finalTotal,
       shipping_address:   shipping_address   ?? null,
       card_customization: card_customization ?? null,
       payment_status: "pending",
       order_status:   "pending",
+      pro_plan:       !!pro_plan,
     });
 
     return res.status(201).json({
@@ -113,24 +134,39 @@ async function getAllOrders(req, res, next) {
   try {
     const orders = await Order.findAll({
       include: [
-        {
-          model: User,
-          as: "user",
-          attributes: ["id", "full_name", "email", "phone"],
-        },
-        {
-          model: Product,
-          as: "product",
-          attributes: ["id", "name", "slug", "price", "sale_price"],
-        },
+        { model: User,    as: "user",    attributes: ["id", "full_name", "email", "phone"] },
+        { model: Product, as: "product", attributes: ["id", "name", "slug", "price", "sale_price"] },
       ],
       order: [["created_at", "DESC"]],
+    });
+
+    // Attach NFC card info per order (by user_id)
+    const userIds = [...new Set(orders.map(o => o.user_id).filter(Boolean))];
+    const cards = userIds.length > 0
+      ? await NfcCard.findAll({
+          where: { user_id: userIds },
+          include: [{ model: Form, as: "form", attributes: ["slug"], required: false }],
+        })
+      : [];
+    const cardByUser = {};
+    cards.forEach(c => { cardByUser[c.user_id] = c; });
+
+    const ordersWithCard = orders.map(o => {
+      const card = o.user_id ? cardByUser[o.user_id] : null;
+      return {
+        ...o.toJSON(),
+        nfc_card: card ? {
+          card_uid:       card.card_uid,
+          default_action: card.default_action,
+          form_slug:      card.form?.slug || null,
+        } : null,
+      };
     });
 
     return res.status(200).json({
       success: true,
       message: "All orders fetched successfully.",
-      data: { orders, count: orders.length },
+      data: { orders: ordersWithCard, count: ordersWithCard.length },
     });
   } catch (err) {
     next(err);

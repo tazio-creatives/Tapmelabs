@@ -283,14 +283,32 @@ export default function PaymentRedirectPage() {
           <div className="my-6 h-px bg-[#F4F4F4]" />
 
           {/* Order summary */}
-          <div className="flex flex-col gap-3 rounded-[12px] bg-[#F9F9F9] px-4 py-4">
+          <div className="flex flex-col gap-2.5 rounded-[12px] bg-[#F9F9F9] px-4 py-4">
             <div className="flex items-center justify-between">
               <span className="text-[13px] text-[#9CA3AF]">Order ID</span>
               <span className="text-[13px] font-semibold text-[#111827]">{orderId}</span>
             </div>
             <div className="h-px bg-[#EBEBEB]" />
+            {/* Breakdown */}
             <div className="flex items-center justify-between">
-              <span className="text-[14px] font-semibold text-[#111827]">Total Amount</span>
+              <span className="text-[13px] text-[#6D6D6D]">NFC Business Card</span>
+              <span className="text-[13px] font-medium text-[#111827]">
+                ₹{currentOrder?.pro_plan
+                  ? (totalAmount - 999).toLocaleString("en-IN")
+                  : totalAmount.toLocaleString("en-IN")}
+              </span>
+            </div>
+            {currentOrder?.pro_plan && (
+              <div className="flex items-center justify-between">
+                <span className="text-[13px] text-[#6D6D6D] flex items-center gap-1">
+                  <span className="text-[11px]">⚡</span> Pro Plan (1 year)
+                </span>
+                <span className="text-[13px] font-medium text-[#28DC4F]">+₹999</span>
+              </div>
+            )}
+            <div className="h-px bg-[#EBEBEB]" />
+            <div className="flex items-center justify-between">
+              <span className="text-[14px] font-semibold text-[#111827]">Total</span>
               <span className="text-[18px] font-bold text-[#111827]">
                 ₹{totalAmount.toLocaleString("en-IN")}
               </span>

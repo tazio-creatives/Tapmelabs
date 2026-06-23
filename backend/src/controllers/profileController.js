@@ -1,4 +1,4 @@
-const { Profile, Order } = require("../models");
+const { Profile, Order, NfcCard } = require("../models");
 
 // ── GET /api/profiles/me ──────────────────────────────────────────────────────
 
@@ -97,6 +97,14 @@ async function createProfile(req, res, next) {
       social_links: social_links ?? {},
       is_public: is_public !== undefined ? is_public : true,
     });
+
+    // Link profile to NFC card if one exists for this user
+    try {
+      const card = await NfcCard.findOne({ where: { user_id: req.user.id } });
+      if (card && !card.profile_id) {
+        await card.update({ profile_id: profile.id });
+      }
+    } catch (e) { console.error("NFC card profile link failed:", e.message); }
 
     return res.status(201).json({
       success: true,

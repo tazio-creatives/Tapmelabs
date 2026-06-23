@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { useParams } from "next/navigation";
+import { useParams, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import Header from "@/components/landing/Header";
 import Footer from "@/components/landing/Footer";
@@ -168,10 +168,21 @@ function ProductFetchError({ message, onRetry }) {
 // ── Page ──────────────────────────────────────────────────────────────────────
 
 export default function ProductPage() {
-  const { slug } = useParams();
-  const [product, setProduct]   = useState(null);
-  const [pageState, setPageState] = useState("loading"); // loading | found | notfound | error
-  const [errorMsg, setErrorMsg] = useState("");
+  const { slug }       = useParams();
+  const searchParams   = useSearchParams();
+  const [product, setProduct]     = useState(null);
+  const [pageState, setPageState] = useState("loading");
+  const [errorMsg, setErrorMsg]   = useState("");
+
+  // Persist reseller token if coming from reseller panel
+  useEffect(() => {
+    const rt = searchParams.get("rt");
+    const isReseller = searchParams.get("reseller");
+    if (rt && isReseller === "1") {
+      sessionStorage.setItem("resellerToken", rt);
+      sessionStorage.setItem("resellerMode", "1");
+    }
+  }, [searchParams]);
 
   async function fetchProduct() {
     setPageState("loading");

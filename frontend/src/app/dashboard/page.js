@@ -56,6 +56,8 @@ function Icon({ k, size = 18, color = "currentColor", strokeWidth = 1.5 }) {
     edit:      <svg {...p}><path d="M14 3l3 3-9 9H5v-3L14 3Z"/><path d="M11.5 5.5l3 3"/></svg>,
     download:  <svg {...p}><path d="M10 3v10M6 9l4 4 4-4"/><path d="M3 16h14"/></svg>,
     trend_up:  <svg width={size} height={size} viewBox="0 0 20 20" fill="none" stroke={color} strokeWidth={strokeWidth} strokeLinecap="round" strokeLinejoin="round"><path d="M3 13l5-5 4 3 5-6"/><path d="M14 5h4v4"/></svg>,
+    form:      <svg {...p}><rect x="3" y="2" width="14" height="16" rx="2"/><path d="M7 7h6M7 10h6M7 13h4"/></svg>,
+    leads:     <svg {...p}><circle cx="8" cy="7" r="3"/><path d="M2 17c0-2.8 2.7-5 6-5"/><path d="M14 11l2 2 4-4"/></svg>,
     linkedin:  <svg width={size} height={size} viewBox="0 0 20 20" fill={color}><path d="M5 7H2v11h3V7ZM3.5 5.8A1.8 1.8 0 1 0 3.5 2.2a1.8 1.8 0 0 0 0 3.6ZM18 11.6c0-2.7-1.4-4.6-3.9-4.6-1.2 0-2.3.7-2.8 1.7V7H8v11h3.3v-5.7c0-1.3.6-2.3 1.8-2.3 1.2 0 1.6 1 1.6 2.3V18H18v-6.4Z"/></svg>,
     instagram: <svg width={size} height={size} viewBox="0 0 20 20" fill="none" stroke={color} strokeWidth="1.4"><rect x="3" y="3" width="14" height="14" rx="4"/><circle cx="10" cy="10" r="3.5"/><circle cx="14" cy="6" r="0.8" fill={color} stroke="none"/></svg>,
     twitter:   <svg width={size} height={size} viewBox="0 0 20 20" fill={color}><path d="M17.3 4.3c-.7.3-1.4.5-2.2.6.8-.5 1.4-1.2 1.7-2.1-.8.5-1.6.8-2.5 1A3.9 3.9 0 0 0 7 7.7a11 11 0 0 1-8-4.1 3.9 3.9 0 0 0 1.2 5.2c-.6 0-1.2-.2-1.7-.5v.1c0 1.9 1.3 3.4 3.1 3.8-.3.1-.7.1-1 .1-.3 0-.5 0-.7-.1.5 1.5 1.9 2.6 3.6 2.6A7.8 7.8 0 0 1 .6 16.5c1.8 1.1 3.8 1.8 6 1.8 7.3 0 11.2-6 11.2-11.2v-.5c.8-.6 1.4-1.3 2-2.1l-.5-.2Z"/></svg>,
@@ -248,7 +250,7 @@ function TopHeader({ onMenuClick, initials }) {
 
 /* ─── analytics card ──────────────────────────────────────────────────────── */
 
-function AnalyticsCard({ label, value, change, hasChange, desc }) {
+function AnalyticsCard({ label, value, desc }) {
   const iconMap = {
     "Total Views":    "eye",
     "Total Taps":     "tap",
@@ -256,25 +258,35 @@ function AnalyticsCard({ label, value, change, hasChange, desc }) {
     "Contacts Saved": "user",
   };
   return (
-    <div className="flex flex-col gap-4 rounded-[12px] border border-[#EBEBEB] bg-white p-5">
-      <div className="flex items-center justify-between">
-        <span className="text-[12px] font-medium text-[#6B7280]">{label}</span>
-        <div className="flex h-8 w-8 items-center justify-center rounded-[8px] bg-[#28DC4F]">
-          <Icon k={iconMap[label]} size={16} color="white" strokeWidth={1.8} />
+    <div className="flex flex-col gap-3 rounded-[12px] border border-[#EBEBEB] bg-white p-5">
+      {/* Icon + menu */}
+      <div className="flex items-start justify-between">
+        <div className="flex h-10 w-10 items-center justify-center rounded-full" style={{ background: "rgba(40,220,79,0.12)" }}>
+          <Icon k={iconMap[label]} size={18} color="#28DC4F" strokeWidth={1.8} />
         </div>
+        <button className="text-[#C4C9D4] hover:text-[#6B7280]">
+          <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor">
+            <circle cx="3" cy="8" r="1.5"/><circle cx="8" cy="8" r="1.5"/><circle cx="13" cy="8" r="1.5"/>
+          </svg>
+        </button>
       </div>
 
-      <div className="flex items-end justify-between">
-        <span className="text-[26px] font-bold leading-none text-[#111827]">{value}</span>
-        {hasChange && (
-          <span className="flex items-center gap-[3px] rounded-full bg-[#28DC4F]/10 px-2 py-[3px] text-[12px] font-medium text-[#28DC4F]">
-            <Icon k="trend_up" size={11} color="#28DC4F" strokeWidth={2} />
-            {change}
-          </span>
-        )}
-      </div>
+      {/* Label */}
+      <p className="text-[13px] font-medium text-[#6B7280]">{label}</p>
 
-      <p className="text-[10px] leading-relaxed text-[#6B7280]">{desc}</p>
+      {/* Value */}
+      <p className="text-[28px] font-bold leading-none text-[#111827]">{value}</p>
+
+      {/* Description */}
+      <p className="text-[11px] text-[#9CA3AF]">{desc}</p>
+
+      {/* Change tag */}
+      <span className="flex w-fit items-center gap-1 rounded-full px-2.5 py-1 text-[11px] font-medium" style={{ background: "rgba(40,220,79,0.1)", color: "#28DC4F" }}>
+        <svg width="10" height="10" viewBox="0 0 10 10" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+          <path d="M1 7l3-3 2 2 3-4"/><path d="M7 2h2v2"/>
+        </svg>
+        0% vs last 7 days
+      </span>
     </div>
   );
 }
@@ -283,10 +295,10 @@ function AnalyticsCard({ label, value, change, hasChange, desc }) {
 
 function ActivityItem({ accent, iconKey, title, desc, time }) {
   return (
-    <div className="flex items-center gap-4 py-3">
+    <div className="flex items-center gap-4 py-3.5">
       <div
         className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full"
-        style={{ background: `${accent}22` }}
+        style={{ background: `${accent}18` }}
       >
         <Icon k={iconKey} size={17} color={accent} strokeWidth={1.6} />
       </div>
@@ -294,7 +306,7 @@ function ActivityItem({ accent, iconKey, title, desc, time }) {
         <p className="text-[13px] font-semibold text-[#111827]">{title}</p>
         <p className="mt-[2px] truncate text-[12px] text-[#9CA3AF]">{desc}</p>
       </div>
-      <span className="shrink-0 text-[14px] text-[#6B7280]">{time}</span>
+      <span className="shrink-0 rounded-full border border-[#F0F0F0] bg-[#F9FAFB] px-2.5 py-1 text-[11px] text-[#6B7280]">{time}</span>
     </div>
   );
 }
@@ -334,8 +346,14 @@ export default function DashboardPage() {
   const [profile,     setProfile]     = useState(null);
   const [analytics,   setAnalytics]   = useState(null);
   const [orders,      setOrders]      = useState([]);
-  const [copied,      setCopied]      = useState(false);
-  const [actionError, setActionError] = useState("");
+  const [copied,         setCopied]         = useState(false);
+  const [actionError,    setActionError]    = useState("");
+  const [cardAction,     setCardAction]     = useState("profile");
+  const [cardUid,        setCardUid]        = useState(null);
+  const [forms,          setForms]          = useState([]);
+  const [selectedFormId, setSelectedFormId] = useState(null);
+  const [savingAction,   setSavingAction]   = useState(false);
+  const [actionSaved,    setActionSaved]    = useState(false);
 
   useEffect(() => {
     // ── Auth guard ──────────────────────────────────────────────────────────
@@ -374,6 +392,18 @@ export default function DashboardPage() {
     }
 
     fetchData();
+
+    // Load NFC card action + forms
+    import("@/services/api").then(({ default: api }) => {
+      api.get("/nfc-cards/mine").then(r => {
+        if (r.data.card) {
+          setCardAction(r.data.card.default_action || "profile");
+          setSelectedFormId(r.data.card.form_id || null);
+          setCardUid(r.data.card.card_uid || null);
+        }
+      }).catch(() => {});
+      api.get("/forms").then(r => setForms(r.data.forms || [])).catch(() => {});
+    });
   }, []);
 
   if (loading) {
@@ -384,6 +414,25 @@ export default function DashboardPage() {
   const displayName = profile?.name || user?.full_name || "there";
   const firstName   = displayName.split(" ")[0];
   const initials    = getInitials(displayName);
+
+  // ── Card tap action save ──────────────────────────────────────────────────
+  async function saveCardAction(action, formId) {
+    setSavingAction(true);
+    try {
+      const { default: api } = await import("@/services/api");
+      await api.patch("/nfc-cards/mine/action", {
+        default_action: action,
+        form_id: action === "form" ? formId : null,
+      });
+      setActionSaved(true);
+      setTimeout(() => setActionSaved(false), 2000);
+    } catch (e) {
+      setActionError(e?.response?.data?.message || "Failed to save");
+      setTimeout(() => setActionError(""), 3000);
+    } finally {
+      setSavingAction(false);
+    }
+  }
 
   // ── Analytics cards from API ──────────────────────────────────────────────
   const analyticsCards = [
@@ -503,20 +552,80 @@ export default function DashboardPage() {
               <p className="mt-[4px] text-[14px] text-[#6B7280]">Here&apos;s how your NFC card is performing</p>
             </div>
 
-            {/* Analytics 2×2 grid */}
-            <div className="mb-6 grid grid-cols-2 gap-3">
+            {/* Analytics 4-col grid */}
+            <div className="mb-6 grid grid-cols-2 gap-3 xl:grid-cols-4">
               {analyticsCards.map((card) => (
                 <AnalyticsCard key={card.label} {...card} />
               ))}
             </div>
 
+              {/* ── Card Tap Mode Toggle ── */}
+              {cardUid && (
+                <div className="rounded-[12px] border border-[#EBEBEB] bg-white px-5 py-5">
+                  <p className="text-[15px] font-bold text-[#111827] mb-1">When Someone Taps Your Card</p>
+                  <p className="text-[12px] text-[#9CA3AF] mb-4">Choose what opens when someone scans your NFC card</p>
+
+                  <div className="flex flex-col gap-2 mb-4">
+                    {[
+                      { value: "profile", label: "Digital Profile", desc: "Show your contact info and social links" },
+                      { value: "form",    label: "Lead Form",       desc: "Collect their name, email and message"  },
+                    ].map(opt => (
+                      <button key={opt.value} type="button"
+                        onClick={() => setCardAction(opt.value)}
+                        className="flex items-start gap-3 rounded-[12px] border p-4 text-left transition-all"
+                        style={{ borderColor: cardAction === opt.value ? "#28DC4F" : "#EBEBEB", background: cardAction === opt.value ? "#F0FFF4" : "#fff" }}>
+                        <div className="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full border-2 transition-colors"
+                          style={{ borderColor: cardAction === opt.value ? "#28DC4F" : "#D1D5DB" }}>
+                          {cardAction === opt.value && <div className="h-2.5 w-2.5 rounded-full bg-[#28DC4F]" />}
+                        </div>
+                        <div>
+                          <p className="text-[14px] font-semibold text-[#111827]">{opt.label}</p>
+                          <p className="text-[12px] text-[#9CA3AF]">{opt.desc}</p>
+                        </div>
+                      </button>
+                    ))}
+                  </div>
+
+                  {cardAction === "form" && forms.length === 0 && (
+                    <p className="mb-3 text-[12px] text-[#9CA3AF]">
+                      No forms yet. <a href="/dashboard/forms" className="text-[#28DC4F] font-medium">Create one →</a>
+                    </p>
+                  )}
+                  {cardAction === "form" && forms.length > 1 && (
+                    <div className="mb-3">
+                      <select value={selectedFormId || ""}
+                        onChange={e => setSelectedFormId(e.target.value)}
+                        className="w-full rounded-[10px] border border-[#EBEBEB] bg-[#F9FAFB] px-3 py-2.5 text-[13px] text-[#111827] outline-none focus:border-[#28DC4F]">
+                        <option value="">Select a form…</option>
+                        {forms.map(f => <option key={f.id} value={f.id}>{f.title}</option>)}
+                      </select>
+                    </div>
+                  )}
+
+                  <button
+                    onClick={async () => {
+                      const fId = cardAction === "form" ? (selectedFormId || forms[0]?.id) : null;
+                      if (cardAction === "form" && !fId) { window.location.href = "/dashboard/forms"; return; }
+                      await saveCardAction(cardAction, fId);
+                    }}
+                    disabled={savingAction}
+                    className="w-full rounded-[10px] py-3 text-[14px] font-bold text-black disabled:opacity-60 transition-colors"
+                    style={{ background: actionSaved ? "#16A34A" : "#28DC4F", color: actionSaved ? "#fff" : "#000" }}>
+                    {savingAction ? "Saving…" : actionSaved ? "✓ Saved!" : "Save Setting"}
+                  </button>
+
+                  {actionError && <p className="mt-2 text-[12px] text-center text-[#EF4444]">{actionError}</p>}
+                </div>
+              )}
+
             {/* Recent Activity */}
             <div className="rounded-[12px] border border-[#EBEBEB] bg-white px-6 py-5">
               <div className="mb-2 flex items-center justify-between">
                 <p className="text-[15px] font-semibold text-[#111827]">Recent Activity</p>
-                <button className="text-[12px] font-medium text-[#28DC4F] transition-opacity hover:opacity-70">
+                <Link href="/dashboard/orders" className="flex items-center gap-1 text-[12px] font-medium text-[#28DC4F] transition-opacity hover:opacity-70">
                   View all
-                </button>
+                  <svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"><path d="M5 3l4 4-4 4"/></svg>
+                </Link>
               </div>
 
               {activityItems.length > 0 ? (
