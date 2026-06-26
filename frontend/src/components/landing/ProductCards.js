@@ -59,7 +59,7 @@ export default function ProductCards() {
         </ScrollReveal>
 
         {/* 4-column grid matching Figma — 285px cards with 20px gaps */}
-        <div className="grid grid-cols-2 gap-4 sm:gap-5 lg:grid-cols-4">
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 sm:gap-5 lg:grid-cols-4">
           {loading && Array.from({ length: 4 }).map((_, i) => <SkeletonCard key={`skel-${i}`} />)}
           {!loading && products.length === 0 && (
             <div className="col-span-4 py-16 text-center text-[14px] text-[#6B7280]">

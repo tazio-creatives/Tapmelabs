@@ -179,7 +179,17 @@ function NotFoundState() {
 // ---------------------------------------------------------------------------
 const ALL_SOCIAL_KEYS = ["whatsapp", "linkedin", "messenger", "instagram", "twitter", "snapchat"];
 
-const SOCIAL_LABELS = { whatsapp: "WhatsApp", linkedin: "LinkedIn", messenger: "Messenger", instagram: "Instagram", twitter: "Twitter / X", snapchat: "Snapchat" };
+const SOCIAL_LABELS = { whatsapp: "WhatsApp", linkedin: "LinkedIn", messenger: "Messenger", instagram: "Instagram", twitter: "Twitter / X", snapchat: "Snapchat" }
+
+function getSocialUrl(key, raw) {
+  if (!raw) return "#";
+  if (raw.startsWith("http")) return raw;
+  if (key === "whatsapp") {
+    const digits = raw.replace(/\D/g, "");
+    if (digits) return `https://wa.me/${digits}`;
+  }
+  return `https://${raw}`;
+};
 
 function SocialPlatformIcon({ platform, size = 32 }) {
   const s = size;
@@ -517,21 +527,17 @@ function DefaultThemeProfile({ profile, onSaveContact, onShare, customization })
 
                 {/* Social icons */}
                 <div className="flex flex-wrap items-center" style={{ marginTop: "20px", gap: "16px" }}>
-                  {activeSocials.map((key) => {
-                    const raw = profile.social[key] || "";
-                    const url = raw.startsWith("http") ? raw : `https://${raw}`;
-                    return (
+                  {activeSocials.map((key) => (
                     <a
                       key={key}
-                      href={url}
+                      href={getSocialUrl(key, profile.social[key])}
                       target="_blank"
                       rel="noopener noreferrer"
                       aria-label={SOCIAL_LABELS[key]}
                     >
                       <SocialPlatformIcon platform={key} size={32} />
                     </a>
-                    );
-                  })}
+                  ))}
                 </div>
               </>
             )}
@@ -726,7 +732,7 @@ function ClassicThemeProfile({ profile, onSaveContact, onShare, customization })
             <div style={{ height: "1px", background: "#E5E5E5", margin: "16px 0" }} />
             <div style={{ display: "flex", flexWrap: "wrap", gap: "16px" }}>
               {activeSocials.map((key) => (
-                <a key={key} href={profile.social[key]?.startsWith("http") ? profile.social[key] : `https://${profile.social[key]}`} target="_blank" rel="noopener noreferrer" aria-label={SOCIAL_LABELS[key]}>
+                <a key={key} href={getSocialUrl(key, profile.social[key])} target="_blank" rel="noopener noreferrer" aria-label={SOCIAL_LABELS[key]}>
                   <SocialPlatformIcon platform={key} size={36} />
                 </a>
               ))}
@@ -869,7 +875,7 @@ function VioletThemeProfile({ profile, onSaveContact, onShare, customization }) 
               <p style={{ fontSize: "16px", fontWeight: 700, color: "#111827", marginBottom: "12px" }}>Social Links</p>
               <div style={{ display: "flex", flexWrap: "wrap", gap: "12px", marginBottom: "24px" }}>
                 {activeSocials.map((key) => (
-                  <a key={key} href={profile.social[key]?.startsWith("http") ? profile.social[key] : `https://${profile.social[key]}`} target="_blank" rel="noopener noreferrer" aria-label={SOCIAL_LABELS[key]}>
+                  <a key={key} href={getSocialUrl(key, profile.social[key])} target="_blank" rel="noopener noreferrer" aria-label={SOCIAL_LABELS[key]}>
                     <SocialPlatformIcon platform={key} size={44} />
                   </a>
                 ))}
@@ -1007,7 +1013,7 @@ function MidnightThemeProfile({ profile, onSaveContact, onShare, customization }
               <p style={{ fontSize: "16px", fontWeight: 700, color: "#111827", marginBottom: "12px" }}>Social Links</p>
               <div style={{ display: "flex", flexWrap: "wrap", gap: "12px", marginBottom: "24px" }}>
                 {activeSocials.map((key) => (
-                  <a key={key} href={profile.social[key]?.startsWith("http") ? profile.social[key] : `https://${profile.social[key]}`} target="_blank" rel="noopener noreferrer" aria-label={SOCIAL_LABELS[key]}>
+                  <a key={key} href={getSocialUrl(key, profile.social[key])} target="_blank" rel="noopener noreferrer" aria-label={SOCIAL_LABELS[key]}>
                     <SocialPlatformIcon platform={key} size={40} />
                   </a>
                 ))}
@@ -1211,7 +1217,7 @@ function RoyalThemeProfile({ profile, onSaveContact, onShare, customization }) {
               </div>
               <div style={{ display: "flex", flexWrap: "wrap", gap: "12px", marginBottom: "24px" }}>
                 {activeSocials.map((key) => (
-                  <a key={key} href={profile.social[key]?.startsWith("http") ? profile.social[key] : `https://${profile.social[key]}`} target="_blank" rel="noopener noreferrer" aria-label={SOCIAL_LABELS[key]}>
+                  <a key={key} href={getSocialUrl(key, profile.social[key])} target="_blank" rel="noopener noreferrer" aria-label={SOCIAL_LABELS[key]}>
                     <SocialPlatformIcon platform={key} size={44} />
                   </a>
                 ))}
@@ -1368,7 +1374,7 @@ function ProfessionalThemeProfile({ profile, onSaveContact, onShare, customizati
                 {activeSocials.map((key) => (
                   <a
                     key={key}
-                    href={profile.social[key]?.startsWith("http") ? profile.social[key] : `https://${profile.social[key]}`}
+                    href={getSocialUrl(key, profile.social[key])}
                     target="_blank"
                     rel="noopener noreferrer"
                     style={{ display: "flex", alignItems: "center", gap: "14px", padding: "12px 14px", background: "#F9FAFB", border: "1px solid #F3F4F6", borderRadius: "12px", textDecoration: "none" }}
