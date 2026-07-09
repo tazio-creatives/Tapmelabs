@@ -30,6 +30,7 @@ function mapProduct(raw) {
     back_image:            raw.back_image  || null,
     allowColorCustomization: raw.allow_color_customization ?? false,
     backgroundStyles:      Array.isArray(raw.background_styles) ? raw.background_styles.filter(s => s.status) : [],
+    productType:           raw.product_type || "nfc_card",
     rawPrice:              price,
     rawSalePrice:          salePrice,
 

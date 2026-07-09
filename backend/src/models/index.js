@@ -5,6 +5,7 @@ const Product = require("./Product");
 const Order = require("./Order");
 const Profile = require("./Profile");
 const NfcCard = require("./NfcCard");
+const ReviewTag = require("./ReviewTag");
 const Theme = require("./Theme");
 const ProfileVisit = require("./ProfileVisit");
 const Reseller = require("./Reseller");
@@ -68,6 +69,10 @@ Subscription.belongsTo(User, { foreignKey: "user_id", as: "user" });
 // NfcCard form association
 NfcCard.belongsTo(Form, { foreignKey: "form_id", as: "form" });
 
+// ReviewTag associations (review-standee / review-card products)
+Order.hasOne(ReviewTag, { foreignKey: "order_id", as: "review_tag" });
+ReviewTag.belongsTo(Order, { foreignKey: "order_id", as: "order" });
+
 module.exports = {
   sequelize,
   User,
@@ -75,6 +80,7 @@ module.exports = {
   Order,
   Profile,
   NfcCard,
+  ReviewTag,
   Theme,
   ProfileVisit,
   Reseller,

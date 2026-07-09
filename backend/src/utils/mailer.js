@@ -1,21 +1,19 @@
 const nodemailer   = require("nodemailer");
 const FRONTEND_URL = process.env.FRONTEND_URL || "http://localhost:3000";
 
-// Pure HTML/CSS logo — Gmail blocks data: URIs and can't reach localhost URLs,
-// so we render the brand mark with CSS shapes and text instead of image files.
+// Real brand mark — hosted image files, not inline <svg> or data: URIs.
+// Gmail strips inline <svg> markup entirely and won't load data: URIs, but
+// it does load ordinary <img> tags pointing at a public HTTPS URL, so we
+// reference the same logo.svg/logo-text.svg files the live site itself uses.
 const LOGO_HEADER = `
   <a href="${FRONTEND_URL}" style="display:inline-table;text-decoration:none;margin-bottom:24px">
     <table cellpadding="0" cellspacing="0" border="0" style="border-collapse:collapse">
       <tr>
         <td style="vertical-align:middle;padding-right:10px">
-          <!-- Icon: green rounded square with white T -->
-          <table cellpadding="0" cellspacing="0" border="0" style="border-collapse:collapse;background:#28DC4F;border-radius:10px;width:40px;height:40px">
-            <tr><td style="text-align:center;vertical-align:middle;font-family:Arial,sans-serif;font-size:22px;font-weight:900;color:#ffffff;line-height:40px;width:40px;height:40px">T</td></tr>
-          </table>
+          <img src="https://tapmelabs.com/images/logo.svg" width="32" height="32" alt="TapMe Labs" style="display:block;border:0;width:32px;height:32px" />
         </td>
         <td style="vertical-align:middle">
-          <!-- Wordmark: TAP + ME in green + LABS -->
-          <span style="font-family:Arial,sans-serif;font-size:18px;font-weight:900;letter-spacing:1px;color:#111827">TAP</span><span style="font-family:Arial,sans-serif;font-size:18px;font-weight:900;letter-spacing:1px;color:#28DC4F">ME</span><span style="font-family:Arial,sans-serif;font-size:12px;font-weight:600;letter-spacing:2px;color:#9CA3AF;margin-left:4px">LABS</span>
+          <img src="https://tapmelabs.com/images/logo-text.svg" width="135" height="12" alt="TapMe Labs" style="display:block;border:0;width:135px;height:12px" />
         </td>
       </tr>
     </table>
@@ -55,7 +53,7 @@ async function sendOtpEmail(to, otp) {
   });
 }
 
-async function sendPaymentSuccessEmail(to, { customerName, orderId, orderNumber, amount, productName, shippingAddress, proPlan }) {
+async function sendPaymentSuccessEmail(to, { customerName, orderId, orderNumber, amount, productName, shippingAddress, proPlan, productType = "nfc_card" }) {
   const displayId   = orderNumber || `TML-${String(orderId).padStart(6, "0")}`;
   const totalAmount = Number(amount);
   const PRO_PRICE   = 999;
@@ -63,6 +61,8 @@ async function sendPaymentSuccessEmail(to, { customerName, orderId, orderNumber,
   const amountStr   = `₹${totalAmount.toLocaleString("en-IN")}`;
   const addr        = shippingAddress || {};
   const addressLine = [addr.address, addr.city, addr.state, addr.pincode].filter(Boolean).join(", ");
+  const isNfcCard   = productType === "nfc_card";
+  const lineItemLabel = isNfcCard ? "NFC Business Card" : (productName || "Product");
 
   await transporter.sendMail({
     from:    process.env.EMAIL_FROM,
@@ -105,7 +105,7 @@ async function sendPaymentSuccessEmail(to, { customerName, orderId, orderNumber,
               <td colspan="2" style="padding:8px 0 4px"><hr style="border:none;border-top:1px solid #EBEBEB;margin:0"/></td>
             </tr>
             <tr>
-              <td style="padding:4px 0;color:#9CA3AF;font-size:13px">NFC Business Card</td>
+              <td style="padding:4px 0;color:#9CA3AF;font-size:13px">${lineItemLabel}</td>
               <td style="padding:4px 0;color:#111827;font-size:13px;text-align:right">₹${cardPrice.toLocaleString("en-IN")}</td>
             </tr>
             ${proPlan ? `
@@ -138,13 +138,14 @@ async function sendPaymentSuccessEmail(to, { customerName, orderId, orderNumber,
           </table>
         </div>
 
+        ${isNfcCard ? `
         <!-- CTA -->
         <div style="text-align:center;margin-bottom:28px">
           <a href="https://tapmelabs.com/dashboard/profile/setup"
              style="display:inline-block;background:#28DC4F;color:#000;font-weight:700;font-size:15px;padding:14px 32px;border-radius:99px;text-decoration:none">
             Set Up Your Profile
           </a>
-        </div>
+        </div>` : ""}
 
         <!-- Footer -->
         <p style="margin:0;font-size:12px;color:#9CA3AF;text-align:center">
@@ -247,4 +248,61 @@ async function sendResellerCustomerSetupEmail(to, { customerName, productName, s
   });
 }
 
-module.exports = { sendOtpEmail, sendPaymentSuccessEmail, sendPasswordResetEmail, sendResellerCustomerSetupEmail };
+async function sendOrderStatusEmail(to, { customerName, orderNumber, productName, orderStatus }) {
+  const isShipped = orderStatus === "shipped";
+  const heading    = isShipped ? "Your order has shipped!" : "Your order has been delivered!";
+  const bodyText   = isShipped
+    ? "Great news — your order is on its way to you."
+    : "Your order has arrived. We hope you love it!";
+  // Plain glyphs (not emoji pictographs) so the icon renders as a clean
+  // single-color mark matching the brand, instead of a colorful stock emoji.
+  const icon       = isShipped ? "&#8594;" : "&#10003;"; // arrow (in-transit) / checkmark (delivered)
+
+  await transporter.sendMail({
+    from:    process.env.EMAIL_FROM,
+    to,
+    subject: `Order ${isShipped ? "Shipped" : "Delivered"} – ${orderNumber} | TapMe Labs`,
+    text: `Hi ${customerName},\n\n${bodyText}\n\nOrder: ${orderNumber}${productName ? ` (${productName})` : ""}\nStatus: ${orderStatus}\n\nTapMe Labs Team`,
+    html: `
+      <div style="font-family:sans-serif;max-width:560px;margin:0 auto;padding:32px 24px;background:#fff;border-radius:16px;border:1px solid #F0F0F0">
+        <div style="margin-bottom:28px">${LOGO_HEADER}</div>
+
+        <div style="text-align:center;margin-bottom:28px">
+          <table cellpadding="0" cellspacing="0" border="0" style="border-collapse:collapse;margin:0 auto 16px">
+            <tr>
+              <td style="width:64px;height:64px;border-radius:50%;background:#28DC4F;text-align:center;vertical-align:middle;font-family:Arial,sans-serif;font-size:30px;font-weight:700;color:#fff;line-height:64px">${icon}</td>
+            </tr>
+          </table>
+          <h1 style="margin:0 0 6px;font-size:24px;font-weight:700;color:#111827">${heading}</h1>
+          <p style="margin:0;font-size:14px;color:#6D6D6D">Hi ${customerName}, ${bodyText.toLowerCase()}</p>
+        </div>
+
+        <div style="background:#F9F9F9;border-radius:12px;padding:20px;margin-bottom:24px">
+          <table style="width:100%;border-collapse:collapse;font-size:14px">
+            <tr>
+              <td style="padding:6px 0;color:#9CA3AF">Order ID</td>
+              <td style="padding:6px 0;color:#111827;font-weight:600;text-align:right">${orderNumber}</td>
+            </tr>
+            ${productName ? `
+            <tr>
+              <td style="padding:6px 0;color:#9CA3AF">Product</td>
+              <td style="padding:6px 0;color:#111827;text-align:right">${productName}</td>
+            </tr>` : ""}
+            <tr>
+              <td style="padding:6px 0;color:#9CA3AF">Status</td>
+              <td style="padding:6px 0;text-align:right">
+                <span style="background:rgba(40,220,79,0.12);color:#16a34a;padding:2px 10px;border-radius:99px;font-size:12px;font-weight:600;text-transform:capitalize">${orderStatus}</span>
+              </td>
+            </tr>
+          </table>
+        </div>
+
+        <p style="margin:0;font-size:12px;color:#9CA3AF;text-align:center">
+          Questions? Email us at <a href="mailto:support@tapmelabs.com" style="color:#28DC4F">support@tapmelabs.com</a>
+        </p>
+      </div>
+    `,
+  });
+}
+
+module.exports = { sendOtpEmail, sendPaymentSuccessEmail, sendPasswordResetEmail, sendResellerCustomerSetupEmail, sendOrderStatusEmail, LOGO_HEADER };

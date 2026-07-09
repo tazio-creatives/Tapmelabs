@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import Header from "@/components/landing/Header";
 import Footer from "@/components/landing/Footer";
+import orderService from "@/services/orderService";
 
 /* ─── helpers ─────────────────────────────────────────────────── */
 
@@ -165,6 +166,12 @@ export default function PaymentSuccessPage() {
   const [checkoutItem,  setCheckoutItem]  = useState(null);
   const [loaded,        setLoaded]        = useState(false);
   const [countdown,     setCountdown]     = useState(5);
+  const [downloadingInvoice, setDownloadingInvoice] = useState(false);
+  const [invoiceError,       setInvoiceError]       = useState("");
+  const [reviewTagUrl,  setReviewTagUrl]  = useState(null);
+  const [qrLoading,     setQrLoading]     = useState(false);
+  const [downloadingQr, setDownloadingQr]  = useState(false);
+  const [qrError,       setQrError]       = useState("");
 
   useEffect(() => {
     // TODO: After Razorpay/Stripe integration, call orderService.updatePaymentStatus here
@@ -176,11 +183,61 @@ export default function PaymentSuccessPage() {
       const itemStr  = localStorage.getItem("checkoutItem");
       if (itemStr)  setCheckoutItem(JSON.parse(itemStr));
     } catch {}
+
+    // A new order just succeeded — the header may have cached stale
+    // pre-purchase state (e.g. "Complete Profile") from earlier in this
+    // session. Clear it and tell the header to re-check now.
+    try {
+      sessionStorage.removeItem("tapme:hasPaidOrder");
+      sessionStorage.removeItem("tapme:hasOtherPaidOrder");
+      sessionStorage.removeItem("tapme:hasProfile");
+      window.dispatchEvent(new Event("tapme:authchange"));
+    } catch {}
+
     setLoaded(true);
   }, []);
 
+  const isNfcCard = (checkoutItem?.productType ?? "nfc_card") === "nfc_card";
+
   useEffect(() => {
-    if (!loaded || !currentOrder) return;
+    // Review-standee/card products get a QR code that points to their public
+    // review-tap page. The ReviewTag row is created server-side in the same
+    // request that marks the order paid, so it should already exist here —
+    // retry a couple of times in case of a brief lag.
+    if (!loaded || !currentOrder || isNfcCard) return;
+    let cancelled = false;
+    let attempts = 0;
+
+    async function fetchReviewTag() {
+      setQrLoading(true);
+      try {
+        const res = await orderService.getOrderById(currentOrder.id);
+        const code = res?.data?.order?.review_tag?.code;
+        if (cancelled) return;
+        if (code) {
+          setReviewTagUrl(`${window.location.origin}/rv/${code}`);
+          setQrLoading(false);
+          return;
+        }
+        attempts += 1;
+        if (attempts < 4) {
+          setTimeout(fetchReviewTag, 1500);
+        } else {
+          setQrLoading(false);
+        }
+      } catch {
+        if (!cancelled) setQrLoading(false);
+      }
+    }
+
+    fetchReviewTag();
+    return () => { cancelled = true; };
+  }, [loaded, currentOrder, isNfcCard]);
+
+  useEffect(() => {
+    // Review-standee/card products need no profile setup — logo + links were
+    // already captured on the product page, so there's nothing to redirect to.
+    if (!loaded || !currentOrder || !isNfcCard) return;
     const id = setInterval(() => {
       setCountdown((c) => {
         if (c <= 1) {
@@ -191,13 +248,13 @@ export default function PaymentSuccessPage() {
       });
     }, 1000);
     return () => clearInterval(id);
-  }, [loaded, currentOrder]);
+  }, [loaded, currentOrder, isNfcCard]);
 
   useEffect(() => {
-    if (countdown === 0 && currentOrder) {
+    if (isNfcCard && countdown === 0 && currentOrder) {
       router.push("/dashboard/profile/setup");
     }
-  }, [countdown, currentOrder, router]);
+  }, [countdown, currentOrder, router, isNfcCard]);
 
   if (!loaded) {
     return (
@@ -227,6 +284,56 @@ export default function PaymentSuccessPage() {
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
   };
+
+  async function handleDownloadInvoice() {
+    setInvoiceError("");
+    setDownloadingInvoice(true);
+    try {
+      const res = await orderService.getInvoice(currentOrder.id);
+      const blobUrl = URL.createObjectURL(res.data);
+      const a = document.createElement("a");
+      a.href = blobUrl;
+      a.download = `invoice-${orderId}.pdf`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(blobUrl);
+    } catch (err) {
+      // responseType "blob" means an error JSON body also arrives as a Blob —
+      // read it back as text to surface the real backend message.
+      let message = "Failed to download invoice. Please try again.";
+      try {
+        const text = await err.response?.data?.text?.();
+        if (text) message = JSON.parse(text).message || message;
+      } catch {}
+      setInvoiceError(message);
+    } finally {
+      setDownloadingInvoice(false);
+    }
+  }
+
+  async function handleDownloadQr() {
+    if (!reviewTagUrl) return;
+    setQrError("");
+    setDownloadingQr(true);
+    const qrApiUrl = `https://api.qrserver.com/v1/create-qr-code/?size=400x400&data=${encodeURIComponent(reviewTagUrl)}&bgcolor=ffffff&color=111827&margin=10`;
+    try {
+      const res = await fetch(qrApiUrl);
+      const blob = await res.blob();
+      const blobUrl = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = blobUrl;
+      a.download = `tapme-qr-${orderId}.png`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(blobUrl);
+    } catch {
+      setQrError("Failed to download QR code. Please try again.");
+    } finally {
+      setDownloadingQr(false);
+    }
+  }
 
   return (
     <>
@@ -277,24 +384,30 @@ export default function PaymentSuccessPage() {
 
             <p className="mt-3 text-[12px] text-[#9CA3AF]">Placed on {dateStr}</p>
 
-            {/* ── Profile CTA ── */}
-            <div className="mt-6 flex flex-col items-center gap-2">
-              <Link
-                href="/dashboard/profile/setup"
-                className="flex items-center justify-center gap-2 rounded-xl px-6 py-[13px] text-[15px] font-semibold text-black transition-opacity hover:opacity-90 active:opacity-80"
-                style={{ background: "#28DC4F" }}
-              >
-                Complete Your Profile
-                <svg width="16" height="16" viewBox="0 0 18 18" fill="none">
-                  <path d="M3.75 9h10.5M9.75 4.5 14.25 9l-4.5 4.5" stroke="white" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
-                </svg>
-              </Link>
-              <p className="text-[13px] text-[#9CA3AF]">
-                Redirecting to profile setup in{" "}
-                <span className="font-semibold text-[#111827]">{countdown}</span>{" "}
-                {countdown === 1 ? "second" : "seconds"}...
+            {/* ── Profile CTA (NFC cards only — review-standee/card products need no setup) ── */}
+            {isNfcCard ? (
+              <div className="mt-6 flex flex-col items-center gap-2">
+                <Link
+                  href="/dashboard/profile/setup"
+                  className="flex items-center justify-center gap-2 rounded-xl px-6 py-[13px] text-[15px] font-semibold text-black transition-opacity hover:opacity-90 active:opacity-80"
+                  style={{ background: "#28DC4F" }}
+                >
+                  Complete Your Profile
+                  <svg width="16" height="16" viewBox="0 0 18 18" fill="none">
+                    <path d="M3.75 9h10.5M9.75 4.5 14.25 9l-4.5 4.5" stroke="white" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+                  </svg>
+                </Link>
+                <p className="text-[13px] text-[#9CA3AF]">
+                  Redirecting to profile setup in{" "}
+                  <span className="font-semibold text-[#111827]">{countdown}</span>{" "}
+                  {countdown === 1 ? "second" : "seconds"}...
+                </p>
+              </div>
+            ) : (
+              <p className="mt-6 max-w-sm text-[13px] text-[#9CA3AF]">
+                No setup needed — it&apos;ll be ready to use as soon as it arrives.
               </p>
-            </div>
+            )}
           </div>
 
           {/* ── Two-column layout ── */}
@@ -387,18 +500,38 @@ export default function PaymentSuccessPage() {
                 </div>
               </div>
 
-              {/* Download Invoice — disabled until backend invoice API is ready */}
-              {/* TODO: Replace with a real invoice PDF endpoint once backend generates invoices. */}
+              {/* Download Invoice */}
               <button
                 type="button"
-                disabled
-                title="Invoice will be available after backend invoice integration."
-                className="flex w-full cursor-not-allowed items-center justify-center gap-2 rounded-xl py-[14px] text-[15px] font-semibold text-white opacity-50"
+                onClick={handleDownloadInvoice}
+                disabled={downloadingInvoice}
+                className="flex w-full items-center justify-center gap-2 rounded-xl py-[14px] text-[15px] font-semibold text-white transition-opacity hover:opacity-90 active:opacity-80 disabled:cursor-not-allowed disabled:opacity-60"
                 style={{ background: "#28DC4F" }}
               >
                 <DownloadIcon />
-                Download Invoice
+                {downloadingInvoice ? "Preparing Invoice…" : "Download Invoice"}
               </button>
+              {invoiceError && (
+                <p className="text-center text-[12px] text-[#EF4444]">{invoiceError}</p>
+              )}
+
+              {/* Download QR Code (review-standee/card products only) */}
+              {!isNfcCard && (
+                <>
+                  <button
+                    type="button"
+                    onClick={handleDownloadQr}
+                    disabled={downloadingQr || qrLoading || !reviewTagUrl}
+                    className="flex w-full items-center justify-center gap-2 rounded-xl border border-[#EBEBEB] bg-white py-[13px] text-[15px] font-semibold text-[#111827] transition-colors hover:border-[#28DC4F] hover:text-[#28DC4F] disabled:cursor-not-allowed disabled:opacity-60"
+                  >
+                    <DownloadIcon />
+                    {downloadingQr ? "Preparing QR Code…" : qrLoading ? "Preparing QR Code…" : "Download QR Code"}
+                  </button>
+                  {qrError && (
+                    <p className="text-center text-[12px] text-[#EF4444]">{qrError}</p>
+                  )}
+                </>
+              )}
 
               {/* View Order */}
               <Link

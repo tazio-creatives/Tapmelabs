@@ -3,8 +3,11 @@ const razorpay = require("../config/razorpay");
 const Order    = require("../models/Order");
 const User     = require("../models/User");
 const Product  = require("../models/Product");
-const { Subscription, NfcCard } = require("../models");
+const { Subscription, NfcCard, ReviewTag } = require("../models");
 const { sendPaymentSuccessEmail } = require("../utils/mailer");
+const base64ToFile = require("../utils/base64ToFile");
+
+const REVIEW_TAG_PRODUCT_TYPES = ["standee_social", "standee_google", "card_google"];
 
 // ── POST /api/payments/create-razorpay-order ──────────────────────────────────
 // Creates a Razorpay order for a given local order_id.
@@ -113,8 +116,10 @@ async function verifyRazorpayPayment(req, res, next) {
       } catch (e) { console.error("Pro activation failed:", e.message); }
     }
 
-    // Auto-assign NFC card on payment success (if not already assigned)
-    if (order.user_id) {
+    const product = await Product.findByPk(order.product_id);
+
+    // Auto-assign NFC card on payment success (if not already assigned) — nfc_card products only
+    if (order.user_id && product?.product_type === "nfc_card") {
       try {
         const existingCard = await NfcCard.findOne({ where: { user_id: order.user_id } });
         if (!existingCard) {
@@ -131,12 +136,37 @@ async function verifyRazorpayPayment(req, res, next) {
       } catch (e) { console.error("NFC card auto-create failed:", e.message); }
     }
 
+    // Auto-create review tag on payment success — review-standee/card products only.
+    // No profile-setup step for these: logo + URLs were already captured on the
+    // product detail page and stored on order.review_tag_data at checkout.
+    if (REVIEW_TAG_PRODUCT_TYPES.includes(product?.product_type)) {
+      try {
+        const existingTag = await ReviewTag.findOne({ where: { order_id: order.id } });
+        if (!existingTag) {
+          const data = order.review_tag_data || {};
+          const code = `RV-${order.order_number}-${Date.now().toString(36).toUpperCase()}`;
+          const logoUrl = data.logoDataUrl
+            ? base64ToFile(data.logoDataUrl, "review-tag-logos", order.order_number, req)
+            : null;
+
+          await ReviewTag.create({
+            order_id:          order.id,
+            code,
+            product_type:      product.product_type,
+            business_name:     data.businessName || null,
+            logo_url:          logoUrl,
+            google_review_url: data.googleReviewUrl,
+            instagram_url:     product.product_type === "standee_social" ? (data.instagramUrl || null) : null,
+            whatsapp_url:      product.product_type === "standee_social" ? (data.whatsappUrl  || null) : null,
+          });
+          console.log(`[payment] Review tag auto-created for order ${order.order_number}: ${code}`);
+        }
+      } catch (e) { console.error("Review tag auto-create failed:", e.message); }
+    }
+
     // Send confirmation email — fire-and-forget so a mail failure never blocks the response
     try {
-      const [user, product] = await Promise.all([
-        User.findByPk(order.user_id),
-        Product.findByPk(order.product_id),
-      ]);
+      const user = await User.findByPk(order.user_id);
       if (user?.email) {
         sendPaymentSuccessEmail(user.email, {
           customerName:    user.full_name || "Customer",
@@ -146,6 +176,7 @@ async function verifyRazorpayPayment(req, res, next) {
           productName:     product?.name ?? null,
           shippingAddress: order.shipping_address,
           proPlan:         !!order.pro_plan,
+          productType:     product?.product_type ?? "nfc_card",
         }).catch(() => {});
       }
     } catch {}

@@ -58,6 +58,11 @@ const Order = sequelize.define(
       allowNull: true,
       defaultValue: null,
     },
+    review_tag_data: {
+      type: DataTypes.JSON,
+      allowNull: true,
+      defaultValue: null,
+    },
     pro_plan: {
       type: DataTypes.BOOLEAN,
       defaultValue: false,

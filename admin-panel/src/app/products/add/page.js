@@ -39,6 +39,7 @@ export default function AddProductPage() {
     short_description: "",
     full_description: "",
     status: "draft",
+    product_type: "nfc_card",
   });
   const [images, setImages]           = useState([]);
   const [uploading, setUploading]     = useState(false);
@@ -54,6 +55,8 @@ export default function AddProductPage() {
   const [saving, setSaving]           = useState(false);
   const [success, setSuccess]         = useState("");
   const [error, setError]             = useState("");
+
+  const isNfcCard = form.product_type === "nfc_card";
 
   function handleChange(e) {
     setForm({ ...form, [e.target.name]: e.target.value });
@@ -117,6 +120,7 @@ export default function AddProductPage() {
         back_image:                backImage  || null,
         allow_color_customization: allowColorCustomization,
         status:                    form.status,
+        product_type:              form.product_type,
       };
 
       await productService.createProduct({ ...payload, background_styles: backgroundStyles });
@@ -154,6 +158,19 @@ export default function AddProductPage() {
 
           {/* Basic info */}
           <Section title="Basic Information">
+            <Field label="Product Type" required>
+              <select name="product_type" value={form.product_type} onChange={handleChange} className={inputCls}>
+                <option value="nfc_card">NFC Card</option>
+                <option value="standee_social">Standee — Google Review + Instagram + WhatsApp</option>
+                <option value="standee_google">Standee — Google Review Only</option>
+                <option value="card_google">Card — Google Review Only</option>
+              </select>
+              <p className="text-[11px] text-slate-400">
+                {isNfcCard
+                  ? "Customer customizes card design online (colors, back design, QR)."
+                  : "Customer adds their logo and review/social links on the product page. No card design customization needed."}
+              </p>
+            </Field>
             <Field label="Product Name" required>
               <input name="name" value={form.name} onChange={handleChange} required
                 placeholder="e.g. Matte Black NFC Card" className={inputCls} />
@@ -242,7 +259,8 @@ export default function AddProductPage() {
             )}
           </Section>
 
-          {/* Card Mockup Images */}
+          {/* Card Mockup Images (NFC card only) */}
+          {isNfcCard && (
           <Section title="Card Mockup Images">
             <p className="text-[11px] text-slate-400">
               Recommended: 1200 × 720 px · 5:3 ratio · WebP/PNG/JPG
@@ -302,8 +320,10 @@ export default function AddProductPage() {
               <p className="text-[12px] text-red-500">{mockupError}</p>
             )}
           </Section>
+          )}
 
-          {/* Color Customization */}
+          {/* Color Customization (NFC card only) */}
+          {isNfcCard && (
           <Section title="Customization Options">
             <div className="flex items-center justify-between rounded-lg p-4" style={{ background: "#F8FAFC", border: "1px solid #E2E8F0" }}>
               <div>
@@ -325,8 +345,10 @@ export default function AddProductPage() {
               </button>
             </div>
           </Section>
+          )}
 
-          {/* Background Styles */}
+          {/* Background Styles (NFC card only) */}
+          {isNfcCard && (
           <Section title="Background Styles">
             <p className="text-[11px] text-slate-400">Upload SVG background designs. Colors are extracted automatically and can be customized by customers.</p>
 
@@ -459,6 +481,7 @@ export default function AddProductPage() {
             </label>
             {svgUploadError && <p className="text-[12px] text-red-500">{svgUploadError}</p>}
           </Section>
+          )}
 
           {/* Status */}
           <Section title="Visibility">

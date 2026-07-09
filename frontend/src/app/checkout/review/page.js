@@ -18,7 +18,7 @@ const ChevronRightIcon = () => (
 
 const ArrowRightIcon = () => (
   <svg width="18" height="18" viewBox="0 0 18 18" fill="none" aria-hidden="true">
-    <path d="M3.75 9h10.5M9.75 4.5 14.25 9l-4.5 4.5" stroke="white" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+    <path d="M3.75 9h10.5M9.75 4.5 14.25 9l-4.5 4.5" stroke="black" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
   </svg>
 );
 
@@ -122,9 +122,10 @@ export default function CheckoutReviewPage() {
     setHydrated(true);
   }, [router]);
 
+  const isNfcCard = (checkoutItem?.productType ?? "nfc_card") === "nfc_card";
   const subtotal = Number(checkoutItem?.rawSalePrice ?? checkoutItem?.rawPrice ?? 0);
   const shipping = 0;
-  const total    = subtotal + shipping + (addPro ? PRO_PRICE : 0);
+  const total    = subtotal + shipping + (isNfcCard && addPro ? PRO_PRICE : 0);
 
   // No item or address → redirect back to fix
   const missingItem    = hydrated && !checkoutItem;
@@ -162,7 +163,8 @@ export default function CheckoutReviewPage() {
         total_amount: total,
         shipping_address,
         card_customization,
-        pro_plan:     addPro,
+        review_tag_data: checkoutItem.review_tag_data ?? null,
+        pro_plan:     isNfcCard && addPro,
       });
 
       localStorage.setItem("currentOrder", JSON.stringify(result.data?.order ?? result));
@@ -280,7 +282,8 @@ export default function CheckoutReviewPage() {
                 )}
               </div>
 
-              {/* ── Pro Plan Add-on ── */}
+              {/* ── Pro Plan Add-on (NFC cards only) ── */}
+              {isNfcCard && (
               <div className="rounded-2xl overflow-hidden shadow-sm" style={{ border: addPro ? "2px solid #28DC4F" : "2px solid #E5E7EB" }}>
                 {/* Header banner */}
                 <div style={{ background: addPro ? "#28DC4F" : "#18181B", padding: "14px 20px" }}
@@ -351,6 +354,7 @@ export default function CheckoutReviewPage() {
                   </button>
                 </div>
               </div>
+              )}
 
               {/* Delivery Address */}
               {address && (
@@ -398,7 +402,7 @@ export default function CheckoutReviewPage() {
                       ? <span className="text-[14px] font-semibold text-[#28DC4F]">FREE</span>
                       : <span className="text-[14px] font-medium text-[#111827]">₹{shipping}</span>}
                   </div>
-                  {addPro && (
+                  {isNfcCard && addPro && (
                     <div className="flex items-center justify-between">
                       <span className="text-[14px] text-[#6D6D6D]">Pro Plan (1 year)</span>
                       <span className="text-[14px] font-medium text-[#28DC4F]">+{formatINR(PRO_PRICE)}</span>

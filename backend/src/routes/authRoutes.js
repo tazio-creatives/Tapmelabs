@@ -1,5 +1,5 @@
 const express = require("express");
-const { register, login, me, updateMe, verifyOtp, resendOtp, changePassword, forgotPassword, resetPassword, validateSetupToken, completeSetup } = require("../controllers/authController");
+const { register, login, me, updateMe, verifyOtp, resendOtp, guestSendOtp, guestVerifyOtp, changePassword, forgotPassword, resetPassword, validateSetupToken, completeSetup } = require("../controllers/authController");
 const { protect } = require("../middlewares/authMiddleware");
 
 const router = express.Router();
@@ -9,6 +9,8 @@ router.post("/login",            login);
 router.get("/me",                protect, me);
 router.post("/verify-otp",       verifyOtp);
 router.post("/resend-otp",       resendOtp);
+router.post("/guest/send-otp",   guestSendOtp);
+router.post("/guest/verify-otp", guestVerifyOtp);
 router.put("/me",                protect, updateMe);
 router.post("/change-password",  protect, changePassword);
 router.post("/forgot-password",  forgotPassword);

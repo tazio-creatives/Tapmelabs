@@ -24,6 +24,13 @@ async function getOrderById(id) {
   return response.data;
 }
 
+// ── GET /api/orders/:id/invoice ───────────────────────────────────────────────
+// Returns a raw PDF blob response (not the {success,data} JSON envelope).
+
+async function getInvoice(id) {
+  return api.get(`/orders/${id}/invoice`, { responseType: "blob" });
+}
+
 // ── PUT /api/orders/:id/payment-status ───────────────────────────────────────
 // Called after payment gateway callback to update payment status.
 // payload: { payment_status, payment_id }
@@ -34,6 +41,6 @@ async function updatePaymentStatus(id, payload) {
   return response.data;
 }
 
-const orderService = { createOrder, getMyOrders, getOrderById, updatePaymentStatus };
+const orderService = { createOrder, getMyOrders, getOrderById, getInvoice, updatePaymentStatus };
 
 export default orderService;

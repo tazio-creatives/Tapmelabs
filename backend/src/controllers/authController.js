@@ -4,6 +4,7 @@ const jwt = require("jsonwebtoken");
 const { Op } = require("sequelize");
 const { User } = require("../models");
 const { sendOtpEmail, sendPasswordResetEmail } = require("../utils/mailer");
+const customerOtpStore = require("../utils/customerOtpStore");
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 
@@ -180,6 +181,82 @@ async function resendOtp(req, res, next) {
       success: true,
       message: "A new OTP has been sent to your email.",
       data: null,
+    });
+  } catch (err) {
+    next(err);
+  }
+}
+
+// ── POST /api/auth/guest/send-otp ───────────────────────────────────────────────
+// Passwordless checkout (review-standee/card products): just prove email
+// ownership via OTP, no User lookup or creation here. Unlike the reseller-staff
+// version of this pattern, this must NOT block on an existing account — a
+// returning guest buying a second product needs to re-verify into the same one.
+
+async function guestSendOtp(req, res, next) {
+  try {
+    const { email } = req.body;
+
+    if (!email) {
+      return res.status(400).json({ success: false, message: "Email is required.", data: null });
+    }
+
+    const otp = customerOtpStore.setOtp(email);
+    await sendOtpEmail(email, otp);
+
+    return res.status(200).json({
+      success: true,
+      message: "Verification code sent to your email.",
+      data: null,
+    });
+  } catch (err) {
+    next(err);
+  }
+}
+
+// ── POST /api/auth/guest/verify-otp ─────────────────────────────────────────────
+// On success: signs into the existing account for this email, or creates a new
+// one with a random, never-disclosed password — these accounts have no
+// password-based login by design, since guest-checkout products need no
+// ongoing account use.
+
+async function guestVerifyOtp(req, res, next) {
+  try {
+    const { email, otp, full_name, phone } = req.body;
+
+    if (!email || !otp) {
+      return res.status(400).json({ success: false, message: "Email and OTP are required.", data: null });
+    }
+
+    const result = customerOtpStore.verifyAndClear(email, otp);
+    if (!result.valid) {
+      return res.status(400).json({ success: false, message: result.message, data: null });
+    }
+
+    let user = await User.findOne({ where: { email } });
+
+    if (!user) {
+      if (!full_name) {
+        return res.status(400).json({ success: false, message: "full_name is required.", data: null });
+      }
+      const randomPassword = crypto.randomBytes(32).toString("hex");
+      user = await User.create({
+        full_name,
+        email,
+        phone: phone || null,
+        password: await bcrypt.hash(randomPassword, 12),
+        role: "customer",
+        is_email_verified: true,
+        status: "active",
+      });
+    }
+
+    const token = signToken(user.id);
+
+    return res.status(200).json({
+      success: true,
+      message: "Verified successfully.",
+      data: { token, user: userPublicFields(user) },
     });
   } catch (err) {
     next(err);
@@ -460,4 +537,4 @@ async function completeSetup(req, res) {
   }
 }
 
-module.exports = { register, login, me, updateMe, verifyOtp, resendOtp, changePassword, forgotPassword, resetPassword, validateSetupToken, completeSetup };
+module.exports = { register, login, me, updateMe, verifyOtp, resendOtp, guestSendOtp, guestVerifyOtp, changePassword, forgotPassword, resetPassword, validateSetupToken, completeSetup };

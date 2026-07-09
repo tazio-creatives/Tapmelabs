@@ -4,6 +4,7 @@ import { useState, useRef, useEffect } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import CardMockupOverlay, { QrSvg } from "./CardMockupOverlay";
+import ReviewProductDetail from "./ReviewProductDetail";
 import { extractSvgColors, replaceSvgColors } from "@/utils/svgColorUtils";
 import orderService from "@/services/orderService";
 
@@ -859,6 +860,7 @@ export default function ProductDetail({ product }) {
       productId:    product.id,
       productName:  product.name,
       productSlug:  product.slug,
+      productType:  product.productType || "nfc_card",
       productImage: Array.isArray(product.images) ? product.images[0] : null,
       front_image:  product.front_image  || null,
       back_image:   product.back_image   || null,
@@ -1005,6 +1007,12 @@ export default function ProductDetail({ product }) {
         </div>
       </div>
     );
+  }
+
+  // Review-standee/card products have their own dedicated, much simpler
+  // detail page (logo + review/social links, no card design customization).
+  if (product.productType && product.productType !== "nfc_card") {
+    return <ReviewProductDetail product={product} />;
   }
 
   return (

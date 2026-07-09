@@ -1,5 +1,5 @@
 const { Form, Lead, NfcCard } = require("../models");
-const { sendOtpEmail } = require("../utils/mailer");
+const { sendOtpEmail, LOGO_HEADER } = require("../utils/mailer");
 const { Op } = require("sequelize");
 
 function generateSlug(userId) {
@@ -170,9 +170,7 @@ async function sendThankYouEmail(to, name, form) {
     subject: `Thanks for connecting with ${ownerName}!`,
     html: `
       <div style="font-family:sans-serif;max-width:480px;margin:0 auto;padding:32px 24px;background:#fff;border-radius:16px;border:1px solid #F0F0F0">
-        <a href="${FRONTEND_URL}" style="display:inline-block;margin-bottom:24px;font-family:Arial,sans-serif;font-size:18px;font-weight:900;letter-spacing:1px;text-decoration:none;color:#111827">
-          TAP<span style="color:#28DC4F">ME</span><span style="font-size:12px;font-weight:600;letter-spacing:2px;color:#9CA3AF;margin-left:4px">LABS</span>
-        </a>
+        <div style="margin-bottom:24px">${LOGO_HEADER}</div>
         <h2 style="margin:0 0 8px;font-size:22px;color:#111827">Hi ${name || "there"}!</h2>
         <p style="margin:0 0 16px;font-size:15px;color:#6D6D6D;line-height:1.6">
           ${form.thank_you_message}

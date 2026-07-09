@@ -12,6 +12,7 @@ export default function Header() {
   const router = useRouter();
   const [isLoggedIn,       setIsLoggedIn]       = useState(false);
   const [hasPaidOrder,     setHasPaidOrder]     = useState(false);
+  const [hasOtherPaidOrder, setHasOtherPaidOrder] = useState(false);
   const [showPaymentModal, setShowPaymentModal] = useState(false);
   const [showUserMenu,     setShowUserMenu]     = useState(false);
   const [userName,         setUserName]         = useState("");
@@ -24,22 +25,26 @@ export default function Header() {
 
       if (!token) {
         setHasPaidOrder(false);
+        setHasOtherPaidOrder(false);
         sessionStorage.removeItem("tapme:hasPaidOrder");
+        sessionStorage.removeItem("tapme:hasOtherPaidOrder");
         sessionStorage.removeItem("tapme:hasProfile");
         return;
       }
 
-      // 1. Check if user already has a completed profile (fastest signal)
+      // 1. Check if user already has a completed profile (fastest signal, NFC-only)
       const cachedProfile = sessionStorage.getItem("tapme:hasProfile");
       if (cachedProfile === "true") {
         setHasPaidOrder(true);
         return;
       }
 
-      // 2. Check sessionStorage cache for paid order
-      const cached = sessionStorage.getItem("tapme:hasPaidOrder");
-      if (cached === "true") {
-        setHasPaidOrder(true);
+      // 2. Check sessionStorage cache
+      const cachedNfc   = sessionStorage.getItem("tapme:hasPaidOrder");
+      const cachedOther = sessionStorage.getItem("tapme:hasOtherPaidOrder");
+      if (cachedNfc !== null && cachedOther !== null) {
+        setHasPaidOrder(cachedNfc === "true");
+        setHasOtherPaidOrder(cachedOther === "true");
         return;
       }
 
@@ -55,15 +60,21 @@ export default function Header() {
         // No profile yet — fall through to order check
       }
 
-      // 4. Check for paid orders (fallback for users mid-flow)
+      // 4. Check for paid orders (fallback for users mid-flow) — split by product
+      //    type, since a paid standee/review-card order has no dashboard or
+      //    profile to manage (unlike an NFC card order).
       try {
         const res    = await orderService.getMyOrders();
         const orders = res?.data?.orders ?? [];
-        const paid   = orders.some((o) => o.payment_status === "paid");
-        sessionStorage.setItem("tapme:hasPaidOrder", String(paid));
-        setHasPaidOrder(paid);
+        const paidNfc   = orders.some((o) => o.payment_status === "paid" && (o.product?.product_type ?? "nfc_card") === "nfc_card");
+        const paidOther = orders.some((o) => o.payment_status === "paid" && (o.product?.product_type ?? "nfc_card") !== "nfc_card");
+        sessionStorage.setItem("tapme:hasPaidOrder", String(paidNfc));
+        sessionStorage.setItem("tapme:hasOtherPaidOrder", String(paidOther));
+        setHasPaidOrder(paidNfc);
+        setHasOtherPaidOrder(paidOther);
       } catch {
         setHasPaidOrder(false);
+        setHasOtherPaidOrder(false);
       }
     }
 
@@ -91,6 +102,9 @@ export default function Header() {
     e.preventDefault();
     if (!isLoggedIn) { router.push("/login"); return; }
     if (hasPaidOrder) { router.push("/dashboard"); return; }
+    // Standee/review-card customers have no dashboard or order history to view —
+    // their orders are tracked purely via confirmation/delivery-status emails.
+    if (hasOtherPaidOrder) { return; }
     setShowPaymentModal(true);
   }
 
@@ -98,9 +112,11 @@ export default function Header() {
     localStorage.removeItem("customerToken");
     localStorage.removeItem("customerUser");
     sessionStorage.removeItem("tapme:hasPaidOrder");
+    sessionStorage.removeItem("tapme:hasOtherPaidOrder");
     sessionStorage.removeItem("tapme:hasProfile");
     setIsLoggedIn(false);
     setHasPaidOrder(false);
+    setHasOtherPaidOrder(false);
     setShowUserMenu(false);
     setUserName("");
     window.dispatchEvent(new Event("tapme:authchange"));
@@ -108,7 +124,10 @@ export default function Header() {
   }
 
   const initials = userName ? userName.split(" ").map(w => w[0]).join("").toUpperCase().slice(0, 2) : "U";
-  const navLabel = !isLoggedIn ? "Profile Login" : hasPaidOrder ? "Dashboard" : "Complete Profile";
+  // Standee/review-card customers have nothing to manage in-app — no dashboard,
+  // no order history page — so their account just shows a name, not a link.
+  const isPlainAccount = isLoggedIn && !hasPaidOrder && hasOtherPaidOrder;
+  const navLabel = !isLoggedIn ? "Profile Login" : hasPaidOrder ? "Dashboard" : isPlainAccount ? (userName || "Account") : "Complete Profile";
 
   return (
   <>
@@ -176,14 +195,16 @@ export default function Header() {
                           <p style={{ fontSize: 13, fontWeight: 600, color: "#111827", margin: 0 }}>{userName}</p>
                         </div>
                       )}
-                      <button
-                        onClick={() => { setShowUserMenu(false); handleProfileClick({ preventDefault: () => {} }); }}
-                        style={{ display: "block", width: "100%", textAlign: "left", padding: "11px 16px", fontSize: 13, color: "#374151", background: "none", border: "none", cursor: "pointer" }}
-                        onMouseEnter={e => e.currentTarget.style.background = "#F9FAFB"}
-                        onMouseLeave={e => e.currentTarget.style.background = "none"}
-                      >
-                        {hasPaidOrder ? "My Dashboard" : "Complete Profile"}
-                      </button>
+                      {!isPlainAccount && (
+                        <button
+                          onClick={() => { setShowUserMenu(false); handleProfileClick({ preventDefault: () => {} }); }}
+                          style={{ display: "block", width: "100%", textAlign: "left", padding: "11px 16px", fontSize: 13, color: "#374151", background: "none", border: "none", cursor: "pointer" }}
+                          onMouseEnter={e => e.currentTarget.style.background = "#F9FAFB"}
+                          onMouseLeave={e => e.currentTarget.style.background = "none"}
+                        >
+                          {hasPaidOrder ? "My Dashboard" : "Complete Profile"}
+                        </button>
+                      )}
                       {hasPaidOrder && (
                         <button
                           onClick={() => { setShowUserMenu(false); router.push("/dashboard/orders"); }}
@@ -235,10 +256,12 @@ export default function Header() {
                   background: "#fff", borderRadius: 12, border: "1px solid #F0F0F0",
                   boxShadow: "0 8px 24px rgba(0,0,0,0.12)", zIndex: 100, overflow: "hidden",
                 }}>
-                  <button onClick={() => { setShowUserMenu(false); handleProfileClick({ preventDefault: () => {} }); }}
-                    style={{ display: "block", width: "100%", textAlign: "left", padding: "11px 16px", fontSize: 13, color: "#374151", background: "none", border: "none", cursor: "pointer" }}>
-                    {hasPaidOrder ? "My Dashboard" : "Complete Profile"}
-                  </button>
+                  {!isPlainAccount && (
+                    <button onClick={() => { setShowUserMenu(false); handleProfileClick({ preventDefault: () => {} }); }}
+                      style={{ display: "block", width: "100%", textAlign: "left", padding: "11px 16px", fontSize: 13, color: "#374151", background: "none", border: "none", cursor: "pointer" }}>
+                      {hasPaidOrder ? "My Dashboard" : "Complete Profile"}
+                    </button>
+                  )}
                   {hasPaidOrder && (
                     <button onClick={() => { setShowUserMenu(false); router.push("/dashboard/orders"); }}
                       style={{ display: "block", width: "100%", textAlign: "left", padding: "11px 16px", fontSize: 13, color: "#374151", background: "none", border: "none", cursor: "pointer" }}>

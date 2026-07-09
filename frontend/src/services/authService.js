@@ -28,6 +28,23 @@ async function resendOtp({ email }) {
   return response.data;
 }
 
+// ── POST /api/auth/guest/send-otp ───────────────────────────────────────────────
+// Passwordless checkout (review-standee/card products) — no account created yet.
+
+async function sendGuestOtp({ email }) {
+  const response = await api.post("/auth/guest/send-otp", { email });
+  return response.data;
+}
+
+// ── POST /api/auth/guest/verify-otp ─────────────────────────────────────────────
+// Signs into the existing account for this email, or creates one — returns
+// { token, user } just like register/login, ready for saveSession().
+
+async function guestVerifyOtp({ email, otp, full_name, phone }) {
+  const response = await api.post("/auth/guest/verify-otp", { email, otp, full_name, phone });
+  return response.data;
+}
+
 // ── GET /api/auth/me ──────────────────────────────────────────────────────────
 // Returns the currently authenticated user (requires customerToken).
 
@@ -66,6 +83,6 @@ function isLoggedIn() {
   return Boolean(localStorage.getItem("customerToken"));
 }
 
-const authService = { register, login, verifyOtp, resendOtp, getMe, saveSession, clearSession, getStoredUser, isLoggedIn };
+const authService = { register, login, verifyOtp, resendOtp, sendGuestOtp, guestVerifyOtp, getMe, saveSession, clearSession, getStoredUser, isLoggedIn };
 
 export default authService;

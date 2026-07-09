@@ -6,6 +6,7 @@
 const nodemailer = require("nodemailer");
 const { Lead, User } = require("../models");
 const { Op } = require("sequelize");
+const { LOGO_HEADER } = require("../utils/mailer");
 
 const FRONTEND_URL = process.env.FRONTEND_URL || "http://localhost:3000";
 
@@ -78,9 +79,7 @@ async function sendScoredLeadsSummary() {
     const html = `
       <div style="font-family:sans-serif;max-width:600px;margin:0 auto;padding:32px 24px;background:#F9F9F9">
         <div style="background:#fff;border-radius:16px;padding:28px;border:1px solid #F0F0F0;margin-bottom:20px">
-          <a href="${FRONTEND_URL}" style="display:inline-block;margin-bottom:20px;font-family:Arial,sans-serif;font-size:18px;font-weight:900;text-decoration:none;color:#111827">
-            TAP<span style="color:#28DC4F">ME</span><span style="font-size:12px;font-weight:600;letter-spacing:2px;color:#9CA3AF;margin-left:4px">LABS</span>
-          </a>
+          <div style="margin-bottom:20px">${LOGO_HEADER}</div>
           <h2 style="margin:0 0 4px;font-size:22px;color:#111827">Hi ${user.full_name || "there"}!</h2>
           <p style="margin:0 0 20px;font-size:14px;color:#6D6D6D">
             ${userLeads.length} new lead${userLeads.length > 1 ? "s" : ""} scored

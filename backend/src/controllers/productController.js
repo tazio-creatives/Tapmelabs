@@ -1,6 +1,8 @@
 const { Op } = require("sequelize");
 const { Product } = require("../models");
 
+const PRODUCT_TYPES = ["nfc_card", "standee_social", "standee_google", "card_google"];
+
 // ── POST /api/products ────────────────────────────────────────────────────────
 
 async function createProduct(req, res, next) {
@@ -18,12 +20,21 @@ async function createProduct(req, res, next) {
       allow_color_customization,
       background_styles,
       status,
+      product_type,
     } = req.body;
 
     if (!name || !slug || price === undefined) {
       return res.status(400).json({
         success: false,
         message: "name, slug, and price are required.",
+        data: null,
+      });
+    }
+
+    if (product_type !== undefined && !PRODUCT_TYPES.includes(product_type)) {
+      return res.status(400).json({
+        success: false,
+        message: `product_type must be one of: ${PRODUCT_TYPES.join(", ")}`,
         data: null,
       });
     }
@@ -50,6 +61,7 @@ async function createProduct(req, res, next) {
       allow_color_customization: allow_color_customization ?? false,
       background_styles: background_styles ?? [],
       status: status ?? "draft",
+      product_type: product_type ?? "nfc_card",
     });
 
     return res.status(201).json({
@@ -146,7 +158,16 @@ async function updateProduct(req, res, next) {
       allow_color_customization,
       background_styles,
       status,
+      product_type,
     } = req.body;
+
+    if (product_type !== undefined && !PRODUCT_TYPES.includes(product_type)) {
+      return res.status(400).json({
+        success: false,
+        message: `product_type must be one of: ${PRODUCT_TYPES.join(", ")}`,
+        data: null,
+      });
+    }
 
     // If slug is being changed, check it isn't already taken by another product
     if (slug && slug !== product.slug) {
@@ -175,6 +196,7 @@ async function updateProduct(req, res, next) {
       ...(allow_color_customization !== undefined && { allow_color_customization }),
       ...(background_styles !== undefined && { background_styles }),
       ...(status !== undefined && { status }),
+      ...(product_type !== undefined && { product_type }),
     });
 
     return res.status(200).json({

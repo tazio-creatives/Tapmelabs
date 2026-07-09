@@ -414,12 +414,14 @@ export default function OrderDetailPage() {
   const [copied,      setCopied]      = useState(false);
   const [downloading, setDownloading] = useState(false);
   const [qrDownloading, setQrDownloading] = useState(false);
+  const [reviewQrDownloading, setReviewQrDownloading] = useState(false);
 
   const frontRef       = useRef(null);
   const backRef        = useRef(null);
   const screenFrontRef = useRef(null);
   const screenBackRef  = useRef(null);
   const qrRef          = useRef(null);
+  const reviewQrRef    = useRef(null);
 
   useEffect(() => { fetchOrder(); }, [id]);
 
@@ -432,8 +434,9 @@ export default function OrderDetailPage() {
       setOrder(ord);
       setProfile(res.data?.profile ?? null);
       setNotes(ord?.admin_notes ?? "");
-      // Fetch NFC card for this user
-      if (ord?.user_id) {
+      // Fetch NFC card for this user — nfc_card orders only
+      const isNfc = (ord?.product?.product_type ?? "nfc_card") === "nfc_card";
+      if (ord?.user_id && isNfc) {
         try {
           const api = (await import("@/services/api")).default;
           const cardRes = await api.get(`/nfc-cards/user/${ord.user_id}`);
@@ -544,6 +547,25 @@ export default function OrderDetailPage() {
     }
   }
 
+  async function handleDownloadReviewQR() {
+    if (!reviewQrRef.current) return;
+    setReviewQrDownloading(true);
+    try {
+      const { toPng } = await import("html-to-image");
+      const dataUrl = await toPng(reviewQrRef.current, { pixelRatio: 4, cacheBust: true });
+      const a = document.createElement("a");
+      a.href = dataUrl;
+      a.download = `${order?.order_number ?? "order"}-qr.png`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+    } catch (err) {
+      console.error("QR download error:", err);
+    } finally {
+      setReviewQrDownloading(false);
+    }
+  }
+
   // ── Derived values ──────────────────────────────────────────────────────────
 
   const profileUrl  = profile?.slug ? `${PROFILE_BASE}/u/${profile.slug}` : null;
@@ -563,6 +585,10 @@ export default function OrderDetailPage() {
 
   const shipAddr = typeof order?.shipping_address === "string" ? null : (order?.shipping_address ?? null);
   const addr = typeof order?.shipping_address === "string" ? order.shipping_address : null;
+
+  const isNfcCard = (order?.product?.product_type ?? "nfc_card") === "nfc_card";
+  const reviewTag = order?.review_tag ?? null;
+  const reviewTagUrl = reviewTag?.code ? `${PROFILE_BASE}/rv/${reviewTag.code}` : null;
 
   // ── Loading / error states ──────────────────────────────────────────────────
 
@@ -648,7 +674,7 @@ export default function OrderDetailPage() {
             </Link>
             <div>
               <h1 className="text-[17px] font-bold text-slate-800">{order.order_number}</h1>
-              <p className="text-[12px] text-slate-400">{formatDateTime(order.created_at)}</p>
+              <p className="text-[12px] text-slate-400">{formatDateTime(order.createdAt)}</p>
             </div>
           </div>
           <div className="flex items-center gap-2">
@@ -686,7 +712,7 @@ export default function OrderDetailPage() {
             {/* Order Information */}
             <SectionCard title="Order Information">
               <InfoRow label="Order Number"  value={order.order_number} mono />
-              <InfoRow label="Order Date"    value={formatDateTime(order.created_at)} />
+              <InfoRow label="Order Date"    value={formatDateTime(order.createdAt)} />
               <InfoRow label="Payment ID"    value={order.payment_id} mono />
               <InfoRow label="Amount Paid"   value={`₹${Number(order.total_amount).toLocaleString("en-IN")}`} />
               <InfoRow label="Payment"       value={<StatusBadge map={PAYMENT_STATUS} value={order.payment_status} />} />
@@ -761,7 +787,9 @@ export default function OrderDetailPage() {
           {/* ── Right column ── */}
           <div className="flex flex-col gap-5">
 
-            {/* Physical NFC Card Preview */}
+            {/* Physical NFC Card Preview (nfc_card products only) */}
+            {isNfcCard && (
+            <>
             <div className="rounded-xl bg-white" style={{ border: "1px solid #E2E8F0" }}>
               {/* Header */}
               <div className="flex items-center justify-between px-5 py-4" style={{ borderBottom: "1px solid #F1F5F9" }}>
@@ -1087,6 +1115,69 @@ export default function OrderDetailPage() {
                     </div>
                   )}
                 </div>
+              </SectionCard>
+            )}
+            </>
+            )}
+
+            {/* Review Tag (standee_social / standee_google / card_google products only) */}
+            {!isNfcCard && (
+              <SectionCard title="Review Tag Details">
+                {reviewTag ? (
+                  <div className="flex flex-col gap-3">
+                    {reviewTag.logo_url && (
+                      <div className="flex items-center gap-3">
+                        {/* eslint-disable-next-line @next/next/no-img-element */}
+                        <img src={reviewTag.logo_url} alt="Business logo" style={{ height: 56, width: 56, objectFit: "contain", borderRadius: 8, background: "#F1F5F9", border: "1px solid #E2E8F0" }} />
+                        <div>
+                          <p className="text-[13px] font-semibold text-slate-800">{reviewTag.business_name || "—"}</p>
+                          <p className="text-[11px] text-slate-400">{reviewTag.product_type}</p>
+                        </div>
+                      </div>
+                    )}
+                    {!reviewTag.logo_url && (
+                      <InfoRow label="Business Name" value={reviewTag.business_name} />
+                    )}
+
+                    <InfoRow label="Google Review URL" value={reviewTag.google_review_url} />
+                    {reviewTag.instagram_url && <InfoRow label="Instagram URL" value={reviewTag.instagram_url} />}
+                    {reviewTag.whatsapp_url  && <InfoRow label="WhatsApp URL"  value={reviewTag.whatsapp_url} />}
+
+                    {reviewTagUrl && (
+                      <div className="rounded-xl p-3 flex flex-col gap-2" style={{ background: "#F0FFF4", border: "1px solid #BBF7D0" }}>
+                        <p className="text-[11px] font-bold text-green-800">Public Tap URL</p>
+                        <div className="flex items-center gap-2">
+                          <div className="flex-1 rounded-lg px-3 py-2 text-[11px] font-mono text-green-900 overflow-hidden bg-white"
+                            style={{ border: "1px solid #BBF7D0", whiteSpace: "nowrap", textOverflow: "ellipsis" }}>
+                            {reviewTagUrl}
+                          </div>
+                          <button onClick={() => navigator.clipboard.writeText(reviewTagUrl)}
+                            className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-green-700 text-white hover:bg-green-800 transition-colors">
+                            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+                          </button>
+                        </div>
+                        <div className="flex flex-col items-center gap-2 rounded-xl bg-white p-4 mt-1" style={{ border: "1px solid #E2E8F0" }}>
+                          <div ref={reviewQrRef} className="bg-white p-2 rounded-lg" style={{ width: 136, height: 136 }}>
+                            <RealQrCode color="#18181B" qrStyle="minimal" data={reviewTagUrl} width={120} height={120} />
+                          </div>
+                          <p className="text-[10px] text-slate-400">Write this URL/QR to the standee&apos;s NFC chip</p>
+                          <button onClick={handleDownloadReviewQR} disabled={reviewQrDownloading}
+                            className="flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-[11px] font-semibold transition-opacity hover:opacity-80 disabled:opacity-50"
+                            style={{ background: "#F1F5F9", color: "#374151", border: "1px solid #E2E8F0" }}>
+                            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                              <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/>
+                            </svg>
+                            {reviewQrDownloading ? "Saving…" : "Download QR"}
+                          </button>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                ) : (
+                  <p className="text-[12px] text-slate-400">
+                    Review tag hasn&apos;t been created yet — it&apos;s auto-generated once payment is confirmed.
+                  </p>
+                )}
               </SectionCard>
             )}
 

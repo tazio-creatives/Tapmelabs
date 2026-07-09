@@ -18,7 +18,7 @@ const LocationPinIcon = () => (
 
 const ArrowRightIcon = () => (
   <svg width="18" height="18" viewBox="0 0 18 18" fill="none" aria-hidden="true">
-    <path d="M3.75 9h10.5M9.75 4.5 14.25 9l-4.5 4.5" stroke="white" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+    <path d="M3.75 9h10.5M9.75 4.5 14.25 9l-4.5 4.5" stroke="black" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
   </svg>
 );
 

@@ -4,6 +4,7 @@ const {
   getMyOrders,
   getAllOrders,
   getOrderById,
+  getOrderInvoice,
   updateOrderStatus,
   updatePaymentStatus,
   updateOrderNotes,
@@ -18,6 +19,7 @@ router.get("/my-orders",          protect,                getMyOrders);
 router.get("/",                   protect, requireAdmin,  getAllOrders);
 router.post("/",                  protect,                createOrder);
 router.get("/:id",                protect,                getOrderById);
+router.get("/:id/invoice",        protect,                getOrderInvoice);
 router.put("/:id/status",         protect, requireAdmin,  updateOrderStatus);
 router.put("/:id/payment-status", protect, requireAdmin,  updatePaymentStatus);
 router.put("/:id/notes",          protect, requireAdmin,  updateOrderNotes);

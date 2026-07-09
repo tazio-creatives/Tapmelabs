@@ -61,6 +61,11 @@ const Product = sequelize.define(
       type: DataTypes.ENUM("active", "draft", "out_of_stock"),
       defaultValue: "draft",
     },
+    product_type: {
+      type: DataTypes.ENUM("nfc_card", "standee_social", "standee_google", "card_google"),
+      allowNull: false,
+      defaultValue: "nfc_card",
+    },
   },
   {
     tableName: "products",

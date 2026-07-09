@@ -194,7 +194,7 @@ export default function OrdersPage() {
                     <td className="px-5 py-3.5">
                       <StatusBadge map={ORDER_STATUS} value={o.order_status} />
                     </td>
-                    <td className="px-5 py-3.5 text-[12px] text-slate-400">{formatDate(o.created_at)}</td>
+                    <td className="px-5 py-3.5 text-[12px] text-slate-400">{formatDate(o.createdAt)}</td>
                     <td className="px-5 py-3.5">
                       <button onClick={() => router.push(`/orders/${o.id}`)}
                         className="rounded-md px-2.5 py-1 text-[11px] font-medium text-slate-600 hover:bg-slate-100"
@@ -238,7 +238,7 @@ export default function OrdersPage() {
                     ["Phone",       selected.user?.phone     ?? "—"],
                     ["Product",     selected.product?.name   ?? "—"],
                     ["Total",       `₹${Number(selected.total_amount).toLocaleString()}`],
-                    ["Date",        formatDate(selected.created_at)],
+                    ["Date",        formatDate(selected.createdAt)],
                   ].map(([k, v]) => (
                     <div key={k} className="flex justify-between gap-4">
                       <p className="text-[12px] font-medium text-slate-400 shrink-0">{k}</p>
